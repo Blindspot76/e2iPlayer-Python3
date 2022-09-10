@@ -1,0 +1,8 @@
+#2022.09.10.02
+-GST Player javítva
+-Google kereső javítva
+#2022.09.10.01
+-Puffer megjelenítés javítva
+-MoziCsillag frissítve
+#2022.09.07.01
+-Python3 Béta Verzió
