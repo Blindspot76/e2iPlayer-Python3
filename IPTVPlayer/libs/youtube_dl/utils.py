@@ -63,7 +63,7 @@ except Exception:
     printDBG("YT import problem 8")
 
 try:
-    from urllib.parse import parse_qs as compat_parse_qs
+    from urllib.parse import parse_qs as compat_parse_qs, unquote as _unquote, parse_qsl as _parse_qsl
 except ImportError: # Python 2
     # HACK: The following is the correct parse_qs implementation from cpython 3's stdlib.
     # Python 2's version is apparently totally broken
@@ -99,8 +99,7 @@ except ImportError: # Python 2
             string += pct_sequence if encoding == None else pct_sequence.decode(encoding, errors)
         return string
 
-    def _parse_qsl(qs, keep_blank_values=False, strict_parsing=False,
-                encoding='utf-8', errors='replace'):
+    def _parse_qsl(qs, keep_blank_values=False, strict_parsing=False, encoding='utf-8', errors='replace'):
         qs, _coerce_result = qs, unicode
         pairs = [s2 for s1 in qs.split('&') for s2 in s1.split(';')]
         r = []
@@ -126,8 +125,7 @@ except ImportError: # Python 2
                 r.append((name, value))
         return r
 
-    def compat_parse_qs(qs, keep_blank_values=False, strict_parsing=False,
-                encoding='utf-8', errors='replace'):
+    def compat_parse_qs(qs, keep_blank_values=False, strict_parsing=False, encoding='utf-8', errors='replace'):
         parsed_result = {}
         pairs = _parse_qsl(qs, keep_blank_values, strict_parsing,
                         encoding=encoding, errors=errors)

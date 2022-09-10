@@ -28,6 +28,8 @@ import hashlib
 import hmac
 import os
 import sys
+if sys.version_info[0] == 3: #Python3
+   unicode = str
 
 from ._logging import *
 from ._url import *

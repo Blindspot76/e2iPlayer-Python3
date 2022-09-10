@@ -9,14 +9,13 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 from Plugins.Extensions.IPTVPlayer.libs import ph
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.libs.crypto.cipher.aes_cbc import AES_CBC
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_urlencode
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 from Components.config import config, ConfigSelection, ConfigYesNo, ConfigText, getConfigListEntry
-from Plugins.Extensions.IPTVPlayer.libs.crypto.cipher.aes_cbc import AES_CBC
 from binascii import unhexlify
 from hashlib import md5
 import base64
@@ -188,7 +187,7 @@ class HDStreams(CBaseHostClass):
             if item[0] in cItem:
                 query[item[1]] = cItem[item[0]]
 
-        query = urllib.urlencode(query)
+        query = urllib_urlencode(query)
         if '?' in url:
             url += '&' + query
         else:
@@ -363,7 +362,7 @@ class HDStreams(CBaseHostClass):
         urlParams['header']['x-requested-with'] = 'XMLHttpRequest'
 
         url = self.getFullUrl('/search')
-        query = urllib.urlencode({'q': searchPattern, 'movies': movies, 'seasons': series, 'didyoumean': 'true', 'actors': 'false'})
+        query = urllib_urlencode({'q': searchPattern, 'movies': movies, 'seasons': series, 'didyoumean': 'true', 'actors': 'false'})
         sts, data = self.getPage(url + '?' + query, urlParams)
         if not sts:
             return

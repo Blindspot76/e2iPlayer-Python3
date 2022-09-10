@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ###################################################
 # LOCAL import
 ###################################################
@@ -8,12 +8,11 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, rm
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads, dumps as json_dumps
 from Plugins.Extensions.IPTVPlayer.libs import ph
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 from copy import deepcopy
 from Components.config import config, ConfigText, getConfigListEntry
 ###################################################
@@ -131,7 +130,7 @@ class FreeDiscPL(CBaseHostClass):
                     header = dict(self.HTTP_HEADER)
                     header['Accept'] = 'image/png,image/*;q=0.8,*/*;q=0.5'
                     params = dict(self.defaultParams)
-                    params.update({'maintype': 'image', 'subtypes': ['jpeg', 'png'], 'check_first_bytes': ['\xFF\xD8', '\xFF\xD9', '\x89\x50\x4E\x47'], 'header': header})
+                    params.update({'maintype': 'image', 'subtypes': ['jpeg', 'png'], 'check_first_bytes': [b'\xFF\xD8', b'\xFF\xD9', b'\x89\x50\x4E\x47'], 'header': header})
                     filePath = GetTmpDir('.iptvplayer_captcha.jpg')
                     rm(filePath)
                     ret = self.cm.saveWebFile(filePath, imgUrl.replace('&amp;', '&'), params)
@@ -240,7 +239,7 @@ class FreeDiscPL(CBaseHostClass):
         params = dict(self.defaultParams)
         params['raw_post_data'] = True
         params['header'] = dict(self.AJAX_HEADER)
-        params['header']['Referer'] = self.cm.getBaseUrl(self.getMainUrl()) + 'search/%s/%s' % (cItem.get('f_search_type', ''), urllib.quote(cItem.get('f_search_pattern', '')))
+        params['header']['Referer'] = self.cm.getBaseUrl(self.getMainUrl()) + 'search/%s/%s' % (cItem.get('f_search_type', ''), urllib_quote(cItem.get('f_search_pattern', '')))
 
         sts, data = self.getPage(cItem['url'], params, json_dumps(post_data))
         if not sts:

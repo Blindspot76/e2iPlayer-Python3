@@ -115,6 +115,11 @@ NaN
 >>>
 """
 
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
+if not isPY2():
+    basestring = str
+    long = int
+######################################################
 __all__ = [
     # Two major classes
     'Decimal', 'Context',
@@ -619,14 +624,14 @@ class Decimal(object):
         # tuple/list conversion (possibly from as_tuple())
         if isinstance(value, (list, tuple)):
             if len(value) != 3:
-                raise(ValueError('Invalid tuple size in creation of Decimal '
+                raise ValueError('Invalid tuple size in creation of Decimal '
                                  'from list or tuple.  The list or tuple '
-                                 'should have exactly three elements.'))
+                                 'should have exactly three elements.')
             # process sign.  The isinstance test rejects floats
             if not (isinstance(value[0], (int, long)) and value[0] in (0, 1)):
-                raise(ValueError("Invalid sign.  The first value in the tuple "
+                raise ValueError("Invalid sign.  The first value in the tuple "
                                  "should be an integer; either 0 for a "
-                                 "positive number or 1 for a negative number."))
+                                 "positive number or 1 for a negative number.")
             self._sign = value[0]
             if value[2] == 'F':
                 # infinity: value[1] is ignored
@@ -642,9 +647,9 @@ class Decimal(object):
                         if digits or digit != 0:
                             digits.append(digit)
                     else:
-                        raise(ValueError("The second value in the tuple must "
+                        raise ValueError("The second value in the tuple must "
                                          "be composed of integers in the range "
-                                         "0 through 9."))
+                                         "0 through 9.")
                 if value[2] in ('n', 'N'):
                     # NaN: digits form the diagnostic
                     self._int = ''.join(map(str, digits))
@@ -656,16 +661,16 @@ class Decimal(object):
                     self._exp = value[2]
                     self._is_special = False
                 else:
-                    raise(ValueError("The third value in the tuple must "
+                    raise ValueError("The third value in the tuple must "
                                      "be an integer, or one of the "
-                                     "strings 'F', 'n', 'N'."))
+                                     "strings 'F', 'n', 'N'.")
             return self
 
         if isinstance(value, float):
-            raise(TypeError("Cannot convert float to Decimal.  " +
-                            "First convert the float to a string"))
+            raise TypeError("Cannot convert float to Decimal.  " +
+                            "First convert the float to a string")
 
-        raise(TypeError("Cannot convert %r to Decimal" % value))
+        raise TypeError("Cannot convert %r to Decimal" % value)
 
     def _isnan(self):
         """Returns whether the number is not actually one.
@@ -812,7 +817,7 @@ class Decimal(object):
         # For example: hash(Decimal("100E-1")) == hash(Decimal("10")).
         if self._is_special:
             if self._isnan():
-                raise(TypeError('Cannot hash a NaN value.'))
+                raise TypeError('Cannot hash a NaN value.')
             return hash(str(self))
         if not self:
             return 0
@@ -1430,7 +1435,7 @@ class Decimal(object):
                 context = getcontext()
                 return context._raise_error(InvalidContext)
             elif self._isinfinity():
-                raise(OverflowError("Cannot convert infinity to long"))
+                raise OverflowError("Cannot convert infinity to long")
         s = (-1)**self._sign
         if self._exp >= 0:
             return s * int(self._int) * 10**self._exp
@@ -3367,7 +3372,7 @@ def _dec_from_triple(sign, coefficient, exponent, special=False):
 
 
 # get rounding method function:
-rounding_functions = [name for name in Decimal.__dict__.keys()
+rounding_functions = [name for name in list(Decimal.__dict__.keys())
                                     if name.startswith('_round_')]
 for name in rounding_functions:
     # name is like _round_half_even, goes to the global ROUND_HALF_EVEN value.
@@ -3431,7 +3436,7 @@ class Context(object):
         if traps is not None and not isinstance(traps, dict):
             traps = dict([(s, s in traps) for s in _signals])
             del s
-        for name, val in locals().items():
+        for name, val in list(locals().items()):
             if val is None:
                 setattr(self, name, _copy.copy(getattr(DefaultContext, name)))
             else:
@@ -3444,9 +3449,9 @@ class Context(object):
         s.append('Context(prec=%(prec)d, rounding=%(rounding)s, '
                  'Emin=%(Emin)d, Emax=%(Emax)d, capitals=%(capitals)d'
                  % vars(self))
-        names = [f.__name__ for f, v in self.flags.items() if v]
+        names = [f.__name__ for f, v in list(self.flags.items()) if v]
         s.append('flags=[' + ', '.join(names) + ']')
-        names = [t.__name__ for t, v in self.traps.items() if v]
+        names = [t.__name__ for t, v in list(self.traps.items()) if v]
         s.append('traps=[' + ', '.join(names) + ']')
         return ', '.join(s) + ')'
 
@@ -3490,7 +3495,7 @@ class Context(object):
 
         # Errors should only be risked on copies of the context
         # self._ignored_flags = []
-        raise(error, explanation)
+        raise ValueError(error, explanation)
 
     def _ignore_all_flags(self):
         """Ignore all flags, if they are raised"""
@@ -3513,7 +3518,7 @@ class Context(object):
     def __hash__(self):
         """A Context cannot be hashed."""
         # We inherit object.__hash__, so we must deny this explicitly
-        raise(TypeError("Cannot hash a Context."))
+        raise TypeError("Cannot hash a Context.")
 
     def Etiny(self):
         """Returns Etiny (= Emin - prec + 1)"""
@@ -4756,7 +4761,7 @@ def _nbits(n, correction={
     or 0 if n == 0.
     """
     if n < 0:
-        raise(ValueError("The argument to _nbits should be nonnegative."))
+        raise ValueError("The argument to _nbits should be nonnegative.")
     hex_n = "%x" % n
     return 4 * len(hex_n) - correction[hex_n[0]]
 
@@ -4769,7 +4774,7 @@ def _sqrt_nearest(n, a):
 
     """
     if n <= 0 or a <= 0:
-        raise(ValueError("Both arguments to _sqrt_nearest should be positive."))
+        raise ValueError("Both arguments to _sqrt_nearest should be positive.")
 
     b = 0
     while a != b:
@@ -4942,7 +4947,7 @@ class _Log10Memoize(object):
         # digits; the stored digits should always be correct
         # (truncated, not rounded to nearest).
         if p < 0:
-            raise(ValueError("p should be nonnegative"))
+            raise ValueError("p should be nonnegative")
 
         if p >= len(self.digits):
             # compute p+3, p+6, p+9, ... digits; continue until at
@@ -5087,7 +5092,7 @@ def _log10_lb(c, correction={
         '6': 23, '7': 16, '8': 10, '9': 5}):
     """Compute a lower bound for 100*log10(c) for a positive integer c."""
     if c <= 0:
-        raise(ValueError("The argument to _log10_lb should be nonnegative."))
+        raise ValueError("The argument to _log10_lb should be nonnegative.")
     str_c = str(c)
     return 100 * len(str_c) - correction[str_c[0]]
 
@@ -5104,7 +5109,7 @@ def _convert_other(other, raiseit=False):
     if isinstance(other, (int, long)):
         return Decimal(other)
     if raiseit:
-        raise(TypeError("Unable to convert %s to Decimal" % other))
+        raise TypeError("Unable to convert %s to Decimal" % other)
     return NotImplemented
 
 ##### Setup Specific Contexts ############################################

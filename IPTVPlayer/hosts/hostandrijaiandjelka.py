@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ###################################################
 # LOCAL import
 ###################################################
@@ -11,7 +11,7 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 ###################################################
 # FOREIGN import
 ###################################################
-import urllib
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 import time
 from binascii import hexlify
 from hashlib import md5
@@ -136,7 +136,7 @@ class AndrijaIAndjelka(CBaseHostClass):
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("AndrijaIAndjelka.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
         cItem = dict(cItem)
-        cItem['url'] = self.getFullUrl('/?s=') + urllib.quote_plus(searchPattern)
+        cItem['url'] = self.getFullUrl('/?s=') + urllib_quote_plus(searchPattern)
         cItem['category'] = 'list_items'
         self.listItems(cItem)
 

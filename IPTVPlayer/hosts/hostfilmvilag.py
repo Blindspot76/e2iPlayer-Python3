@@ -48,11 +48,11 @@ class FilmVilag(CBaseHostClass):
                 return
             url = self.cm.ph.getDataBeetwenMarkers(data,'height="315" src="','" width', False) [1]
             if "https:" not in url:
-		        url = "https:" + url
+                url = "https:" + url
         else:
            url = cItem['url']
            if "https:" not in url:
-		       url = "https:" + url
+               url = "https:" + url
         videoUrls = []
         uri = urlparser.decorateParamsFromUrl(url)
         protocol = uri.meta.get('iptv_proto', '')
@@ -87,43 +87,34 @@ class FilmVilag(CBaseHostClass):
                         {'category':'search_history',  'title': _('Keresési előzmények'), 'desc': "Egyes videómegosztók pillanatnyilag nem támogatottak"}]
         self.listsTab(MAIN_CAT_TAB, cItem) 
 
-    def getdesc(self, title, iurl):
+    def getdesc(self, iurl):
         sts, data = self.getPage(iurl)
         ogdesc = self.cm.ph.getDataBeetwenMarkers(data, '<meta property="og:description" content="', '" />', False)[1]
-        ogdesc = ogdesc.split(",")
-        ogdesc.pop(1)
-        if len(ogdesc) == 3:
-            ogdesc.pop(1)
-        ogdesc = ",".join(ogdesc)
-        printDBG(ogdesc)
-        url = False
-        if "HD" in title or "FHD" in title or "(4K)" in title or "(2K)" in title:
-            title = title.replace("FHD", "").replace("HD", "").replace("(4K)", "").replace("(2K)", "")
-        title = title.replace(" ", "+")
-        sts, data = self.getPage("https://port.hu/kereso?q=" + title + "&type=movie" + "&s=relevance")
-        if not sts:
-            return
-        data = self.cm.ph.getAllItemsBeetwenMarkers(data, '<a class="title"', '<div class="wrapper must-shorten">')
-        for i in data:
-            neodesc = self.cm.ph.getDataBeetwenMarkers(i, '<label class="summary">', '<', False)[1]
-            neodesc = neodesc.split()
-            neodesc = " ".join(neodesc)
-            neodesc = neodesc.split(",")
-            if len(neodesc) == 3:
-                neodesc.pop(1)
-            neodesc = ",".join(neodesc)
-            printDBG(neodesc)
-            if neodesc in ogdesc or ogdesc in neodesc:
-                url = self.cm.ph.getDataBeetwenMarkers(i, '<a class="title" href="', '">', False)[1]
-                break
-        if not url:
-            url = self.cm.ph.getDataBeetwenMarkers(data[0], '<a class="title" href="', '">', False)[1]
-        url = "https://port.hu" + url
-        sts, data = self.getPage(url)
-        if not sts:
-            return
-        desc = self.cm.ph.getDataBeetwenMarkers(data, '<meta property="description" content="', '">', False) [1]
-        return desc
+        desc = self.cm.ph.getDataBeetwenMarkers(data, '<div class="editor-area">', '<div class="article-cont-clear clear">', False)[1]
+        while '<' in desc and '>' in desc:
+           kill = self.cm.ph.getDataBeetwenMarkers(desc, '<', '>')[1]
+           desc = desc.replace(kill, '')
+        while "&" in desc and ";" in desc:
+           kill = self.cm.ph.getDataBeetwenMarkers(desc, '&', ';')[1]
+           desc = desc.replace(kill, '')
+        while "adsbygoogle" in desc:
+           desc = desc.replace('(adsbygoogle = window.adsbygoogle || []).push({});', '')
+        printDBG(desc)
+        desc = desc.split("\n")
+        printDBG(desc)
+        var = 0
+        while var != len(desc):
+           if "," not in desc[var]:
+               if ":" not in desc[var]:
+                   desc.pop(var)
+                   var = var-1
+           var = var+1
+        printDBG(desc)
+        if "Letöltés" in desc[0]:
+            desc.pop(0)
+        printDBG(desc)
+        desc = "\n".join(desc)
+        return (ogdesc + "\n" + desc)
 
     def listItems(self, cItem):
         printDBG('FilmVilag.listItems')              
@@ -137,7 +128,7 @@ class FilmVilag(CBaseHostClass):
             title = self.cm.ph.getDataBeetwenMarkers(m, '<span class="decoration" title="','"></span>', False) [1]
             icon = self.cm.ph.getDataBeetwenMarkers(m, '<img src="','" width', False) [1]
             url = self.MAIN_URL + self.cm.ph.getDataBeetwenMarkers(m, '<a href="','">', False) [1]
-            desc = self.getdesc(title, url)
+            desc = self.getdesc(url)
             params = {'title':title, 'icon': icon , 'url': url, 'desc': desc}
             self.addVideo(params)
         if "Következő &raquo" in data:
@@ -225,7 +216,7 @@ class FilmVilag(CBaseHostClass):
         s = searchPattern.replace(" ", "+")
         sts, data = self.getPage(url, self.defaultParams, {'uid':664389, 'key': s})
         if not sts:
-		    return
+            return
         results = self.cm.ph.getDataBeetwenMarkers(data, '<ul>', '</ul>', False) [1]
         printDBG(results)
         results = self.cm.ph.getAllItemsBeetwenMarkers(results, 'a href="', '">', False)

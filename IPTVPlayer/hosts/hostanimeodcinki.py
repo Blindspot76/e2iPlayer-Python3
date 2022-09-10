@@ -11,11 +11,11 @@ from hashlib import md5
 from Plugins.Extensions.IPTVPlayer.libs.crypto.cipher.aes_cbc import AES_CBC
 from Plugins.Extensions.IPTVPlayer.libs.crypto.keyedHash.evp import EVP_BytesToKey
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 ###################################################
 # FOREIGN import
 ###################################################
-import urllib
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote, urllib_quote_plus
 try:
     import json
 except Exception:
@@ -191,10 +191,10 @@ class AnimeOdcinkiPL(CBaseHostClass):
         for key in self.filtersTab:
             iKey = 'f_' + key
             if iKey in cItem:
-                getParams.append('%s=%s' % (urllib.quote(key), urllib.quote(cItem[iKey])))
+                getParams.append('%s=%s' % (urllib_quote(key), urllib_quote(cItem[iKey])))
 
         if 'f_search' in cItem:
-            getParams.append('s=%s' % (urllib.quote_plus(cItem['f_search'])))
+            getParams.append('s=%s' % (urllib_quote_plus(cItem['f_search'])))
 
         baseUrl = cItem['url']
         if page > 1:
@@ -277,7 +277,7 @@ class AnimeOdcinkiPL(CBaseHostClass):
                 alg = AES_CBC(key, keySize=kSize)
                 decrypted = alg.decrypt(a2b_base64(data["a"]), iv=iv)
                 decrypted = decrypted.split('\x00')[0]
-            decrypted = "%s" % json.loads(decrypted).encode('utf-8')
+            decrypted = "%s" % ensure_str(json.loads(decrypted))
         except Exception:
             printExc()
             decrypted = ''
@@ -318,8 +318,8 @@ class AnimeOdcinkiPL(CBaseHostClass):
         urlTab = []
 
         # mark requested link as used one
-        if len(self.cacheLinks.keys()):
-            key = self.cacheLinks.keys()[0]
+        if len(list(self.cacheLinks.keys())):
+            key = list(self.cacheLinks.keys())[0]
             for idx in range(len(self.cacheLinks[key])):
                 if videoUrl in self.cacheLinks[key][idx]['url']:
                     if not self.cacheLinks[key][idx]['name'].startswith('*'):

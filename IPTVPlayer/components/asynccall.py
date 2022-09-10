@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
 ###################################################
 # LOCAL import
 ###################################################
@@ -96,7 +96,10 @@ class AsyncCall(object):
         return self.finished
 
     def isAlive(self):
-        return None != self.Thread and self.Thread.isAlive()
+        if isPY2():
+            return None != self.Thread and self.Thread.isAlive()
+        else:
+            return None != self.Thread and self.Thread.is_alive()
 
     def _kill(self):
         bRet = False
@@ -108,7 +111,7 @@ class AsyncCall(object):
                     thread_id = self.Thread._thread_id
 
                 # no, look for it in the _active dict
-                for tid, tobj in threading._active.items():
+                for tid, tobj in list(threading._active.items()):
                     if tobj is self.Thread:
                         thread_id = tid
                 if None != thread_id:
@@ -162,9 +165,14 @@ class AsyncCall(object):
 
             self.Callback = None
             if self.finished == False:
-                if self.Thread.isAlive():
-                    self._kill()
-                    self.Thread._Thread__stop()
+                if isPY2():
+                    if self.Thread.isAlive():
+                      self._kill()
+                      self.Thread._Thread__stop()
+                else:
+                    if self.Thread.is_alive():
+                      self._kill()
+                      self.Thread.join(timeout=1)
                 bRet = True
 
         self.mainLock.release()
@@ -340,11 +348,16 @@ class iptv_execute(object):
             printExc()
             terminated = False
 
-        if not terminated and self.Thread.isAlive():
-            try:
-                self.Thread._iptvplayer_ext['iptv_execute'] = self
-            except Exception:
-                printExc()
+        if not terminated:
+            if isPY2():
+                th_is_alive = self.Thread.isAlive()
+            else:
+                th_is_alive = self.Thread.is_alive()
+            if th_is_alive:
+                try:
+                    self.Thread._iptvplayer_ext['iptv_execute'] = self
+                except Exception:
+                    printExc()
             self.iptv_system = iptv_system(cmd, self._callBack)
 
             return iptv_execute.WAIT_RET
@@ -473,7 +486,7 @@ class CFunctionProxyQueue:
         currThreadName = threading.currentThread().getName()
         if self.mainThreadName != currThreadName:
             printDBG("ERROR CFunctionProxyQueue.processQueue: Queue can be processed only from main thread, thread [%s] is not main thread" % currThreadName)
-            raise AssertionError, ("ERROR CFunctionProxyQueue.processQueue: Queue can be processed only from main thread, thread [%s] is not main thread" % currThreadName)
+            raise AssertionError("ERROR CFunctionProxyQueue.processQueue: Queue can be processed only from main thread, thread [%s] is not main thread" % currThreadName)
             return False
 
         if self.isQueueEmpty():

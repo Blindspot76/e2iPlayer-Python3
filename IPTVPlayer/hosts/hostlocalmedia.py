@@ -15,7 +15,10 @@ from Plugins.Extensions.IPTVPlayer.components.iptvchoicebox import IPTVChoiceBox
 from Plugins.Extensions.IPTVPlayer.components.e2ivkselector import GetVirtualKeyboard
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads, dumps as json_dumps
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
+if not isPY2():
+    basestring = str
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 ###################################################
 # FOREIGN import
 ###################################################
@@ -97,7 +100,7 @@ class LocalMedia(CBaseHostClass):
     def prepareCmd(self, path, start, end):
         lsdirPath = GetBinDir("lsdir")
         try:
-            os_chmod(lsdirPath, 0777)
+            os_chmod(lsdirPath, 0o777)
         except Exception:
             printExc()
         if config.plugins.iptvplayer.local_showhiddensdir.value:
@@ -376,10 +379,14 @@ class LocalMedia(CBaseHostClass):
                     except Exception:
                         printExc()
                         continue
+                title = item[0]
                 try:
-                    title = item[0].decode(encoding).encode('utf-8')
+                    if isPY2():
+                        title = item[0].decode(encoding).encode('utf-8')
+                    else:
+                        if isinstance(item[0], bytes):
+                            title = item[0].decode(encoding, 'ignore')
                 except Exception:
-                    title = item[0]
                     printExc()
                 params = {'title': title, 'raw_name': item[0]}
                 if 'd' == item[1]:

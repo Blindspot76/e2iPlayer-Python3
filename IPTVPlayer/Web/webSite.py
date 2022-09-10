@@ -6,6 +6,8 @@ import webParts
 import webThreads
 import Plugins.Extensions.IPTVPlayer.components.iptvplayerwidget
 
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote
+
 from webTools import *
 from Plugins.Extensions.IPTVPlayer.components.ihost import IHost, CDisplayListItem, RetHost, CUrlItem, ArticleContent, CFavItem
 from Plugins.Extensions.IPTVPlayer.iptvdm.iptvdh import DMHelper, DMItemBase
@@ -19,7 +21,6 @@ from Components.Language import language
 #### system imports
 import os
 from twisted.web import resource, http, util
-import urllib
 
 ########################################################
 
@@ -419,7 +420,7 @@ class downloaderPage(resource.Resource):
             if None != Plugins.Extensions.IPTVPlayer.components.iptvplayerwidget.gDownloadManager:
                 DMlist = Plugins.Extensions.IPTVPlayer.components.iptvplayerwidget.gDownloadManager.getList()
         elif key == 'watchMovie' and os.path.exists(arg):
-            return util.redirectTo("/file?action=download&file=%s" % urllib.quote(arg.decode('utf8', 'ignore').encode('utf-8')), req)
+            return util.redirectTo("/file?action=download&file=%s" % urllib_quote(arg.decode('utf8', 'ignore').encode('utf-8')), req)
         elif key == 'stopDownload' and arg.isdigit():
             if None != Plugins.Extensions.IPTVPlayer.components.iptvplayerwidget.gDownloadManager:
                 Plugins.Extensions.IPTVPlayer.components.iptvplayerwidget.gDownloadManager.stopDownloadItem(int(arg))
@@ -437,7 +438,7 @@ class downloaderPage(resource.Resource):
             if arg2 == 'deleteMovie' and os.path.exists(arg3):
                 os.remove(arg3)
             elif arg2 == 'watchMovie' and os.path.exists(arg3):
-                return util.redirectTo("/file?action=download&file=%s" % urllib.quote(arg3.decode('utf8', 'ignore').encode('utf-8')), req)
+                return util.redirectTo("/file?action=download&file=%s" % urllib_quote(arg3.decode('utf8', 'ignore').encode('utf-8')), req)
             if os.path.exists(config.plugins.iptvplayer.NaszaSciezka.value) and None != Plugins.Extensions.IPTVPlayer.components.iptvplayerwidget.gDownloadManager:
                 files = os.listdir(config.plugins.iptvplayer.NaszaSciezka.value)
                 files.sort(key=lambda x: x.lower())

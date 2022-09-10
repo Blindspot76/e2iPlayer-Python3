@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #
 #  IPTV download manager List UI
 #
@@ -16,7 +16,7 @@ from Plugins.Extensions.IPTVPlayer.components.iptvlist import IPTVListComponentB
 ###################################################
 # FOREIGN import
 ###################################################
-from enigma import eListboxPythonMultiContent, eListbox, gFont, RT_HALIGN_LEFT, RT_HALIGN_RIGHT, RT_VALIGN_CENTER
+from enigma import eListboxPythonMultiContent, eListbox, gFont, RT_HALIGN_LEFT, RT_HALIGN_RIGHT, RT_VALIGN_CENTER, getDesktop
 from Tools.LoadPixmap import LoadPixmap
 import skin
 ###################################################
@@ -31,11 +31,17 @@ class IPTVUpdateList(IPTVListComponentBase):
         try:
             self.fonts[0] = skin.fonts["iptvupdatelistitem_0"]
         except Exception:
-            self.fonts[0] = ("Regular", 16, 20, 0)
+            if getDesktop(0).size().width() >= 1920:
+                self.fonts[0] = ("Regular", 25, 40, 0)
+            else:
+                self.fonts[0] = ("Regular", 16, 20, 0)
         try:
             self.fonts[1] = skin.fonts["iptvupdatelistitem_1"]
         except Exception:
-            self.fonts[1] = ("Regular", 26, 50, 0)
+            if getDesktop(0).size().width() >= 1920:
+                self.fonts[1] = ("Regular", 35, 50, 0)
+            else:
+                self.fonts[1] = ("Regular", 26, 50, 0)
 
         self.l.setFont(0, gFont(self.fonts[0][0], self.fonts[0][1]))
         self.l.setFont(1, gFont(self.fonts[1][0], self.fonts[1][1]))

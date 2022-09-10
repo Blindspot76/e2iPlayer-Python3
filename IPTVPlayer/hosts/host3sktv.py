@@ -13,8 +13,8 @@ from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 # FOREIGN import
 ###################################################
 import re
-import urllib
-from urlparse import urlparse
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urlparse
 ###################################################
 
 
@@ -215,7 +215,7 @@ class C3skTv(CBaseHostClass):
         urlTab = []
 
         # mark requested link as used one
-        if len(self.cacheLinks.keys()):
+        if len(list(self.cacheLinks.keys())):
             for key in self.cacheLinks:
                 for idx in range(len(self.cacheLinks[key])):
                     if videoUrl in self.cacheLinks[key][idx]['url']:
@@ -229,7 +229,7 @@ class C3skTv(CBaseHostClass):
         marker = 'google.search.Search.csqr2538'
         page = cItem.get('page', 0)
         if page == 0:
-            url = self.getFullUrl('/search.htm?q=%s&btnG=' % urllib.quote(searchPattern))
+            url = self.getFullUrl('/search.htm?q=%s&btnG=' % urllib_quote(searchPattern))
             sts, data = self.getPage(url)
             if not sts:
                 return

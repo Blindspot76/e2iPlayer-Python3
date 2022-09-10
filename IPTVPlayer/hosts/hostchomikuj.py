@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -9,12 +9,15 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, fo
 from Plugins.Extensions.IPTVPlayer.libs.youtube_dl.utils import clean_html
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
+if not isPY2:
+    long = int
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 ###################################################
 # FOREIGN import
 ###################################################
 from Components.config import config, ConfigText, getConfigListEntry
-import urllib
 from hashlib import md5
 try:
     import simplejson as json
@@ -79,7 +82,7 @@ class Chomikuj(CBaseHostClass):
             v = None
         if None == v:
             return default
-        return clean_html(u'%s' % v).encode('utf-8')
+        return ensure_str(clean_html(u'%s' % v))
 
     def _getJItemNum(self, item, key, default=0):
         try:
@@ -166,7 +169,7 @@ class Chomikuj(CBaseHostClass):
         page = cItem.get('page', 1)
 
         if 'accounts' == searchType:
-            url = self.SEARCH_ACCOUNT_URL % (page, urllib.quote_plus(searchPattern))
+            url = self.SEARCH_ACCOUNT_URL % (page, urllib_quote_plus(searchPattern))
             sts, data = self.requestJsonData(url)
             if not sts:
                 return
@@ -190,7 +193,7 @@ class Chomikuj(CBaseHostClass):
                 self.addDir(params)
         else:
             map = {"images": "Image", "video": "Video", "music": "Music"}
-            self.handleDataRequest(cItem, self.SEARCH_URL % (urllib.quote_plus(searchPattern), page, map[searchType]))
+            self.handleDataRequest(cItem, self.SEARCH_URL % (urllib_quote_plus(searchPattern), page, map[searchType]))
 
     def handleProfile(self, cItem):
         printDBG("Chomikuj.handleProfile cItem[%s]" % cItem)

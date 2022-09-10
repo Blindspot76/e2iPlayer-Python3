@@ -7,11 +7,10 @@ from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostC
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, byteify
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 ###################################################
 # FOREIGN import
 ###################################################
-import urllib
 try:
     import json
 except Exception:
@@ -30,7 +29,7 @@ class KreskoweczkiPL(CBaseHostClass):
         self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': self.COOKIE_FILE}
         self.abcCache = {}
 
-        self.HEADER = {'User-Agent': 'Mozilla/5.0', 'Accept': 'text/html'}
+        self.HEADER = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0', 'Accept': 'text/html'}
         self.AJAX_HEADER = dict(self.HEADER)
         self.AJAX_HEADER.update({'X-Requested-With': 'XMLHttpRequest'})
 
@@ -234,7 +233,7 @@ class KreskoweczkiPL(CBaseHostClass):
         printDBG("KreskoweczkiPL.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
         cItem = dict(cItem)
         cItem['category'] = 'list_items'
-        cItem['url'] = self.getFullUrl('/szukaj?query=' + urllib.quote_plus(searchPattern))
+        cItem['url'] = self.getFullUrl('/szukaj?query=' + urllib_quote_plus(searchPattern))
         self.listItems(cItem)
 
     def getFavouriteData(self, cItem):

@@ -13,7 +13,7 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import enum, strwithmeta
 from Plugins.Extensions.IPTVPlayer.iptvdm.basedownloader import BaseDownloader
 from Plugins.Extensions.IPTVPlayer.iptvdm.iptvdh import DMHelper
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import strDecode
 ###################################################
 # FOREIGN import
 ###################################################
@@ -147,7 +147,7 @@ class MergeDownloader(BaseDownloader):
     def _dataAvail(self, data):
         if None == data:
             return
-        self.outData += data
+        self.outData += strDecode(data)
         if 'Saving to:' in self.outData:
             self.console_stderrAvail_conn = None
             lines = self.outData.replace('\r', '\n').split('\n')

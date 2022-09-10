@@ -48,9 +48,9 @@ class FilmPapa(CBaseHostClass):
             return
         url = self.cm.ph.getDataBeetwenMarkers(data,'<div id="cn-content" class="autosize-container"><p><iframe width="560" height="315" src="','" frameborder="0" allow="autoplay" allowfullscreen></iframe></p>', False) [1]
         if not url:
-		    url = self.cm.ph.getDataBeetwenMarkers(data,' preload="metadata" controls="controls"><source type="video/mp4" src="','" /><a href="', False) [1]
+            url = self.cm.ph.getDataBeetwenMarkers(data,' preload="metadata" controls="controls"><source type="video/mp4" src="','" /><a href="', False) [1]
         if "https:" not in url:
-		    url = "https:" + url
+            url = "https:" + url
         videoUrls = []
         uri = urlparser.decorateParamsFromUrl(url)
         protocol = uri.meta.get('iptv_proto', '')

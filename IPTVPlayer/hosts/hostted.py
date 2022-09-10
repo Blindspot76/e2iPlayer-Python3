@@ -10,14 +10,14 @@ from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Play
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 from Plugins.Extensions.IPTVPlayer.libs import ph
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote, urllib_urlencode, urllib_quote_plus
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 from datetime import timedelta
-from urlparse import urljoin
 ###################################################
 
 
@@ -61,7 +61,7 @@ class TED(CBaseHostClass):
         try:
             url.encode('ascii')
         except Exception:
-            url = urllib.quote(url, safe="/:&?%@[]()*$!+-=|<>;")
+            url = urllib_quote(url, safe="/:&?%@[]()*$!+-=|<>;")
         url = url.replace(' ', '%20').replace('&amp;', '&')
         return url
 
@@ -286,7 +286,7 @@ class TED(CBaseHostClass):
                 continue
             query[queryParamsMap[key]] = cItem[key]
 
-        query = urllib.urlencode(query)
+        query = urllib_urlencode(query)
         if '?' in url:
             url += '&' + query
         else:
@@ -356,7 +356,7 @@ class TED(CBaseHostClass):
                 continue
             query[queryParamsMap[key]] = cItem[key]
 
-        query = urllib.urlencode(query)
+        query = urllib_urlencode(query)
         if '?' in url:
             url += '&' + query
         else:
@@ -428,7 +428,7 @@ class TED(CBaseHostClass):
         printDBG("TED.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
         page = cItem.get('page', 1)
 
-        url = self.getFullUrl('/search?cat=%s&page=%s&per_page=12&q=%s' % (searchType, page, urllib.quote_plus(searchPattern)))
+        url = self.getFullUrl('/search?cat=%s&page=%s&per_page=12&q=%s' % (searchType, page, urllib_quote_plus(searchPattern)))
 
         sts, data = self.getPage(url)
         if not sts:

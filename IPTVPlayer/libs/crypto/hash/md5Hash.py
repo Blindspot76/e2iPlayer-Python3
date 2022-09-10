@@ -2,9 +2,12 @@
 """   md5Hash.py
       Wrapper for python md5 module to support crypo module standard interface
 """
+import sys
 from hashlib import md5
-from ..hash.hash import Hash
-
+try:
+    from ..hash.hash import Hash
+except Exception:
+    from Plugins.Extensions.IPTVPlayer.libs.crypto.hash.hash import Hash
 
 class MD5(Hash):
 
@@ -23,7 +26,10 @@ class MD5(Hash):
             equivalent to a single call with the concatenation of all the
             arguments: m.update(a); m.update(b) is equivalent to m.update(a+b).
         """
-        self.pymd5.update(data)
+        if sys.version_info[0] == 2: #PY2
+            self.pymd5.update(data)
+        else:
+            self.pymd5.update(data.encode('utf-8'))
 
     def digest(self):
         """ Return the digest of the strings passed to the update()

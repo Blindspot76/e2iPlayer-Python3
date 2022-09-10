@@ -7,12 +7,11 @@ from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostC
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, rm
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 ###################################################
 
 
@@ -135,7 +134,7 @@ class WorldFree4u(CBaseHostClass):
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("WorldFree4u.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
         cItem = dict(cItem)
-        cItem['url'] = self.getFullUrl('/search/' + urllib.quote(searchPattern))
+        cItem['url'] = self.getFullUrl('/search/' + urllib_quote(searchPattern))
         self.listItems(cItem)
 
     def getLinksForVideo(self, cItem, forEpisodes=False):

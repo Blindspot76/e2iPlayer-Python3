@@ -7,7 +7,7 @@ from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostC
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, byteify
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 ###################################################
 # FOREIGN import
 ###################################################
@@ -383,7 +383,7 @@ class TfarjoCom(CBaseHostClass):
             val = self.cleanHtmlStr(item[-1]).replace(' ,', ',')
             if val == '' or val.lower() == 'n/a':
                 continue
-            key = self.cleanHtmlStr(item[0]).decode('utf-8').lower().encode('utf-8')
+            key = ensure_str(self.cleanHtmlStr(item[0]))
             if key not in keysMap:
                 continue
             otherInfo[keysMap[key]] = val

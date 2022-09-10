@@ -1,10 +1,10 @@
 import os
 import re
-import urlparse
-from urllib2 import urlopen
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urlparse, urljoin
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib2_urlopen
 
-from model import M3U8, Playlist
-from parser import parse, is_url
+from Plugins.Extensions.IPTVPlayer.libs.m3u8.model import M3U8, Playlist
+from Plugins.Extensions.IPTVPlayer.libs.m3u8.parser import parse, is_url
 
 __all__ = 'M3U8', 'Playlist', 'loads', 'load', 'parse'
 
@@ -15,10 +15,10 @@ def inits(content, uri):
     this content was downloaded returns a M3U8 object.
     Raises ValueError if invalid content
     '''
-    parsed_url = urlparse.urlparse(uri)
+    parsed_url = urlparse(uri)
     prefix = parsed_url.scheme + '://' + parsed_url.netloc
     base_path = os.path.normpath(parsed_url.path + '/..')
-    base_uri = urlparse.urljoin(prefix, base_path)
+    base_uri = urljoin(prefix, base_path)
     return M3U8(content, base_uri=base_uri)
 
 
@@ -42,13 +42,13 @@ def load(uri):
 
 
 def _load_from_uri(uri):
-    open = urlopen(uri)
+    open = urllib2_urlopen(uri)
     uri = open.geturl()
     content = open.read().strip()
-    parsed_url = urlparse.urlparse(uri)
+    parsed_url = urlparse(uri)
     prefix = parsed_url.scheme + '://' + parsed_url.netloc
     base_path = os.path.normpath(parsed_url.path + '/..')
-    base_uri = urlparse.urljoin(prefix, base_path)
+    base_uri = urljoin(prefix, base_path)
     return M3U8(content, base_uri=base_uri)
 
 

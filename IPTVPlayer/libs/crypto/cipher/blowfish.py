@@ -89,7 +89,7 @@ class Blowfish:
 	def __init__(self, key):
 
 		if not key or len(key) < 8 or len(key) > 56:
-			raise(RuntimeError, "Attempted to initialize Blowfish cipher with key of invalid length: %s" % len(key))
+			raise RuntimeError("Attempted to initialize Blowfish cipher with key of invalid length: %s" % len(key))
 
 		self.p_boxes = [
 			0x243F6A88, 0x85A308D3, 0x13198A2E, 0x03707344,
@@ -432,7 +432,7 @@ class Blowfish:
 	def encrypt(self, data):
 
 		if not len(data) == 8:
-			raise(RuntimeError, "Attempted to encrypt data of invalid block length: %s" % len(data))
+			raise RuntimeError("Attempted to encrypt data of invalid block length: %s" % len(data))
 
 		# Use big endianess since that's what everyone else uses
 		xl = ord(data[3]) | (ord(data[2]) << 8) | (ord(data[1]) << 16) | (ord(data[0]) << 24)
@@ -448,7 +448,7 @@ class Blowfish:
 	def decrypt(self, data):
 
 		if not len(data) == 8:
-			raise(RuntimeError, "Attempted to encrypt data of invalid block length: %s" % len(data))
+			raise RuntimeError("Attempted to encrypt data of invalid block length: %s" % len(data))
 
 		# Use big endianess since that's what everyone else uses
 		cl = ord(data[3]) | (ord(data[2]) << 8) | (ord(data[1]) << 16) | (ord(data[0]) << 24)

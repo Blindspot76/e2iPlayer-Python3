@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ###################################################
 # LOCAL import
 ###################################################
@@ -6,12 +6,11 @@ from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT
 from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostClass
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 try:
     import json
 except Exception:
@@ -177,7 +176,7 @@ class WgranePL(CBaseHostClass):
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("WgranePL.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
         cItem = dict(cItem)
-        cItem['url'] = self.getFullUrl('/watch.html?search=') + urllib.quote_plus(searchPattern)
+        cItem['url'] = self.getFullUrl('/watch.html?search=') + urllib_quote_plus(searchPattern)
         cItem['category'] = 'list_items'
         self.listItems(cItem, 'list_playlist')
 

@@ -4,17 +4,17 @@
 ###################################################
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _, SetIPTVPlayerLastHostError
 from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostClass
-from Plugins.Extensions.IPTVPlayer.components.recaptcha_v2helper import CaptchaHelper
+from Plugins.Extensions.IPTVPlayer.components.captcha_helper import CaptchaHelper
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetDefaultLang, byteify, rm, GetCacheSubDir, ReadTextFile, WriteTextFile
 from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_urlencode, urllib_quote_plus
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 import base64
 from copy import deepcopy
 try:
@@ -140,7 +140,7 @@ class MRPiracyGQ(CBaseHostClass, CaptchaHelper):
             encoding = self.cm.ph.getDataBeetwenMarkers(data, 'charset=', '"', False)[1]
             if encoding != '':
                 try:
-                    data = data.decode(encoding).encode('utf-8')
+                    data = ensure_str(data.decode(encoding))
                 except Exception:
                     printExc()
         return sts, data
@@ -244,7 +244,7 @@ class MRPiracyGQ(CBaseHostClass, CaptchaHelper):
         if 'sort_by' in cItem and 'order' in cItem:
             uriParams[cItem['sort_by']] = cItem['order']
 
-        uriParams = urllib.urlencode(uriParams)
+        uriParams = urllib_urlencode(uriParams)
         if '?' in url:
             url += '&' + uriParams
         else:
@@ -364,7 +364,7 @@ class MRPiracyGQ(CBaseHostClass, CaptchaHelper):
             return
 
         cItem = dict(cItem)
-        cItem['url'] = self.getFullUrl('%s.php?&searchBox=' % type) + urllib.quote_plus(searchPattern)
+        cItem['url'] = self.getFullUrl('%s.php?&searchBox=' % type) + urllib_quote_plus(searchPattern)
         self.listItems(cItem, 'list_seasons')
 
     def getLinksForVideo(self, cItem):

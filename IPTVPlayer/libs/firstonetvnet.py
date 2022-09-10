@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -13,7 +13,7 @@ from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 from Plugins.Extensions.IPTVPlayer.libs import ph
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import iterDictItems
 ###################################################
 # FOREIGN import
 ###################################################
@@ -199,7 +199,7 @@ class FirstOneTvApi(CBaseHostClass):
                 surl = data['surl']
                 if surl.startswith('{'):
                     surl = json_loads(surl)
-                    for name, url in surl.iteritems():
+                    for name, url in iterDictItems(surl):
                         url = strwithmeta(url, {'Referer': cUrl, 'name': 'firstonetv.net'})
                         links.append({'name': name, 'url': self.getFullUrl(url, cUrl), 'need_resolve': 1})
                 else:

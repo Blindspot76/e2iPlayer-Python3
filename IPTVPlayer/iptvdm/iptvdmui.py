@@ -17,7 +17,7 @@ from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT
 from Plugins.Extensions.IPTVPlayer.iptvdm.iptvdh import DMHelper, DMItemBase
 from Plugins.Extensions.IPTVPlayer.iptvdm.iptvlist import IPTVDownloadManagerList
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 ###################################################
 # FOREIGN import
 ###################################################
@@ -139,7 +139,7 @@ class IPTVDMWidget(Screen):
         printDBG("IPTVDMWidget.refreshNewData")
         if self.iptvclosing:
             return
-        self.tmpData += data
+        self.tmpData += ensure_str(data)
         newFiles = self.tmpData.split('\n')
         if not self.tmpData.endswith('\n'):
             self.tmpData = newFiles[-1]

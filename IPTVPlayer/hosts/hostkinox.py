@@ -7,13 +7,12 @@ from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostC
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, byteify
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus, urllib_urlencode
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 ###################################################
 # FOREIGN import
 ###################################################
-import urlparse
 import re
-import urllib
 try:
     import json
 except Exception:
@@ -41,7 +40,7 @@ def GetConfigList():
 
 
 def gettytul():
-    return 'https://www1.kinox.to/'
+    return 'https://kinox.to/'
 
 
 class Kinox(CBaseHostClass):
@@ -64,7 +63,7 @@ class Kinox(CBaseHostClass):
         self.defaultParams = {'header': self.HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': self.COOKIE_FILE, 'cookie_items': {'ListMode': 'cover', 'CinemaMode': 'cover'}}
 
     def selectDomain(self):
-        domains = ['http://kinoz.to/', 'http://kinox.tv/', 'http://kinox.ag/', 'http://kinox.me/', 'https://kinox.am/', 'http://kinox.nu/', 'http://kinox.io/', 'http://kinox.sg/']
+        domains = ['https://kinoz.to/', 'https://kinox.bz/', 'http://kinox.ag/', 'http://kinox.me/', 'https://kinox.am/', 'http://kinox.nu/', 'http://kinox.pe/', 'http://kinox.sg/', 'http://kinox.to/', 'http://kinox.tv/']
         domain = config.plugins.iptvplayer.kinox_alt_domain.value.strip()
         if self.cm.isValidUrl(domain):
             if domain[-1] != '/':
@@ -88,7 +87,7 @@ class Kinox(CBaseHostClass):
                 break
 
         if confirmedDomain == None:
-            self.MAIN_URL = 'https://www1.kinox.to/'
+            self.MAIN_URL = 'https://kinox.to/'
 
         self.MAIN_CAT_TAB = [{'category': 'news', 'title': _('News'), 'url': self.getMainUrl()},
                              {'category': 'list_langs', 'title': _('Cinema movies'), 'url': self.getFullUrl('/Kino-filme.html'), 'get_list_mode': 'direct'},
@@ -375,7 +374,7 @@ class Kinox(CBaseHostClass):
                 query['country'] = cItem['f_country']
             if query != {}:
                 query.update({'q': '', 'actors': '', 'imdbop': '', 'imdbrating': '', 'year': '', 'extended_search': 1})
-            query = urllib.urlencode(query)
+            query = urllib_urlencode(query)
             if query != '':
                 url += '?' + query
 
@@ -397,7 +396,7 @@ class Kinox(CBaseHostClass):
             if 'f_lang' in cItem:
                 additionalParams['onlyLanguage'] = cItem['f_lang']
 
-            post_data = {'Page': page, 'Per_Page': ITEMS_PER_PAGE, 'per_page': ITEMS_PER_PAGE, 'dir': 'desc', 'sort': 'title', 'ListMode': 'cover', 'additional': json.dumps(additionalParams).encode('utf-8')}
+            post_data = {'Page': page, 'Per_Page': ITEMS_PER_PAGE, 'per_page': ITEMS_PER_PAGE, 'dir': 'desc', 'sort': 'title', 'ListMode': 'cover', 'additional': ensure_str(json.dumps(additionalParams))}
             sts, data = self.getPage(self.getFullUrl('/aGET/List/'), post_data=post_data)
             if not sts:
                 return
@@ -495,7 +494,7 @@ class Kinox(CBaseHostClass):
         printDBG("Kinox.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
         cItem = dict(cItem)
         cItem['get_list_mode'] = 'direct'
-        cItem['url'] = self.getFullUrl('/Search.html?q=' + urllib.quote_plus(searchPattern))
+        cItem['url'] = self.getFullUrl('/Search.html?q=' + urllib_quote_plus(searchPattern))
         self.listsLangFilter(cItem, 'list_items')
 
     def getLinksForVideo(self, cItem):

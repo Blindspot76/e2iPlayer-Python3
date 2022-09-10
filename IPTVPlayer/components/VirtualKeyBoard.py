@@ -6,7 +6,11 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, Ge
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _
 from Plugins.Extensions.IPTVPlayer.components.cover import Cover3, Cover2
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
+from Plugins.Extensions.IPTVPlayer.p2p3.Widgets import innerWidgetTextRight
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
+if not isPY2():
+    unichr = chr
 ###################################################
 # FOREIGN import
 ###################################################
@@ -260,11 +264,11 @@ class IPTVVirtualKeyBoardWithCaptcha(Screen):
 
         elif text == "SPACE":
             self["text"].insertChar(" ".encode("UTF-8"), self["text"].currPos, False, True)
-            self["text"].innerright()
+            innerWidgetTextRight(self["text"])
             self["text"].update()
 
         elif text == "OK":
-            self.close(self["text"].getText().encode("UTF-8"))
+            self.close(ensure_str(self["text"].getText()))
 
         elif text == "LEFT":
             self["text"].left()
@@ -274,7 +278,7 @@ class IPTVVirtualKeyBoardWithCaptcha(Screen):
 
         else:
             self["text"].insertChar(text, self["text"].currPos, False, True)
-            self["text"].innerright()
+            innerWidgetTextRight(self["text"])
             self["text"].update()
 
     def ok(self):

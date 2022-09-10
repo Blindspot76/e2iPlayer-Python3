@@ -1,9 +1,13 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import re
 from Plugins.Extensions.IPTVPlayer.libs.youtube_dl.utils import clean_html as yt_clean_html
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printExc
-
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
+if not isPY2():
+    basestring = str
+######################################################
 # flags:
 NONE = 0
 START_E = 1
@@ -98,7 +102,6 @@ def check(arg1, arg2=None):
 
 
 def findall(data, start, end=('',), flags=START_E | END_E, limits=-1):
-
     start = start if isinstance(start, tuple) or isinstance(start, list) else (start,)
     end = end if isinstance(end, tuple) or isinstance(end, list) else (end,)
 
@@ -178,7 +181,6 @@ def findall(data, start, end=('',), flags=START_E | END_E, limits=-1):
 
 
 def rfindall(data, start, end=('',), flags=START_E | END_E, limits=-1):
-
     start = start if isinstance(start, tuple) or isinstance(start, list) else (start,)
     end = end if isinstance(end, tuple) or isinstance(end, list) else (end,)
 
@@ -280,7 +282,8 @@ def strip_doubles(data, pattern):
 STRIP_HTML_TAGS_C = None
 
 
-def clean_html(str):
+def clean_html(string): # str is a keyword in python and should not be used, so changed to string
+    string = ensure_str(string)
     global STRIP_HTML_TAGS_C
     if None == STRIP_HTML_TAGS_C:
         STRIP_HTML_TAGS_C = False
@@ -289,14 +292,17 @@ def clean_html(str):
             if 'strip_html_tags' in dir(p):
                 STRIP_HTML_TAGS_C = p
         except Exception:
-            printExc()
+            printExc('WARNING')
 
-    if STRIP_HTML_TAGS_C and type(u' ') != type(str):
-        return STRIP_HTML_TAGS_C.strip_html_tags(str)
+    if STRIP_HTML_TAGS_C:
+        if isPY2() and type(u' ') != type(str):
+            return STRIP_HTML_TAGS_C.strip_html_tags(string)
+        else: #PY3
+            return STRIP_HTML_TAGS_C.strip_html_tags(string)
 
-    str = str.replace('<', ' <')
-    str = str.replace('&nbsp;', ' ')
-    str = str.replace('&nbsp', ' ')
-    str = yt_clean_html(str)
-    str = str.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
-    return strip_doubles(str, ' ').strip()
+    string = string.replace('<', ' <')
+    string = string.replace('&nbsp;', ' ')
+    string = string.replace('&nbsp', ' ')
+    string = yt_clean_html(string)
+    string = string.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
+    return strip_doubles(string, ' ').strip()

@@ -8,7 +8,7 @@ HOST_VERSION = "1.7"
 ###################################################
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _, SetIPTVPlayerLastHostError
 from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostClass
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetIPTVPlayerVerstion, MergeDicts
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetIPTVPlayerVersion, MergeDicts
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Playlist, getF4MLinksWithMeta, getMPDLinksWithMeta
 from Plugins.Extensions.IPTVPlayer.libs.urlparser import urlparser
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads, dumps as json_dumps
@@ -19,11 +19,9 @@ from Plugins.Extensions.IPTVPlayer.libs import ph
 # FOREIGN import
 ###################################################
 import os
-import urlparse
 import datetime
 import time
 import zlib
-import cookielib
 import urllib
 import base64
 from hashlib import sha1
@@ -56,18 +54,18 @@ class m4sport(CBaseHostClass):
         self.HEADER = {'User-Agent':self.USER_AGENT, 'DNT':'1', 'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Encoding':'gzip, deflate, br'}
         self.AJAX_HEADER = dict(self.HEADER)
         self.AJAX_HEADER.update( {'X-Requested-With': 'XMLHttpRequest'} )
-        self.MAIN_URL = zlib.decompress(base64.b64decode('eJzLKCkpKLbS1y8vL9fLNSkuyC8q0cso1S/LTEnNz9YHAK3xCyM='))
-        self.DEFAULT_ICON_URL = zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c81KS7ILyqJz8lPz9cryEsHAI25EXM='))
-        self.ICON_URL_ELO = zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c81KS7ILyqJz8lPz49PzcnXK8hLBwDYJxMS'))
-        self.ICON_URL_FOCI = zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c81KS7ILyqJz8lPz49Py0/O1CvISwcA66gTcw=='))
-        self.vivn = GetIPTVPlayerVerstion()
+        self.MAIN_URL = 'https://www.m4sport.hu/videok/'
+        self.DEFAULT_ICON_URL = 'http://www.figyelmeztetes.hu/m4sport_logo.png'
+        self.ICON_URL_ELO = 'http://www.figyelmeztetes.hu/m4sport_logo_elo.png'
+        self.ICON_URL_FOCI = 'http://www.figyelmeztetes.hu/m4sport_logo_foci.png'
+        self.vivn = GetIPTVPlayerVersion()
         self.porv = self.gits()
         self.pbtp = '-'
         self.btps = config.plugins.iptvplayer.boxtipus.value
         self.brdr = config.plugins.iptvplayer.boxrendszer.value
         self.aid = config.plugins.iptvplayer.m4sport_id.value
         self.aid_ki = ''
-        self.eblf = zlib.decompress(base64.b64decode('eJzLKCkpKLbS1y8vL9fLNSkuyC8q0cso1U9KzMrLz87PzslMT8xKBAAIlg4p'))
+        self.eblf = 'https://www.m4sport.hu/bajnokokligaja'
         self.defaultParams = {'header':self.HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': self.COOKIE_FILE}
         
     def getFullIconUrl(self, url):
@@ -226,7 +224,7 @@ class m4sport(CBaseHostClass):
             if cid != '' and bid != '' and mig > 0:
                 params = dict(self.defaultParams)
                 params['header'] = dict(self.AJAX_HEADER)
-                pue = zlib.decompress(base64.b64decode('eJw1yTEOwyAMQNHbZCteOlWKOvQIPQAiwQIqwBaYOlHVu7cL09fXiyLcbwCqasq1MzUxcYDyZacqWAU4j5BqB8GM040mH1A6zFbU59geTjBQO8G93GEzOV+ooeHI992JTX79fBemLlZOxvWdPNKyZQqTXEBbR9mw/fcHOtA8OQ=='))
+                pue = 'https://www.m4sport.hu/wp-content/plugins/telesport.hu.widgets/widgets/newSubCategory/ajax_loadmore.php?cat_id={}&post_type=video&blog_id={}&page_number={}'
                 for x in range(1, mig):
                     puf = pue.format(cid,bid,str(x))
                     sts, data = self.getPage(puf, params)
@@ -369,7 +367,7 @@ class m4sport(CBaseHostClass):
         return bu
         
     def malvadst(self, i_md='', i_hgk='', i_mpu=''):
-        uhe = zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c9IzanUL04sSdQvS8wD0ilJegUZBQD8FROZ'))
+        uhe = 'http://www.figyelmeztetes.hu/hely/sata/vansatdb.php'
         pstd = {'md':i_md, 'hgk':i_hgk, 'mpu':i_mpu}
         t_s = ''
         temp_vn = ''
@@ -396,7 +394,7 @@ class m4sport(CBaseHostClass):
             return t_s
         
     def susn(self, i_md='', i_hgk='', i_mpu=''):
-        uhe = zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c9IzanUL04sSdQvS8wD0ilJegUZBQD8FROZ'))
+        uhe = 'http://www.figyelmeztetes.hu/hely/sata/vansatdb.php'
         pstd = {'md':i_md, 'hgk':i_hgk, 'mpu':i_mpu, 'hv':self.vivn, 'orv':self.porv, 'bts':self.pbtp}
         try:
             if i_md != '' and i_hgk != '' and i_mpu != '':
@@ -409,8 +407,8 @@ class m4sport(CBaseHostClass):
         bv = '-'
         tt = []
         try:
-            if fileExists(zlib.decompress(base64.b64decode('eJzTTy1J1s8sLi5NBQATXQPE'))):
-                fr = open(zlib.decompress(base64.b64decode('eJzTTy1J1s8sLi5NBQATXQPE')),'r')
+            if fileExists('/etc/issue'):
+                fr = open('/etc/issue','r')
                 for ln in fr:
                     ln = ln.rstrip('\n')
                     if ln != '':

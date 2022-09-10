@@ -13,7 +13,7 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 ###################################################
 import time
 import re
-import urllib
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote, urllib_unquote
 try:
     import json
 except Exception:
@@ -197,7 +197,7 @@ class AkoAm(CBaseHostClass):
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("AkoAm.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
 
-        url = self.getFullUrl('/search/') + urllib.quote(searchPattern)
+        url = self.getFullUrl('/search/') + urllib_quote(searchPattern)
         cItem = dict(cItem)
         cItem.update({'url': url, 'category': 'list_items'})
         self.listItems(cItem, 'explore_item')
@@ -317,7 +317,7 @@ class AkoAm(CBaseHostClass):
         urlTab = []
 
         # mark requested link as used one
-        if len(self.cacheLinks.keys()):
+        if len(list(self.cacheLinks.keys())):
             for key in self.cacheLinks:
                 for idx in range(len(self.cacheLinks[key])):
                     if baseUrl in self.cacheLinks[key][idx]['url']:
@@ -339,7 +339,7 @@ class AkoAm(CBaseHostClass):
                 if 'golink' in data:
                     data = data['golink']
                     printDBG(data)
-                    data = urllib.unquote(data)
+                    data = urllib_unquote(data)
                     data = byteify(json.loads(data))
                     printDBG(data)
                     baseUrl = data['route']

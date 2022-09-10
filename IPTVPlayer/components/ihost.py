@@ -14,8 +14,12 @@ from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads, dump
 from Components.config import config
 from skin import parseColor
 
-from urlparse import urljoin
-
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import isPY2
+if not isPY2():
+    basestring = str
+######################################################
 
 class CUrlItem:
     def __init__(self, name="", url="", urlNeedsResolve=0):
@@ -688,13 +692,15 @@ class CBaseHostClass:
         if not sts:
             return
         try:
-            data = json_loads(data)
-            mycountry = data.get('country', '')
-            if mycountry != country:
-                if not mycountry:
-                    mycountry = '?'
+            data = ensure_str(data.strip())
+            try:
+                data = json_loads(data[1:-1], '', True)
+            except Exception:
+                data = json_loads(data)
+            data['country'] = data.get('country','N/A') #to avoid exceptions when something went wrong
+            if data['country'] != country:
                 message = _('%s uses "geo-blocking" measures to prevent you from accessing the services from abroad.\n Host country: %s, your country: %s')
-                GetIPTVNotify().push(message % (self.getMainUrl(), country, mycountry), 'info', 5)
+                GetIPTVNotify().push(message % (self.getMainUrl(), country, data['country']), 'info', 5)
             self.isGeoBlockingChecked = True
         except Exception:
             printExc()
@@ -758,11 +764,10 @@ class CBaseHostClass:
 
     @staticmethod
     def getStr(v, default=''):
-        if type(v) == type(u''):
-            return v.encode('utf-8')
-        elif type(v) == type(''):
-            return v
-        return default
+        try:
+            return ensure_str(v)
+        except Exception:
+            return default
 
     def getCurrList(self):
         return self.currList

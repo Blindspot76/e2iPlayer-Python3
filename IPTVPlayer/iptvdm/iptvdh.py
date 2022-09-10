@@ -258,7 +258,7 @@ class DMHelper:
 
         #defaultHeader = ' --header "User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:21.0) Gecko/20100101 Firefox/21.0" '
         defaultHeader = ' --header "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36" '
-        for key, value in downloaderParams.items():
+        for key, value in list(downloaderParams.items()):
             if value != '':
                 if key in DMHelper.HANDLED_HTTP_HEADER_PARAMS:
                     if 'Cookie' == key:
@@ -297,7 +297,7 @@ class DMHelper:
 
         #userAgent = ' -u "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:21.0) Gecko/20100101 Firefox/21.0" '
         userAgent = ' -u "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36" '
-        for key, value in downloaderParams.items():
+        for key, value in list(downloaderParams.items()):
             if value != '':
                 if key in DMHelper.HANDLED_HTTP_HEADER_PARAMS:
                     if key == 'User-Agent':

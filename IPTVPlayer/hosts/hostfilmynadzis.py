@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ###################################################
 # LOCAL import
 ###################################################
@@ -12,13 +12,11 @@ from Plugins.Extensions.IPTVPlayer.libs import ph
 from Components.config import config, ConfigText, getConfigListEntry
 
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 ###################################################
 # FOREIGN import
 ###################################################
-from urllib import quote_plus
 import re
-
 ###################################################
 
 ###################################################
@@ -269,11 +267,10 @@ class FilmyNaDzis(CBaseHostClass):
                 elif 'm3u' in url:
                     urlTab.extend(getDirectM3U8Playlist(url, checkExt=False, checkContent=True, sortWithMaxBitrate=999999999))
 
-        tmp = self.cm.ph.getAllItemsBeetwenMarkers(data, '<iframe', '>')
+        tmp = re.compile('''<iframe[^>]+?src=['"]([^'^"]+?)['"]''', re.IGNORECASE).findall(data)
         if len(tmp):
             for item in tmp:
-                url = self.cm.ph.getSearchGroups(item, '''src=['"]([^'^"]+?)['"]''')[0]
-                urlTab.append({'name': self.up.getHostName(url), 'url': self.getFullUrl(url), 'need_resolve': 1})
+                urlTab.append({'name': self.up.getHostName(item), 'url': self.getFullUrl(item), 'need_resolve': 1})
 
         if urlTab:
             self.cacheLinks[cacheKey] = urlTab

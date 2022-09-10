@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -9,68 +9,28 @@ from Plugins.Extensions.IPTVPlayer.libs.pCommon import common
 from Plugins.Extensions.IPTVPlayer.components.asynccall import MainSessionWrapper
 from Plugins.Extensions.IPTVPlayer.components.recaptcha_v2widget import UnCaptchaReCaptchaWidget
 from Plugins.Extensions.IPTVPlayer.libs import ph
-
 ###################################################
-# FOREIGN import
-###################################################
-import urllib
-import re
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_urlencode
 ###################################################
 
 
 class UnCaptchaReCaptcha:
     def __init__(self, lang='en'):
-        self.COOKIE_FILE = GetCookieDir('google.cookie')
-        self.HTTP_HEADER = {'Accept': 'text/html',
-                            'Accept-Charset': 'UTF-8',
-                            'Accept-Encoding': 'gzip',
-                            'Accept-Language': lang,
-                            'Referer': 'https://www.google.com/recaptcha/api2/demo',
-                            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'
-                           }
-        self.HttpParams = {'header': self.HTTP_HEADER, 'cookiefile': self.COOKIE_FILE, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True}
+        self.HTTP_HEADER = {'Accept-Language': lang, 'Referer': 'https://www.google.com/recaptcha/api2/demo', 'User-Agent': 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.2.18) Gecko/20110621 Mandriva Linux/1.9.2.18-0.1mdv2010.2 (2010.2) Firefox/3.6.18'}
         self.cm = common()
         self.sessionEx = MainSessionWrapper()
+        self.COOKIE_FILE = GetCookieDir('google.cookie')
 
-    def processCaptcha(self, key, referer=None, lang='en'):
+    def processCaptcha(self, key, referer=None, captchaType=''):
         post_data = None
         token = ''
         iteration = 0
         if referer != None:
-            self.HttpParams['header']['Referer'] = referer
-
-        #reCaptchaUrl = 'http://www.google.com/recaptcha/api/fallback?k=%s' % (key)
-
-        #new method as in plugin kodiondemand
-
-        reCaptchaApiUrl = "https://www.google.com/recaptcha/api.js?hl=%s" % lang
-        sts, apiCode = self.cm.getPage(reCaptchaApiUrl, self.HttpParams)
-
-        if not sts:
-            SetIPTVPlayerLastHostError(_('Fail to get "%s".') % reCaptchaApiUrl)
-            return ''
-
-        apiVersionUrl = re.findall("po.src\s*=\s*'(.*?)';", apiCode)
-
-        if not apiVersionUrl:
-            SetIPTVPlayerLastHostError(_('Fail to get "%s".') % reCaptchaApiUrl)
-            return ''
-
-        version = apiVersionUrl[0].split("/")[5]
-        printDBG("reCaptcha version: %s" % version)
-
-        reCaptchaUrl = "https://www.google.com/recaptcha/api/fallback?k=" + key + "&hl=" + lang + "&v=" + version + "&t=2&ff=true"
-        printDBG("reCaptchaUrl: %s " % reCaptchaUrl)
-
+            self.HTTP_HEADER['Referer'] = referer
+        reCaptchaUrl = 'http://www.google.com/recaptcha/api/fallback?k=%s' % (key)
         while iteration < 20:
             #,'cookiefile':self.COOKIE_FILE, 'use_cookie': True, 'load_cookie': True, 'save_cookie':True
-            #sts, data = self.cm.getPage(reCaptchaUrl, {'header':self.HTTP_HEADER, 'raw_post_data':True}, post_data=post_data)
-            if post_data:
-                self.HttpParams['raw_post_data'] = True
-                sts, data = self.cm.getPage(reCaptchaUrl, self.HttpParams, post_data)
-            else:
-                sts, data = self.cm.getPage(reCaptchaUrl, self.HttpParams)
-
+            sts, data = self.cm.getPage(reCaptchaUrl, {'header': self.HTTP_HEADER, 'raw_post_data': True}, post_data=post_data)
             if not sts:
                 SetIPTVPlayerLastHostError(_('Fail to get "%s".') % reCaptchaUrl)
                 return ''
@@ -120,8 +80,7 @@ class UnCaptchaReCaptcha:
             if retArg is not None and len(retArg) and retArg[0]:
                 answer = retArg[0]
                 printDBG('>>>>>>>> Captcha answer[%s]' % (answer))
-                post_data = urllib.urlencode({'c': cval, 'response': answer}, doseq=True)
-                printDBG(str(post_data))
+                post_data = urllib_urlencode({'c': cval, 'response': answer}, doseq=True)
             else:
                 break
 

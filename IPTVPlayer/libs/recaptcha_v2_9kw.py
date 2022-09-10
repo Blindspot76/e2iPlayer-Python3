@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -11,10 +11,11 @@ from Screens.MessageBox import MessageBox
 from Components.config import config
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 ###################################################
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote
+###################################################
 # FOREIGN import
 ###################################################
 import time
-import urllib
 from Components.config import config
 ###################################################
 
@@ -33,12 +34,12 @@ class UnCaptchaReCaptcha:
             mainUrl = self.getMainUrl()
         return self.cm.getFullUrl(url, mainUrl)
 
-    def processCaptcha(self, sitekey, referer=''):
+    def processCaptcha(self, sitekey, referer='', captchaType=''):
         sleepObj = None
         token = ''
         errorMsgTab = []
         apiKey = config.plugins.iptvplayer.api_key_9kweu.value
-        apiUrl = self.getFullUrl('/index.cgi?apikey=') + apiKey + '&action=usercaptchaupload&interactive=1&json=1&file-upload-01=' + sitekey + '&oldsource=recaptchav2&pageurl=' + urllib.quote(referer)
+        apiUrl = self.getFullUrl('/index.cgi?apikey=') + apiKey + '&action=usercaptchaupload&interactive=1&json=1&file-upload-01=' + sitekey + '&oldsource=recaptchav2&pageurl=' + urllib_quote(referer)
         try:
             token = ''
             sts, data = self.cm.getPage(apiUrl)

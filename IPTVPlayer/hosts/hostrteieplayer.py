@@ -8,12 +8,11 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, by
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Playlist, getF4MLinksWithMeta
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 try:
     import json
 except Exception:
@@ -207,7 +206,7 @@ class RteIE(CBaseHostClass):
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("AnimeTo.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
         cItem = dict(cItem)
-        cItem['url'] = self.getFullUrl('/player/search/?q=' + urllib.quote_plus(searchPattern))
+        cItem['url'] = self.getFullUrl('/player/search/?q=' + urllib_quote_plus(searchPattern))
         self.listItems(cItem, 'list_items')
 
     def getLinksForVideo(self, cItem):

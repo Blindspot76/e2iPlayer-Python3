@@ -12,7 +12,6 @@ hostanimeodcinki
 hostappletrailers
 hostardmediathek
 hostartetv
-hostautohu
 hostbajeczkiorg
 hostbbciplayer
 hostbbcsport
@@ -82,7 +81,6 @@ hosthitboxtv
 hosthoofootcom
 hosticefilmsinfo
 hostiitvpl
-hostinfoversion
 hostinteriatv
 hostipla
 hostitvcom
@@ -114,7 +112,6 @@ hostmusicbox
 hostmusicmp3ru
 hostmyfreemp3
 hostmythewatchseries
-hostmytvtelenor
 hostngolos
 hostninateka
 hostnonstopmozi
@@ -159,7 +156,6 @@ hostsvtplayse
 hosttainieskaiseirestv
 hosttainiesonline
 hosttantifilmorg
-hosttechnika
 hostted
 hosttfarjocom
 hosttvgrypl

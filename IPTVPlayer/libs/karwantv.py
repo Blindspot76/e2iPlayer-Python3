@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -15,7 +15,7 @@ try:
     import json
 except Exception:
     import simplejson as json
-from urlparse import urljoin
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin
 ############################################
 
 ###################################################

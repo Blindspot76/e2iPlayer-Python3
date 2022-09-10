@@ -24,6 +24,9 @@ import struct
 import os
 from ._exceptions import *
 from ._utils import validate_utf8
+import sys
+if sys.version_info[0] == 3: #Python3
+   unicode = str
 
 try:
     # If wsaccel is available we use compiled routines to mask data.

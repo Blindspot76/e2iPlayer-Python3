@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -15,12 +15,11 @@ from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import unpackJSPlayerPar
 from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 import random
 import base64
 from time import time
@@ -123,7 +122,7 @@ class Sport365LiveApi:
         printDBG(">> id[%s]\n" % id)
         xz = str(int(time() * 1000)) + id + str(int(random.random() * 1000)) + str(2 * int(random.random() * 4)) + str(num)
         xz = base64.b64encode(xz)
-        return 'MarketGidStorage=%s; ' % urllib.quote('{"0":{"svspr":"%s","svsds":%s,"TejndEEDj":"%s"},"C%s":{"page":1,"time":%s}}' % (referer, num, xz, id, int(time() * 100)))
+        return 'MarketGidStorage=%s; ' % urllib_quote('{"0":{"svspr":"%s","svsds":%s,"TejndEEDj":"%s"},"C%s":{"page":1,"time":%s}}' % (referer, num, xz, id, int(time() * 100)))
 
     def refreshAdvert(self):
         if not self.needRefreshAdvert:
@@ -467,7 +466,7 @@ class Sport365LiveApi:
                                         sts, bsrc = self.getPage(banner, bheaders)
                                         bheaders['header']['Referer'] = banner
                                         banner = re.findall(r'window.location.replace\("([^"]+)"\);\s*}\)<\/script><div', bsrc)[0]
-                                        banner = urllib.quote(banner, ':/()!@#$%^&;><?')
+                                        banner = urllib_quote(banner, ':/()!@#$%^&;><?')
                                         sts, bsrc = self.getPage(banner, bheaders)
                                         ###########################
                                     except BaseException:

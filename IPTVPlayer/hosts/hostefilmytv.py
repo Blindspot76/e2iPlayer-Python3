@@ -8,11 +8,10 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, Ge
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin
 ###################################################
 # FOREIGN import
 ###################################################
-import urlparse
 import time
 import re
 from copy import deepcopy
@@ -56,7 +55,7 @@ class EFilmyTv(CBaseHostClass):
         CBaseHostClass.__init__(self, {'history': 'efilmy.tv', 'cookie': 'efilmy.tv.cookie'})
         self.USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0'
         self.MAIN_URL = 'http://www.efilmy.tv/'
-        self.DEFAULT_ICON_URL = 'https://voucherforyou.pl/wp-content/uploads/2020/05/efilmy.jpg'
+        self.DEFAULT_ICON_URL = 'https://superrepo.org/static/images/icons/original/xplugin.video.efilmy.png.pagespeed.ic.ISN8CDQxwg.png'
         self.HTTP_HEADER = {'User-Agent': self.USER_AGENT, 'DNT': '1', 'Accept': 'text/html', 'Accept-Encoding': 'gzip, deflate', 'Referer': self.getMainUrl(), 'Origin': self.getMainUrl()}
         self.AJAX_HEADER = dict(self.HTTP_HEADER)
         self.AJAX_HEADER.update({'X-Requested-With': 'XMLHttpRequest', 'Accept-Encoding': 'gzip, deflate', 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'Accept': 'application/json, text/javascript, */*; q=0.01'})
@@ -82,7 +81,7 @@ class EFilmyTv(CBaseHostClass):
             if self.cm.isValidUrl(url):
                 return url
             else:
-                return urlparse.urljoin(baseUrl, url)
+                return urljoin(baseUrl, url)
         addParams['cloudflare_params'] = {'domain': self.up.getDomain(baseUrl), 'cookie_file': self.COOKIE_FILE, 'User-Agent': self.USER_AGENT, 'full_url_handle': _getFullUrl}
         return self.cm.getPageCFProtection(baseUrl, addParams, post_data)
 
@@ -554,7 +553,7 @@ class EFilmyTv(CBaseHostClass):
         urlTab = []
 
         # mark requested link as used one
-        if len(self.cacheLinks.keys()):
+        if len(list(self.cacheLinks.keys())):
             for key in self.cacheLinks:
                 for idx in range(len(self.cacheLinks[key])):
                     if videoUrl in self.cacheLinks[key][idx]['url']:
@@ -592,7 +591,7 @@ class EFilmyTv(CBaseHostClass):
             header = dict(self.HTTP_HEADER)
             header['Accept'] = 'image/png,image/*;q=0.8,*/*;q=0.5'
             params = dict(self.defaultParams)
-            params.update({'maintype': 'image', 'subtypes': ['jpeg', 'png'], 'check_first_bytes': ['\xFF\xD8', '\xFF\xD9', '\x89\x50\x4E\x47'], 'header': header})
+            params.update({'maintype': 'image', 'subtypes': ['jpeg', 'png'], 'check_first_bytes': [b'\xFF\xD8', b'\xFF\xD9', b'\x89\x50\x4E\x47'], 'header': header})
             filePath = GetTmpDir('.iptvplayer_captcha.jpg')
             rm(filePath)
             ret = self.cm.saveWebFile(filePath, imgUrl.replace('&amp;', '&'), params)

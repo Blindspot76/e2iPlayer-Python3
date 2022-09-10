@@ -9,13 +9,12 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Playlist
 from Plugins.Extensions.IPTVPlayer.libs import ph
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin, urlparse
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus, urllib_unquote
 ###################################################
 # FOREIGN import
 ###################################################
-import urlparse
 import re
-import urllib
 ###################################################
 
 
@@ -208,7 +207,7 @@ class FaselhdCOM(CBaseHostClass):
         cItem = dict(cItem)
         if 1 == cItem.get('page', 1):
             cItem['category'] = 'list_items'
-            cItem['url'] = self.getFullUrl('/?s=') + urllib.quote_plus(searchPattern)
+            cItem['url'] = self.getFullUrl('/?s=') + urllib_quote_plus(searchPattern)
         self.listItems(cItem, 'explore_item')
 
     def getLinksForVideo(self, cItem):
@@ -248,7 +247,7 @@ class FaselhdCOM(CBaseHostClass):
                 url = self.cm.ph.getSearchGroups(item, '''href\s*?=\s*?['"]([^'^"]+?)['"]''')[0]
                 tmp = url.split('embed.php?url=', 1)
                 if 2 == len(tmp):
-                    url = urllib.unquote(tmp[-1])
+                    url = urllib_unquote(tmp[-1])
             retTab.append({'name': name, 'url': self.getFullUrl(url), 'need_resolve': 1})
 
         if self.cm.isValidUrl(dwnLink):

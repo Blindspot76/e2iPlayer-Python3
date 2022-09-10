@@ -11,7 +11,7 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, Ge
 from Plugins.Extensions.IPTVPlayer.components.configbase import ConfigBaseWidget
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
 ###################################################
 # FOREIGN import
 ###################################################
@@ -31,7 +31,7 @@ class ConfigHostMenu(ConfigBaseWidget):
         self.hostName = hostName
         ConfigBaseWidget.__init__(self, session)
         self.setup_title = _("Configuration [%s] service") % self.hostName
-        self.host = __import__('Plugins.Extensions.IPTVPlayer.hosts.host' + hostName, globals(), locals(), ['GetConfigList'], -1)
+        self.host = __import__('Plugins.Extensions.IPTVPlayer.hosts.host' + hostName, globals(), locals(), ['GetConfigList'], 0) #switch to absolute import for p3 compatibility
 
     def __del__(self):
         printDBG("ConfigHostMenu.__del__ ")
@@ -132,7 +132,7 @@ class ConfigHostsMenu(ConfigBaseWidget):
             if self.hostsConfigsAvailableList[curIndex] and IsHostEnabled(hostName):
                 addConf = False
                 try:
-                    self.host = __import__('Plugins.Extensions.IPTVPlayer.hosts.host' + hostName, globals(), locals(), ['GetConfigList'], -1)
+                    self.host = __import__('Plugins.Extensions.IPTVPlayer.hosts.host' + hostName, globals(), locals(), ['GetConfigList'], 0) #switch to absolute import for p3 compatibility
                     if(len(self.host.GetConfigList()) < 1):
                         printDBG('ConfigMenu host "%s" does not have additional configs' % hostName)
                     else:
@@ -233,7 +233,10 @@ class ConfigHostsMenu(ConfigBaseWidget):
         for hostName in sortedList:
             try:
                 optionEntry = None
-                exec('optionEntry = config.plugins.iptvplayer.host' + hostName)
+                if isPY2():
+                    exec('optionEntry = config.plugins.iptvplayer.host' + hostName)
+                else:
+                    optionEntry = eval('config.plugins.iptvplayer.host' + hostName)
                 self.list.append(getConfigListEntry("%s" % hostsAliases.get('host' + hostName, hostName), optionEntry))
                 if hostName in ['ipla']:
                     self.privacePoliceWorningList.append(optionEntry)

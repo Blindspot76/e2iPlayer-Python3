@@ -13,14 +13,13 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, Ge
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import hex_md5
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus, urllib_quote
 ###################################################
 # FOREIGN import
 ###################################################
 from datetime import timedelta
 import time
 import re
-import urllib
 import unicodedata
 import base64
 try:
@@ -111,7 +110,7 @@ class NapiProjektProvider(CBaseSubProviderClass):
 
     def getMoviesList(self, cItem, nextCategoryMovie):
         printDBG("NapiProjektProvider.getMoviesList")
-        title = urllib.quote_plus(self.params['confirmed_title'])
+        title = urllib_quote_plus(self.params['confirmed_title'])
         url = self.getFullUrl('/ajax/search_catalog.php')
 
         post_data = {'queryString': title, 'queryKind': cItem.get('kind', 0), 'queryYear': '', 'associate': ''}
@@ -162,7 +161,7 @@ class NapiProjektProvider(CBaseSubProviderClass):
         urlPattern = self.cm.ph.getDataBeetwenMarkers(tmp, 'window.location.href=', ';', False)[1].replace("'", "").replace('"', '').strip()
         urlPattern = urlPattern.split('tytul=')
         if 2 == len(urlPattern):
-            urlPattern = urlPattern[0] + 'tytul=' + urllib.quote(urlPattern[1])
+            urlPattern = urlPattern[0] + 'tytul=' + urllib_quote(urlPattern[1])
         else:
             urlPattern = ''
 

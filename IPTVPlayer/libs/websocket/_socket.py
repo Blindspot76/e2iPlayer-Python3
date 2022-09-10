@@ -20,6 +20,10 @@ Copyright (C) 2010 Hiroki Ohtani(liris)
 
 """
 
+import sys
+if sys.version_info[0] == 3: #Python3
+   unicode = str
+
 import socket
 
 from ._exceptions import *

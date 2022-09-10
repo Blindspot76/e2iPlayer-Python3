@@ -22,7 +22,7 @@ from Plugins.Extensions.IPTVPlayer.components.ihost import ArticleContent
 from Plugins.Extensions.IPTVPlayer.libs.pCommon import common
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
 ###################################################
 # FOREIGN import
 ###################################################
@@ -254,7 +254,7 @@ class IUpdateObjectInterface():
 
 
 class UpdateMainAppImpl(IUpdateObjectInterface):
-    VERSION_PATTERN = 'IPTV_VERSION="([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)"'
+    VERSION_PATTERN = 'IPTV_VERSION\s?=\s?"([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)"'
 
     def __init__(self, session, allowTheSameVersion=False):
         printDBG("UpdateMainAppImpl.__init__ -------------------------------")
@@ -397,7 +397,7 @@ class UpdateMainAppImpl(IUpdateObjectInterface):
         self.list.append(self.__getStepDesc(title=_("Checking version."), execFunction=self.stepCheckFiles))
         self.list.append(self.__getStepDesc(title=_("Removing unnecessary files."), execFunction=self.stepRemoveUnnecessaryFiles, breakable=True, ignoreError=True))
         self.list.append(self.__getStepDesc(title=_("Confirmation of installation."), execFunction=self.stepConfirmInstalation))
-        #self.list.append( self.__getStepDesc(title = _("Removing the old version."),       execFunction = self.stepRemoveOldVersion, breakable=False, ignoreError=True, repeatCount=2) )
+        self.list.append(self.__getStepDesc(title=_("Removing the old version."), execFunction=self.stepRemoveOldVersion, breakable=False, ignoreError=True, repeatCount=2))
         self.list.append(self.__getStepDesc(title=_("Installing new version."), execFunction=self.stepInstallNewVersion, breakable=False, ignoreError=False, repeatCount=3))
         return self.list
 
@@ -424,13 +424,12 @@ class UpdateMainAppImpl(IUpdateObjectInterface):
 
     def stepGetGitlab(self):
         printDBG('UpdateMainAppImpl.stepGetGitlab')
-        nick = config.plugins.iptvplayer.gitlab_repo.value
         self.clearTmpData()
         sts, msg = self.createPath(self.tmpDir)
         if not sts:
             self.stepFinished(-1, msg)
             return
-        serverUrl = "https://gitlab.com/{0}/e2iplayer/raw/master/IPTVPlayer/version.py".format(nick)
+        serverUrl = "https://gitlab.com/{0}/e2iplayer/raw/master/IPTVPlayer/version.py".format(config.plugins.iptvplayer.gitlab_repo.value)
         self.downloader = UpdateDownloaderCreator(serverUrl)
         self.downloader.subscribersFor_Finish.append(boundFunction(self.downloadFinished, self.__serversListGitlabFinished, None))
         self.downloader.start(serverUrl, os_path.join(self.tmpDir, 'lastversion.py'))
@@ -681,7 +680,13 @@ class UpdateMainAppImpl(IUpdateObjectInterface):
         self.cmd = iptv_system(cmd, self.__installNewVersionCmdFinished)
 
     def downloadFinished(self, callBackFun, arg, status):
-        printDBG('UpdateMainAppImpl.downloadFinished file[%s], status[%s]' % (file, status))
+        if 0:
+            #usage of 'file' in below line seems to be a mistake. file is a standard object and doesn't return anything valuable - just pointer to itself
+            #Example:
+            #  UpdateMainAppImpl.downloadFinished file[<type 'file'>], status[STS_DOWNLOADED]
+            printDBG('UpdateMainAppImpl.downloadFinished file[%s], status[%s]' % (file, status))
+        else:
+            printDBG('UpdateMainAppImpl.downloadFinished, status[%s]' % (status))
         self.downloader.subscribersFor_Finish = []
         if self.terminating:
             printDBG('UpdateMainAppImpl.downloadFinished closing')
@@ -692,24 +697,23 @@ class UpdateMainAppImpl(IUpdateObjectInterface):
         try:
             rmtree(self.tmpDir)
         except Exception:
-            printExc()
+            printExc('WARNING')
 
     ##############################################################################
     # SERWERS LISTS STEP'S PRIVATES METHODS
     ##############################################################################
     def __addLastVersion(self, servers):
-        nick = config.plugins.iptvplayer.gitlab_repo.value
-        mainUrl = "https://gitlab.com/{0}/e2iplayer".format(nick)
+        mainUrl = "https://gitlab.com/iptvplayer-for-e2/iptvplayer-for-e2"
         sts, data = self.cm.getPage(mainUrl + '/tree/master')
         if sts:
-            crcSum = CParsingHelper.getSearchGroups(data, '"/{0}/e2iplayer/commit/([^"]+?)">'.format(nick))[0]
+            crcSum = CParsingHelper.getSearchGroups(data, '"/iptvplayer-for-e2/iptvplayer-for-e2/commit/([^"]+?)">')[0]
             if 40 == len(crcSum):
                 finalurl = mainUrl + '/blob/%s/IPTVPlayer/version.py' % crcSum
                 sts, data = self.cm.getPage(finalurl)
                 if sts:
                     newVerNum = CParsingHelper.getSearchGroups(data, '&quot;([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)&quot;')[0]
                     sourceUrl = mainUrl + "/repository/archive.tar.gz?ref=%s" % crcSum
-                    server = {'name': 'gitlab.com/' + nick + '/', 'version': newVerNum, 'url': sourceUrl, 'subdir': 'iptvplayer-for-e2.git/', 'pyver': 'X.X', 'packagetype': 'sourcecode'}
+                    server = {'name': 'gitlab.com', 'version': newVerNum, 'url': sourceUrl, 'subdir': 'iptvplayer-for-e2.git/', 'pyver': 'X.X', 'packagetype': 'sourcecode'}
                     printDBG("UpdateMainAppImpl.__addLastVersion server: [%s]" % str(server))
                     servers.append(server)
             else:
@@ -720,7 +724,6 @@ class UpdateMainAppImpl(IUpdateObjectInterface):
         filePath = self.downloader.getFullFileName()
         self.downloader = None
         printDBG('UpdateMainAppImpl.__serversListGitlabFinished url[%s], filePath[%s] ' % (url, filePath))
-        nick = config.plugins.iptvplayer.gitlab_repo.value
         if DMHelper.STS.DOWNLOADED != status:
             msg = _("Problem with downloading the packet:\n[%s].") % url
             self.stepFinished(-1, msg)
@@ -736,10 +739,10 @@ class UpdateMainAppImpl(IUpdateObjectInterface):
                 except Exception:
                     printExc()
                 if 13 == len(newVerNum):
-                    sourceUrl = "https://gitlab.com/{0}/e2iplayer/-/archive/master/e2iplayer-master.tar.gz".format(nick)
-                    self.gitlabList = {'name': 'gitlab.com/' + nick + '/', 'version': newVerNum, 'url': sourceUrl, 'subdir': 'e2iplayer-master/', 'pyver': 'X.X', 'packagetype': 'sourcecode'}
+                    sourceUrl = "https://gitlab.com/{0}/e2iplayer/-/archive/master/e2iplayer-master.tar.gz".format(config.plugins.iptvplayer.gitlab_repo.value)
+                    self.gitlabList = {'name': 'gitlab.com', 'version': newVerNum, 'url': sourceUrl, 'subdir': 'e2iplayer-master/', 'pyver': 'X.X', 'packagetype': 'sourcecode'}
                     printDBG("__serversListGitlabFinished: [%s]" % str(self.gitlabList))
-                    self.stepFinished(0, _("GitLab version from {0} was downloaded successfully.".format(nick)))
+                    self.stepFinished(0, _("GitLab version from {0} was downloaded successfully.".format(config.plugins.iptvplayer.gitlab_repo.value)))
                 else:
                     msg = _("Wrong version: [%s].") % str(self.gitlabList)
                     self.stepFinished(-1, msg)
@@ -788,7 +791,10 @@ class UpdateMainAppImpl(IUpdateObjectInterface):
             serversList = []
             try:
                 with open(filePath) as fileHandle:
-                    jsonData = json.load(fileHandle, 'utf-8')
+                    if isPY2():
+                        jsonData = json.load(fileHandle, 'utf-8')
+                    else:
+                        jsonData = json.load(fileHandle)
                 #printDBG("__serversListDownloadFinished jsonData [%r]" % jsonData)
                 for server in jsonData['servers']:
                     serverOK = True
@@ -898,7 +904,10 @@ class UpdateMainAppImpl(IUpdateObjectInterface):
                     elif config.plugins.iptvplayer.ListaGraficzna.value:
                         list.append(self.__getStepDesc(title=_("Copy icons."), execFunction=self.stepCopyOnlyIcons))
 
-            self.list[3:3] = list
+            if config.plugins.iptvplayer.gitlab_repo.value and config.plugins.iptvplayer.preferredupdateserver.value == '2':
+                self.list[4:4] = list
+            else:
+                self.list[3:3] = list
             if 'enc' in self.serversList[self.currServIdx]:
                 self.list.insert(1, self.__getStepDesc(title=_("Get decryption key."), execFunction=self.stepGetEncKey))
                 self.list.insert(3, self.__getStepDesc(title=_("Decrypt archive."), execFunction=self.stepDecryptArchive))

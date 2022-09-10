@@ -13,7 +13,7 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import enum, strwithmeta
 from Plugins.Extensions.IPTVPlayer.iptvdm.basedownloader import BaseDownloader
 from Plugins.Extensions.IPTVPlayer.iptvdm.iptvdh import DMHelper
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import strDecode
 ###################################################
 # FOREIGN import
 ###################################################
@@ -116,7 +116,7 @@ class HLSDownloader(BaseDownloader):
     def _dataAvail(self, data):
         if None == data:
             return
-        data = self.outData + data
+        data = self.outData + strDecode(data)
         if '\n' != data[-1]:
             truncated = True
         else:

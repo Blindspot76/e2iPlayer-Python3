@@ -14,7 +14,8 @@ from Plugins.Extensions.IPTVPlayer.libs import m3u8
 from Plugins.Extensions.IPTVPlayer.iptvdm.basedownloader import BaseDownloader
 from Plugins.Extensions.IPTVPlayer.iptvdm.iptvdh import DMHelper
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import strDecode
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
 ###################################################
 # FOREIGN import
 ###################################################
@@ -345,12 +346,12 @@ class M3U8Downloader(BaseDownloader):
 
     def _dataAvail(self, data):
         if None != data:
-            self.outData += data
+            self.outData += strDecode(data)
             if self.DOWNLOAD_TYPE.M3U8 == self.downloadType:
                 return
 
             if self.WGET_STS.CONNECTING == self.wgetStatus:
-                self.outData += data
+                self.outData += strDecode(data)
                 lines = self.outData.replace('\r', '\n').split('\n')
                 for idx in range(len(lines)):
                     if lines[idx].startswith('Length:'):
@@ -500,10 +501,16 @@ class M3U8Downloader(BaseDownloader):
 
         '''
         if None != self.updateThread:
-            if self.updateThread.Thread.isAlive():
-                # give some time for update thread to finish
-                sleep(self.MIN_REFRESH_DELAY)
-                printDBG('m3u8 downloader killing update thread')
+            if isPY2:
+                if self.updateThread.Thread.isAlive():
+                    # give some time for update thread to finish
+                    sleep(self.MIN_REFRESH_DELAY)
+                    printDBG('m3u8 downloader killing update thread')
+            else:
+                if self.updateThread.Thread.is_alive():
+                    # give some time for update thread to finish
+                    sleep(self.MIN_REFRESH_DELAY)
+                    printDBG('m3u8 downloader killing update thread')
         '''
 
         if not terminated:

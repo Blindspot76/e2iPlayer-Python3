@@ -9,12 +9,11 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 from Plugins.Extensions.IPTVPlayer.libs import ph
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin
 ###################################################
 # FOREIGN import
 ###################################################
-import urllib
-from urlparse import urljoin
 ###################################################
 
 
@@ -246,7 +245,7 @@ class FilmPalastTo(CBaseHostClass):
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("FilmPalastTo.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
         cItem = dict(cItem)
-        cItem['url'] = self.getFullUrl('/search/title/%s' % urllib.quote(searchPattern))
+        cItem['url'] = self.getFullUrl('/search/title/%s' % urllib_quote(searchPattern))
         self.listItems(cItem, 'explore_item')
 
     def getLinksForVideo(self, cItem):

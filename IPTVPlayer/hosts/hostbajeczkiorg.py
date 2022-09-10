@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# Blindspot - 2022.01.07.
 ###################################################
 # LOCAL import
 ###################################################
@@ -11,12 +10,11 @@ from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 from Plugins.Extensions.IPTVPlayer.libs import ph
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Playlist
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 ###################################################
 
 
@@ -29,7 +27,7 @@ class BajeczkiOrg(CBaseHostClass):
     def __init__(self):
         CBaseHostClass.__init__(self, {'history': 'bajeczki.org', 'cookie': 'bajeczki.org.cookie'})
         self.MAIN_URL = 'http://bajeczki.org/'
-        self.DEFAULT_ICON_URL = "https://bajeczki.org/wp-content/uploads/logo_bajeczki_bg-aktualne.gif"
+        self.DEFAULT_ICON_URL = self.getFullIconUrl('/wp-content/uploads/1397134512_5b47d5c61cb3523b0ff67e3168ded910-1-640x360.jpg')
         self.HEADER = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0', 'DNT': '1', 'Accept': 'text/html'}
         self.AJAX_HEADER = dict(self.HEADER)
         self.AJAX_HEADER.update({'X-Requested-With': 'XMLHttpRequest'})
@@ -56,13 +54,17 @@ class BajeczkiOrg(CBaseHostClass):
         if not sts:
             return
 
-        data = self.cm.ph.getAllItemsBeetwenMarkers(data, '<div class="category-bar">', '</span></a></div>')
+        data = self.cm.ph.getAllItemsBeetwenNodes(data, ('<div', '>', 'category-bar'), ('</div', '>'))
         for item in data:
-            url = self.cm.ph.getDataBeetwenMarkers(item, '<a href="','" title=',False)[1]
-            title = self.cm.ph.getDataBeetwenMarkers(item, '<span class="category-name">','</span><span class=',False)[1]
-            desc = self.cm.ph.getDataBeetwenMarkers(item, '<span class="category-desc">','</span>',False)[1]
+            url = self.getFullUrl(self.cm.ph.getSearchGroups(item, '''\shref=['"]([^"^']+?)['"]''')[0])
+            if url == '':
+                continue
+            item = item.split('</span>', 1)
+            title = ph.clean_html(item[0])
+            desc = ph.clean_html(item[-1])
+            icon = url + '?fake=need_resolve.jpeg'
             params = dict(cItem)
-            params = {'good_for_fav': True, 'category': nextCategory, 'title': title, 'url': url, 'icon': None, 'desc': desc}
+            params = {'good_for_fav': True, 'category': nextCategory, 'title': title, 'url': url, 'icon': icon, 'desc': desc}
             self.addDir(params)
 
     def listItems(self, cItem):
@@ -85,7 +87,7 @@ class BajeczkiOrg(CBaseHostClass):
             if url == '':
                 continue
 #            icon = self.getFullUrl( ph.search(item, ph.IMAGE_SRC_URI_RE)[1] )
-            icon = self.cm.ph.getDataBeetwenMarkers(item, 'src="','" class', False) [1]
+            icon = self.getFullIconUrl(self.cm.ph.getSearchGroups(item, '''data-src=['"]([^'^"]+?)['"]''', ignoreCase=True)[0])
             item = item.split('</h2>', 1)
             title = ph.clean_html(item[0])
 
@@ -173,7 +175,7 @@ class BajeczkiOrg(CBaseHostClass):
         urlTab = []
 
         # mark requested link as used one
-        if len(self.cacheLinks.keys()):
+        if len(list(self.cacheLinks.keys())):
             for key in self.cacheLinks:
                 for idx in range(len(self.cacheLinks[key])):
                     if videoUrl in self.cacheLinks[key][idx]['url']:
@@ -188,7 +190,7 @@ class BajeczkiOrg(CBaseHostClass):
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("FilmeHD.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
         cItem = dict(cItem)
-        cItem.update({'category': 'list_items', 'url': self.getFullUrl('/?s=') + urllib.quote_plus(searchPattern)})
+        cItem.update({'category': 'list_items', 'url': self.getFullUrl('/?s=') + urllib_quote_plus(searchPattern)})
         self.listItems(cItem)
 
     def handleService(self, index, refresh=0, searchPattern='', searchType=''):

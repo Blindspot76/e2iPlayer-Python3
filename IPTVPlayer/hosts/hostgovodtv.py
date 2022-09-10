@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ###################################################
 # LOCAL import
 ###################################################
@@ -8,13 +8,12 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, rm
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 ###################################################
 # FOREIGN import
 ###################################################
-import urlparse
 import re
-import urllib
 try:
     import json
 except Exception:
@@ -54,7 +53,7 @@ class govodtv(CBaseHostClass):
             if self.cm.isValidUrl(url):
                 return url
             else:
-                return urlparse.urljoin(baseUrl, url)
+                return urljoin(baseUrl, url)
         addParams['cloudflare_params'] = {'domain': self.up.getDomain(baseUrl), 'cookie_file': self.COOKIE_FILE, 'User-Agent': self.USER_AGENT, 'full_url_handle': _getFullUrl}
         return self.cm.getPageCFProtection(baseUrl, addParams, post_data)
 
@@ -215,7 +214,7 @@ class govodtv(CBaseHostClass):
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("govodtv.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
 
-        url = self.getFullUrl('/szukaj?s=%s') % urllib.quote_plus(searchPattern)
+        url = self.getFullUrl('/szukaj?s=%s') % urllib_quote_plus(searchPattern)
         params = {'name': 'category', 'category': 'list_items', 'good_for_fav': False, 'url': url}
         self.listItems(params)
 

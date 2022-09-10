@@ -7,13 +7,19 @@
     match FIPS specification for readability.  It is not implemented
     for performance.
 
-    Copyright © (c) 2002 by Paul A. Lambert
+    Copyright (c) 2002 by Paul A. Lambert
     Read LICENSE.txt for license information.
 
     2002-06-01
 """
 
-from base import BlockCipher, padWithPadLen, noPadding
+try:
+    from base import BlockCipher, padWithPadLen, noPadding
+except Exception:
+    try:
+        from .base import BlockCipher, padWithPadLen, noPadding
+    except Exception:
+        from Plugins.Extensions.IPTVPlayer.libs.crypto.cipher.base import BlockCipher, padWithPadLen, noPadding
 
 
 class Rijndael(BlockCipher):

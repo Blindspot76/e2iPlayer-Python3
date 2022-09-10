@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import urllib
-import urllib2
+#import urllib # not used?
+#import urllib2 # not used?
 import re
 from Plugins.Extensions.IPTVPlayer.libs.pCommon import common, CParsingHelper
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _, SetIPTVPlayerLastHostError

@@ -383,7 +383,7 @@ class Dmdamedia(CBaseHostClass):
                      desc = self.cm.ph.getDataBeetwenMarkers(m, "<p>", "</p>", False) [1]
                      params = {'category':'explore_item','title':title, 'icon': icon , 'url': newurl, 'desc': desc}
                      self.addDir(params)
-	    printDBG("Dmdamedia.listSearchResult - Sorozatok cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
+        printDBG("Dmdamedia.listSearchResult - Sorozatok cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
         printDBG(cItem)
         url = 'https://dmdamedia.hu/'	
         sts, data = self.getPage(url)           

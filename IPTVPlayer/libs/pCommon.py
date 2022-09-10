@@ -11,10 +11,28 @@ from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute_ext
 from Plugins.Extensions.IPTVPlayer.libs import ph
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads, dumps as json_dumps
 ###################################################
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_binary, strDecode, iterDictItems, ensure_str
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin, urlparse, urlunparse
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
+if isPY2():
+    import cookielib
+    try:
+        from cStringIO import StringIO
+    except Exception:
+        from StringIO import StringIO
+else:
+    import http.cookiejar as cookielib
+    from io import StringIO, BytesIO
+    basestring = str
+    file = open
+    unichr = chr
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_addinfourl, urllib_unquote, urllib_quote_plus, urllib_urlencode, urllib_quote, \
+                                                      urllib2_HTTPRedirectHandler, urllib2_BaseHandler, urllib2_HTTPHandler, urllib2_HTTPError, \
+                                                      urllib2_URLError, urllib2_build_opener, urllib2_urlopen, urllib2_HTTPCookieProcessor, \
+                                                      urllib2_HTTPSHandler, urllib2_ProxyHandler, urllib2_Request
+###################################################
 # FOREIGN import
 ###################################################
-import urllib
-import urllib2
 import base64
 try:
     import ssl
@@ -22,29 +40,29 @@ except Exception:
     pass
 import re
 import time
-import cookielib
 import unicodedata
 try:
     import pycurl
 except Exception:
     pass
 try:
-    try:
-        from cStringIO import StringIO
-    except Exception:
-        from StringIO import StringIO
     import gzip
 except Exception:
     pass
-from urlparse import urljoin, urlparse, urlunparse
 from binascii import hexlify
 ###################################################
 
 
 def DecodeGzipped(data):
-    buf = StringIO(data)
-    f = gzip.GzipFile(fileobj=buf)
-    return f.read()
+    if isPY2():
+        buf = StringIO(data)
+        f = gzip.GzipFile(fileobj=buf)
+        return f.read()
+    else:
+        #return gzip.decompress(data)
+        buf = BytesIO(data)
+        f = gzip.GzipFile(fileobj=buf)
+        return f.read()
 
 
 def EncodeGzipped(data):
@@ -57,9 +75,9 @@ def EncodeGzipped(data):
     return encoded
 
 
-class NoRedirection(urllib2.HTTPRedirectHandler):
+class NoRedirection(urllib2_HTTPRedirectHandler):
     def http_error_302(self, req, fp, code, msg, headers):
-        infourl = urllib.addinfourl(fp, headers, req.get_full_url())
+        infourl = urllib_addinfourl(fp, headers, req.get_full_url())
         infourl.status = code
         infourl.code = code
         return infourl
@@ -69,8 +87,8 @@ class NoRedirection(urllib2.HTTPRedirectHandler):
     http_error_307 = http_error_302
 
 
-class MultipartPostHandler(urllib2.BaseHandler):
-    handler_order = urllib2.HTTPHandler.handler_order - 10
+class MultipartPostHandler(urllib2_BaseHandler):
+    handler_order = urllib2_HTTPHandler.handler_order - 10
 
     def http_request(self, request):
         data = request.get_data()
@@ -244,7 +262,11 @@ class CParsingHelper:
                              u'á': u'a', u'é': u'e', u'í': u'i', u'ñ': u'n', u'ó': u'o', u'ú': u'u', u'ü': u'u',
                              u'Á': u'A', u'É': u'E', u'Í': u'I', u'Ñ': u'N', u'Ó': u'O', u'Ú': u'U', u'Ü': u'U',
                             }
-        txt = txt.decode('utf-8')
+        if isPY2():
+            txt = txt.decode('utf-8')
+        else: #PY3
+            if isinstance(txt, bytes):
+                txt = txt.decode('utf-8')
         if None != idx:
             txt = txt[idx]
         nrmtxt = unicodedata.normalize('NFC', txt)
@@ -256,7 +278,10 @@ class CParsingHelper:
                     ret_str.append(item)
             else: # pure ASCII character
                 ret_str.append(item)
-        return ''.join(ret_str).encode('utf-8')
+        if isPY2():
+            return ''.join(ret_str).encode('utf-8')
+        else:
+            return ''.join(ret_str)
 
     @staticmethod
     def isalpha(txt, idx=None):
@@ -353,7 +378,7 @@ class common:
     def buildHTTPQuery(query):
         def _process(query, data, key_prefix):
             if isinstance(data, dict):
-                for key, value in data.iteritems():
+                for key, value in iterDictItems(data):
                     key = '%s[%s]' % (key_prefix, key) if key_prefix else key
                     _process(query, value, key)
             elif isinstance(data, list):
@@ -509,7 +534,7 @@ class common:
                     continue
                 value = cookiesDict[name]
                 if unquote:
-                    value = urllib.unquote(value)
+                    value = urllib_unquote(value)
                 ret += '%s=%s; ' % (name, value)
         except Exception:
             printExc()
@@ -531,7 +556,10 @@ class common:
         out_data = None
         sts = False
 
-        buffer = StringIO()
+        if isPY2():
+            buffer = StringIO()
+        else:
+            buffer = BytesIO()
         checkFromFirstBytes = params.get('check_first_bytes', [])
         fileHandler = None
         firstAttempt = [True]
@@ -540,6 +568,7 @@ class common:
         responseHeaders = {}
 
         def _headerFunction(headerLine):
+            headerLine = ensure_str(headerLine)
             if ':' not in headerLine:
                 if 0 == maxDataSize:
                     if headerLine in ['\r\n', '\n']:
@@ -696,7 +725,7 @@ class common:
 
             if params.get('use_cookie', False):
                 cookiesStr = ''
-                for cookieKey in params.get('cookie_items', {}).keys():
+                for cookieKey in list(params.get('cookie_items', {}).keys()):
                     printDBG("cookie_item[%s=%s]" % (cookieKey, params['cookie_items'][cookieKey]))
                     cookiesStr += '%s=%s; ' % (cookieKey, params['cookie_items'][cookieKey])
 
@@ -749,7 +778,7 @@ class common:
             pageUrl = url
             proxy_gateway = params.get('proxy_gateway', '')
             if proxy_gateway != '':
-                pageUrl = proxy_gateway.format(urllib.quote_plus(pageUrl, ''))
+                pageUrl = proxy_gateway.format(urllib_quote_plus(pageUrl, ''))
             printDBG("pageUrl: [%s]" % pageUrl)
 
             curlSession.setopt(pycurl.URL, pageUrl)
@@ -764,7 +793,7 @@ class common:
                     curlSession.setopt(pycurl.HTTPPOST, post_data)
                     #curlSession.setopt(pycurl.CUSTOMREQUEST, "PUT")
                 else:
-                    curlSession.setopt(pycurl.POSTFIELDS, urllib.urlencode(post_data))
+                    curlSession.setopt(pycurl.POSTFIELDS, urllib_urlencode(post_data))
 
             curlSession.setopt(pycurl.HEADERFUNCTION, _headerFunction)
 
@@ -903,7 +932,7 @@ class common:
                     if key in responseHeaders:
                         metadata[key.lower()] = responseHeaders[key]
 
-            for header, value in responseHeaders.iteritems():
+            for header, value in iterDictItems(responseHeaders):
                 metadata[header.lower()] = responseHeaders[header]
 
     def getPage(self, url, addParams={}, post_data=None):
@@ -919,7 +948,7 @@ class common:
                 addParams['return_data'] = True
             response = self.getURLRequestData(addParams, post_data)
             status = True
-        except urllib2.HTTPError as e:
+        except urllib2_HTTPError as e:
             try:
                 printExc()
                 status = False
@@ -940,7 +969,7 @@ class common:
                     e.fp.close()
             except Exception:
                 printExc()
-        except urllib2.URLError as e:
+        except urllib2_URLError as e:
             printExc()
             errorMsg = str(e)
             if 'ssl_protocol' not in addParams and 'TLSV1_ALERT_PROTOCOL_VERSION' in errorMsg:
@@ -1051,7 +1080,7 @@ class common:
                                 url += '&'
                             else:
                                 url += '?'
-                            url += urllib.urlencode(post_data2)
+                            url += urllib_urlencode(post_data2)
                             post_data2 = None
 
                         sts, data = self.getPage(url, params2, post_data2)
@@ -1095,7 +1124,7 @@ class common:
                             get_data[name] = value
 #                        get_data = dict(re.findall(r'<input[^>]*name="([^"]*)"[^>]*value="([^"]*)"[^>]*>', verData))
                         get_data['jschl_answer'] = decoded['answer']
-                        post_data = 'r=%s&jschl_vc=%s&pass=%s&jschl_answer=%s' % (urllib.quote(get_data['r'], safe=''), urllib.quote(get_data['jschl_vc'], safe=''), urllib.quote(get_data['pass'], safe=''), get_data['jschl_answer'])
+                        post_data = 'r=%s&jschl_vc=%s&pass=%s&jschl_answer=%s' % (urllib_quote(get_data['r'], safe=''), urllib_quote(get_data['jschl_vc'], safe=''), urllib_quote(get_data['pass'], safe=''), get_data['jschl_answer'])
                         verUrl = _getFullUrl2(verUrl, domain).replace('&amp;', '&')
                         params2 = dict(params)
                         params2['load_cookie'] = True
@@ -1167,19 +1196,38 @@ class common:
 
             checkFromFirstBytes = addParams.get('check_first_bytes', [])
             OK = True
-            if 'maintype' in addParams and addParams['maintype'] != downHandler.headers.maintype:
-                printDBG("common.getFile wrong maintype! requested[%r], retrieved[%r]" % (addParams['maintype'], downHandler.headers.maintype))
-                if 0 == len(checkFromFirstBytes):
-                    downHandler.close()
-                OK = False
-
+            if 'maintype' in addParams:
+                if isPY2():
+                    if addParams['maintype'] != downHandler.headers.maintype:
+                        printDBG("common.getFile wrong maintype! requested[%r], retrieved[%r]" % (addParams['maintype'], downHandler.headers.maintype))
+                        if 0 == len(checkFromFirstBytes):
+                            downHandler.close()
+                        OK = False
+                else: #PY3
+                    #printDBG('!!!!! downHandler.headers: %s!!!!!' % downHandler.headers )
+                    if addParams['maintype'] not in str(downHandler.headers): #silly catching Content-Type: image/png from header
+                        printDBG("common.getFile wrong maintype! requested[%s], retrieved[%s]" % (addParams['maintype'], str(downHandler.headers)))
+                        if 0 == len(checkFromFirstBytes):
+                            downHandler.close()
+                        OK = False
+            
             if OK and 'subtypes' in addParams:
                 OK = False
+                #printDBG('!!!!! downHandler.headers: %s!!!!!' % downHandler.headers )
                 for item in addParams['subtypes']:
-                    if item == downHandler.headers.subtype:
-                        OK = True
-                        break
+                    #printDBG("saveWebFile() subtype='%s'" % item)
+                    if isPY2():
+                        if item == downHandler.headers.subtype:
+                            OK = True
+                            break
+                    else: #PY3
+                        if item in str(downHandler.headers):
+                            printDBG("common.getFile found '%s' subtype in header" % item)
+                            OK = True
+                            break
+                    
 
+            printDBG('saveWebFile() OK=%s, checkFromFirstBytes=%s' % (str(OK), checkFromFirstBytes))
             if OK or len(checkFromFirstBytes):
                 blockSize = addParams.get('block_size', 8192)
                 fileHandler = None
@@ -1187,9 +1235,10 @@ class common:
                     buffer = downHandler.read(blockSize)
 
                     if len(checkFromFirstBytes):
+                        printDBG('saveWebFile() buffer.startswith "%s"' % buffer[:5])
                         OK = False
                         for item in checkFromFirstBytes:
-                            if buffer.startswith(item):
+                            if buffer.startswith(ensure_binary(item)):
                                 OK = True
                                 break
                         if not OK:
@@ -1202,7 +1251,7 @@ class common:
                     downDataSize += len(buffer)
                     if len(buffer):
                         if fileHandler == None:
-                            fileHandler = file(file_path, "wb")
+                            fileHandler = open(file_path, "wb")
                         fileHandler.write(buffer)
                 if fileHandler != None:
                     fileHandler.close()
@@ -1240,17 +1289,23 @@ class common:
     def getURLRequestData(self, params={}, post_data=None):
 
         def urlOpen(req, customOpeners, timeout):
+            #req = ensure_binary(req)
+            # above line was added to resolve > "TypeError: POST data should be bytes, an iterable of bytes, or a file object. It cannot be of type str."
+            # but it seems it breaks other scenarios
+            # also documentation says req should be a string. :(
+            # NEEDS FURTHER INVESTIGATION !!!
+    
             if len(customOpeners) > 0:
-                opener = urllib2.build_opener(*customOpeners)
+                opener = urllib2_build_opener(*customOpeners)
                 if timeout != None:
                     response = opener.open(req, timeout=timeout)
                 else:
                     response = opener.open(req)
             else:
                 if timeout != None:
-                    response = urllib2.urlopen(req, timeout=timeout)
+                    response = urllib2_urlopen(req, timeout=timeout)
                 else:
-                    response = urllib2.urlopen(req)
+                    response = urllib2_urlopen(req)
             return response
 
         if IsMainThread():
@@ -1304,13 +1359,13 @@ class common:
                 except Exception:
                     printExc()
             try:
-                for cookieKey in params.get('cookie_items', {}).keys():
+                for cookieKey in list(params.get('cookie_items', {}).keys()):
                     printDBG("cookie_item[%s=%s]" % (cookieKey, params['cookie_items'][cookieKey]))
                     cookieItem = cookielib.Cookie(version=0, name=cookieKey, value=params['cookie_items'][cookieKey], port=None, port_specified=False, domain='', domain_specified=False, domain_initial_dot=False, path='/', path_specified=True, secure=False, expires=None, discard=True, comment=None, comment_url=None, rest={'HttpOnly': None}, rfc2109=False)
                     cj.set_cookie(cookieItem)
             except Exception:
                 printExc()
-            customOpeners.append(urllib2.HTTPCookieProcessor(cj))
+            customOpeners.append(urllib2_HTTPCookieProcessor(cj))
 
         if params.get('no_redirection', False):
             customOpeners.append(NoRedirection())
@@ -1320,20 +1375,20 @@ class common:
         else:
             sslProtoVer = None
         # debug
-        #customOpeners.append(urllib2.HTTPSHandler(debuglevel=1))
-        #customOpeners.append(urllib2.HTTPHandler(debuglevel=1))
+        #customOpeners.append(urllib2_HTTPSHandler(debuglevel=1))
+        #customOpeners.append(urllib2_HTTPHandler(debuglevel=1))
         if not IsHttpsCertValidationEnabled():
             try:
                 if sslProtoVer != None:
                     ctx = ssl._create_unverified_context(sslProtoVer)
                 else:
                     ctx = ssl._create_unverified_context()
-                customOpeners.append(urllib2.HTTPSHandler(context=ctx))
+                customOpeners.append(urllib2_HTTPSHandler(context=ctx))
             except Exception:
                 pass
         elif sslProtoVer != None:
             ctx = ssl.SSLContext(sslProtoVer)
-            customOpeners.append(urllib2.HTTPSHandler(context=ctx))
+            customOpeners.append(urllib2_HTTPSHandler(context=ctx))
 
         #proxy support
         if self.useProxy:
@@ -1345,13 +1400,13 @@ class common:
             http_proxy = params['http_proxy']
         if '' != http_proxy:
             printDBG('getURLRequestData USE PROXY')
-            customOpeners.append(urllib2.ProxyHandler({"http": http_proxy}))
-            customOpeners.append(urllib2.ProxyHandler({"https": http_proxy}))
+            customOpeners.append(urllib2_ProxyHandler({"http": http_proxy}))
+            customOpeners.append(urllib2_ProxyHandler({"https": http_proxy}))
 
         pageUrl = params['url']
         proxy_gateway = params.get('proxy_gateway', '')
         if proxy_gateway != '':
-            pageUrl = proxy_gateway.format(urllib.quote_plus(pageUrl, ''))
+            pageUrl = proxy_gateway.format(urllib_quote_plus(pageUrl, ''))
         printDBG("pageUrl: [%s]" % pageUrl)
 
         if None != post_data:
@@ -1362,10 +1417,13 @@ class common:
                 customOpeners.append(MultipartPostHandler())
                 dataPost = post_data
             else:
-                dataPost = urllib.urlencode(post_data)
-            req = urllib2.Request(pageUrl, dataPost, headers)
+                if isPY2():
+                    dataPost = urllib_urlencode(post_data)
+                else:
+                    dataPost = urllib_urlencode(post_data).encode()
+            req = urllib2_Request(pageUrl, dataPost, headers)
         else:
-            req = urllib2.Request(pageUrl, None, headers)
+            req = urllib2_Request(pageUrl, None, headers)
 
         if not params.get('return_data', False):
             out_data = urlOpen(req, customOpeners, timeout)
@@ -1381,10 +1439,14 @@ class common:
                     self.fillHeaderItems(metadata, response.info(), True, collectAllHeaders=params.get('collect_all_headers'))
                 except Exception:
                     pass
-
-                data = response.read(params.get('max_data_size', -1))
+                
+                max = params.get('max_data_size', -1)
+                if max == -1:
+                    data = response.read()
+                else:
+                    data = response.read(max)
                 response.close()
-            except urllib2.HTTPError as e:
+            except urllib2_HTTPError as e:
                 ignoreCodeRanges = params.get('ignore_http_code_ranges', [(404, 404), (500, 500)])
                 ignoreCode = False
                 metadata['status_code'] = e.code
@@ -1402,7 +1464,11 @@ class common:
                         self.fillHeaderItems(metadata, e.fp.info(), True, collectAllHeaders=params.get('collect_all_headers'))
                     except Exception:
                         pass
-                    data = e.fp.read(params.get('max_data_size', -1))
+                    max = params.get('max_data_size', -1)
+                    if max == -1:
+                        data = e.fp.read()
+                    else:
+                        data = e.fp.read(max)
                     #e.msg
                     #e.headers
                 elif e.code == 503:
@@ -1454,25 +1520,35 @@ class common:
                     encoding = self.ph.getSearchGroups(metadata['content-type'], '''charset=([A-Za-z0-9\-]+)''', 1, True)[0].strip().upper()
 
                 if encoding == '' and params.get('search_charset', False):
-                    encoding = self.ph.getSearchGroups(data, '''(<meta[^>]+?Content-Type[^>]+?>)''', ignoreCase=True)[0]
+                    encoding = self.ph.getSearchGroups(strDecode(data,'ignore'), '''(<meta[^>]+?Content-Type[^>]+?>)''', ignoreCase=True)[0]
                     encoding = self.ph.getSearchGroups(encoding, '''charset=([A-Za-z0-9\-]+)''', 1, True)[0].strip().upper()
                 if encoding not in ['', 'UTF-8']:
                     printDBG(">> encoding[%s]" % encoding)
                     try:
-                        data = data.decode(encoding).encode('UTF-8')
+                        if isPY2():
+                            data = data.decode(encoding).encode('UTF-8')
+                        else:
+                            data = data.decode(encoding)
                     except Exception:
                         printExc()
                     metadata['orig_charset'] = encoding
+                else:
+                    try:
+                        data = strDecode(data)
+                    except Exception:
+                        data = strDecode(data, 'ignore')
         except Exception:
             printExc()
         return data, metadata
 
     def urlEncodeNonAscii(self, b):
-        return re.sub('[\x80-\xFF]', lambda c: '%%%02x' % ord(c.group(0)), b)
+        return re.sub(b'[\x80-\xFF]', lambda c: '%%%02x' % ord(c.group(0)), b)
 
     def iriToUri(self, iri):
         try:
-            parts = urlparse(iri.decode('utf-8'))
+            if isPY2() or isinstance(iri, bytes):
+                iri = iri.decode('utf-8')
+            parts = urlparse(iri)
             encodedParts = []
             for parti, part in enumerate(parts):
                 newPart = part
@@ -1483,7 +1559,7 @@ class common:
                         newPart = self.urlEncodeNonAscii(part.encode('utf-8'))
                 except Exception:
                     printExc()
-                encodedParts.append(newPart)
+                encodedParts.append(ensure_str(newPart))
             return urlunparse(encodedParts)
         except Exception:
             printExc()

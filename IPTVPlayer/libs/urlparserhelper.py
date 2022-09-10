@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -8,6 +8,16 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.pCommon import CParsingHelper, common
 from Plugins.Extensions.IPTVPlayer.libs import m3u8
 ###################################################
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_binary
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_unquote
+try:
+    from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urlsplit, urlunsplit, urljoin
+except Exception:
+    printExc()
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
+if not isPY2():
+    unichr = chr
+###################################################
 # FOREIGN import
 ###################################################
 from binascii import hexlify
@@ -15,17 +25,12 @@ import re
 import time
 import string
 import codecs
-import urllib
-try:
-    from urlparse import urlsplit, urlunsplit, urljoin
-except Exception:
-    printExc()
 ###################################################
 try:
     from hashlib import md5
 
     def hex_md5(e):
-        return md5(e).hexdigest()
+        return md5(ensure_binary(e)).hexdigest()
 except Exception:
     from Plugins.Extensions.IPTVPlayer.libs.crypto.hash.md5Hash import MD5 as md5
 
@@ -35,7 +40,11 @@ except Exception:
 
 
 def int2base(x, base):
-    digs = string.digits + string.lowercase
+    printDBG('int2base(%s,%s)' % (x, base)) #temporary to catch why digits.append(digs[x % base]) sometimes returns TypeError: string indices must be integers
+    if isPY2():
+        digs = string.digits + string.lowercase
+    else:
+        digs = string.digits + string.ascii_lowercase
     if x < 0:
         sign = -1
     elif x == 0:
@@ -45,8 +54,8 @@ def int2base(x, base):
     x *= sign
     digits = []
     while x:
-        digits.append(digs[x % base])
-        x /= base
+        digits.append(digs[int(x) % base])
+        x = x // base # // pushes PY3 to use int arithmetic
     if sign < 0:
         digits.append('-')
     digits.reverse()
@@ -258,7 +267,7 @@ def unpackJS(data, decryptionFun, addCode=''):
     except Exception:
         printExc('unpackJS compile algo code EXCEPTION')
         return ''
-    vGlobals = {"__builtins__": None, 'string': string, 'decodeURIComponent': urllib.unquote, 'unescape': urllib.unquote}
+    vGlobals = {"__builtins__": None, 'string': string, 'decodeURIComponent': urllib_unquote, 'unescape': urllib_unquote}
     vLocals = {'paramsTouple': None}
 
     try:

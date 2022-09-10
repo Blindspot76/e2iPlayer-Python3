@@ -11,14 +11,13 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, Ge
                                                           MapUcharEncoding, GetPolishSubEncoding, rmtree, mkdirs
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_urlencode
 ###################################################
 # FOREIGN import
 ###################################################
 from datetime import timedelta
 import time
 import re
-import urllib
 import unicodedata
 import base64
 from os import listdir as os_listdir, path as os_path
@@ -95,7 +94,7 @@ class SubsRoProvider(CBaseSubProviderClass):
             actionUrl += '&'
         else:
             actionUrl += '?'
-        actionUrl += urllib.urlencode(query)
+        actionUrl += urllib_urlencode(query)
 
         sts, data = self.cm.getPage(actionUrl, urlParams)
         if not sts:

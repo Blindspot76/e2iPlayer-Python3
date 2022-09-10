@@ -113,14 +113,8 @@ class IPTVSetupImpl:
         self.cmdwrapPaths = [resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/bin/cmdwrap'), "/usr/bin/cmdwrap"]
 
         # duk
-
-        self.dukVersion = 5 # "2.1.99" # real version
+        self.dukVersion = 6 # "2.1.99 [experimental]" # real version
         self.dukPaths = [resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/bin/duk'), "/usr/bin/duk"]
-
-	    # duk v6
-        
-        self.duk6Version = 6 # "2.3.0" # real version
-        self.duk6Paths = [resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/bin/duk6'), "/usr/bin/duk6"]
 
         self.binaryInstalledSuccessfully = False
         self.tries = 0
@@ -312,7 +306,7 @@ class IPTVSetupImpl:
     def getOpensslVersionFinished(self, stsTab, dataTab):
         printDBG("IPTVSetupImpl.getOpensslVersionFinished")
         if len(stsTab) > 0 and True == stsTab[-1]:
-            for ver in ['0.9.8', '1.0.0', '1.0.2']:
+            for ver in ['0.9.8', '1.0.0', '1.0.2', '1.1.1']:
                 if ver in dataTab[-1]:
                     self.openSSLVersion = '.' + ver
                     break

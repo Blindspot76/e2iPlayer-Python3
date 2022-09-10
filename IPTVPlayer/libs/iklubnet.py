@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -9,13 +9,12 @@ from Plugins.Extensions.IPTVPlayer.libs.urlparser import urlparser
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Playlist
 from Plugins.Extensions.IPTVPlayer.components.ihost import CBaseHostClass
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_unquote
 ###################################################
 # FOREIGN import
 ###################################################
 from Components.config import config, ConfigYesNo, getConfigListEntry
 import re
-import urllib
 try:
     import json
 except Exception:
@@ -192,7 +191,7 @@ class IKlubNetApi(CBaseHostClass):
                         else:
                             tmp2 = re.compile('''unescape\(['"]([^"^']+?)['"]''').findall(item)
                             for item2 in tmp2:
-                                ddata += urllib.unquote(item2)
+                                ddata += urllib_unquote(item2)
 
                 printDBG("++++++++++++++++++++++++++++++++++++++++++++++++++++")
                 printDBG(ddata)
@@ -206,8 +205,8 @@ class IKlubNetApi(CBaseHostClass):
                 ddata = self.cm.ph.getSearchGroups(ddata, '''document\.write[^'^"]+?['"]([^'^"]+?)['"]''')[0]
                 data = ''
                 tmp = ddata.split(sp)
-                ddata = urllib.unquote(tmp[0])
-                k = urllib.unquote(tmp[1] + modStr)
+                ddata = urllib_unquote(tmp[0])
+                k = urllib_unquote(tmp[1] + modStr)
                 for idx in range(len(ddata)):
                     data += chr((int(k[idx % len(k)]) ^ ord(ddata[idx])) + modInt)
 

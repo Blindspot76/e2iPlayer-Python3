@@ -6,9 +6,12 @@
     Copyright © (c) 2002 by Paul A. Lambert
     Read LICENSE.txt for license information.
 """
+import sys
 import hashlib
-from ..hash.hash import Hash
-
+try:
+    from ..hash.hash import Hash
+except Exception:
+    from Plugins.Extensions.IPTVPlayer.libs.crypto.hash.hash import Hash
 
 class SHA1(Hash):
 
@@ -27,7 +30,10 @@ class SHA1(Hash):
             equivalent to a single call with the concatenation of all the
             arguments: m.update(a); m.update(b) is equivalent to m.update(a+b).
         """
-        self.pysha1.update(data)
+        if sys.version_info[0] == 2: #PY2
+            self.pysha1.update(data)
+        else:
+            self.pysha1.update(data.encode('utf-8'))
 
     def digest(self):
         """ Return the digest of the strings passed to the update()

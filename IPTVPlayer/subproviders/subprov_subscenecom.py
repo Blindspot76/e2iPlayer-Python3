@@ -10,14 +10,13 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, Ge
                                                           MapUcharEncoding, GetPolishSubEncoding, rmtree, mkdirs
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 ###################################################
 # FOREIGN import
 ###################################################
 from datetime import timedelta
 import time
 import re
-import urllib
 import unicodedata
 import base64
 from os import listdir as os_listdir, path as os_path
@@ -60,7 +59,6 @@ def GetLanguageTab():
             ["Arabic", "ar", "ara"],
             ["Belarusian", "hy", "arm"],
             ["Bosnian", "bs", "bos"],
-            ["BosnianLatin", "bs", "bos"],
             ["Bulgarian", "bg", "bul"],
             ["Brazilian", "pb", "pob"],
             ["Catalan", "ca", "cat"],
@@ -70,10 +68,8 @@ def GetLanguageTab():
             ["Danish", "da", "dan"],
             ["Dutch", "nl", "dut"],
             ["English", "en", "eng"],
-            ["Espanol", "es", "spa"],
             ["Estonian", "et", "est"],
             ["Persian", "fa", "per"],
-            ["Farsi", "fa", "per"],
             ["Finnish", "fi", "fin"],
             ["French", "fr", "fre"],
             ["German", "de", "ger"],
@@ -103,8 +99,10 @@ def GetLanguageTab():
             ["Thai", "th", "tha"],
             ["Turkish", "tr", "tur"],
             ["Ukrainian", "uk", "ukr"],
-            ["Vietnamese", "vi", "vie"]
-          ]
+            ["Vietnamese", "vi", "vie"],
+            ["BosnianLatin", "bs", "bos"],
+            ["Farsi", "fa", "per"],
+            ["Espanol", "es", "spa"]]
     return tab
 
 
@@ -120,9 +118,8 @@ class SubsceneComProvider(CBaseSubProviderClass):
         CBaseSubProviderClass.__init__(self, params)
 
         self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': self.COOKIE_FILE}
-        self.SEARCH_TYPE_TAB = [{'title': _('By media title'), 'category': 'search_by_title'}]
-                                #,
-                                #{'title':_('By release name'), 'category':'search_by_release'}]
+        self.SEARCH_TYPE_TAB = [{'title': _('By media title'), 'category': 'search_by_title'},
+                                {'title': _('By release name'), 'category': 'search_by_release'}]
         self.cache = {}
 
     def _getHeader(self, lang):
@@ -155,10 +152,11 @@ class SubsceneComProvider(CBaseSubProviderClass):
             if '' == langId:
                 continue
             title = self.cleanHtmlStr(item)
+            params = {'title': title, 'lang_id': langId}
             if _isDefaultLanguage(title):
-                defaultLanguages.append({'title': _(title), 'lang_id': langId})
+                defaultLanguages.append(params)
             else:
-                list.append({'title': _(title), 'lang_id': langId})
+                list.append(params)
         defaultLanguages.extend(list)
         return defaultLanguages
 
@@ -180,21 +178,14 @@ class SubsceneComProvider(CBaseSubProviderClass):
     def searchByTitle(self, cItem, nextCategory):
         printDBG("SubsceneComProvider.searchByTitle")
         self.cache = {}
-
-        url = self.getFullUrl('/subtitles/searchbytitle')
-
-        #urllib.quote_plus()
+        url = self.getFullUrl('/subtitles/title?q={0}&r=true'.format(urllib_quote_plus(self.params['confirmed_title'])))
 
         header = self._getHeader(cItem['lang_id'])
-        sts, data = self.cm.getPage(url, {'header': header}, {'query': self.params['confirmed_title'], 'l': ''})
+        sts, data = self.cm.getPage(url, {'header': header})
         if not sts:
             return
 
-        if 'alternativeSearch' in data:
-            data = self.cm.ph.getDataBeetwenMarkers(data, '<div class="search-result">', '<div class="alternativeSearch">', False)[1]
-        else:
-            data = self.cm.ph.getDataBeetwenMarkers(data, '<div class="search-result">', '<footer>', False)[1]
-
+        data = self.cm.ph.getDataBeetwenMarkers(data, '<div class="search-result">', '<div class="alternativeSearch">', False)[1]
         data = self.cm.ph.getAllItemsBeetwenMarkers(data, '<h2', '</ul>')
         for groupItem in data:
             groupTitle = self.cleanHtmlStr(self.cm.ph.getDataBeetwenMarkers(groupItem, '<h2', '</h2>', True)[1])
@@ -221,7 +212,7 @@ class SubsceneComProvider(CBaseSubProviderClass):
 
     def searchByReleaseName(self, cItem, nextCategory):
         printDBG("SubsceneComProvider.searchByReleaseName")
-        url = self.getFullUrl('/subtitles/release?q={0}&r=true'.format(urllib.quote_plus(self.params['confirmed_title'])))
+        url = self.getFullUrl('/subtitles/release?q={0}&r=true'.format(urllib_quote_plus(self.params['confirmed_title'])))
         cItem = dict(cItem)
         cItem.update({'url': url})
         self.listSubItems(cItem, nextCategory)

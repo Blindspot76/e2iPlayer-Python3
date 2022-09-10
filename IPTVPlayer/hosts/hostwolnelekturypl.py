@@ -6,13 +6,12 @@ from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT
 from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostClass
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, byteify
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 ###################################################
 # FOREIGN import
 ###################################################
 import datetime
 import re
-import urllib
 try:
     import json
 except Exception:
@@ -198,7 +197,7 @@ class WolnelekturyPL(CBaseHostClass):
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("WolnelekturyPL.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
         cItem = dict(cItem)
-        cItem['url'] = self.getFullUrl('/szukaj/?q=%s' % urllib.quote_plus(searchPattern))
+        cItem['url'] = self.getFullUrl('/szukaj/?q=%s' % urllib_quote_plus(searchPattern))
         self.listItems(cItem, '', 'explore_item', True)
 
     def getLinksForVideo(self, cItem):

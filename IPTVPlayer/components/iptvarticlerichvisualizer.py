@@ -103,7 +103,7 @@ class IPTVArticleRichVisualizer(Screen):
         except Exception:
             printExc()
 
-        self.richDesc['pages_count'] = self.richDesc['items_count'] / self.MAX_RICH_DESC_ROW_NUM
+        self.richDesc['pages_count'] = int(self.richDesc['items_count'] / self.MAX_RICH_DESC_ROW_NUM)
         if self.richDesc['items_count'] % self.MAX_RICH_DESC_ROW_NUM > 0:
             self.richDesc['pages_count'] += 1
         if self.richDesc['items_count'] < self.MAX_RICH_DESC_ROW_NUM:
@@ -350,8 +350,8 @@ class IPTVArticleRichVisualizer(Screen):
             self.richDesc['page'] = page
             self.setRichDesc()
 
-            x = self.richDesc['page_item_start_x'] + page * self.richDesc['page_item_size']
-            y = self.richDesc['page_item_start_y']
+            x = int(self.richDesc['page_item_start_x'] + page * self.richDesc['page_item_size'])
+            y = int(self.richDesc['page_item_start_y'])
             self["page_marker"].instance.move(ePoint(x, y))
 
     def nextRichDescPage(self):

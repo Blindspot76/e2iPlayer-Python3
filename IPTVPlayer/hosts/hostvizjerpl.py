@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ###################################################
 # LOCAL import
 ###################################################
@@ -9,13 +9,12 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute
 from Plugins.Extensions.IPTVPlayer.libs.youtube_dl.utils import unescapeHTML
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 ###################################################
 # FOREIGN import
 ###################################################
-import urlparse
 import re
-import urllib
 import base64
 try:
     import json
@@ -174,8 +173,8 @@ class Vizjer(CBaseHostClass):
             if url == '':
                 continue
             icon = self.getFullIconUrl(self.cm.ph.getSearchGroups(item, '''src=['"]([^"^']+?poster[^"^']+?)['"]''')[0])
-            title = unescapeHTML(self.cm.ph.getSearchGroups(item, '''title=['"]([^"^']+?)['"]''')[0]).encode('UTF-8')
-            desc = unescapeHTML(self.cm.ph.getSearchGroups(item, '''data-text=['"]([^"^']+?)['"]''')[0]).encode('UTF-8')
+            title = ensure_str(unescapeHTML(self.cm.ph.getSearchGroups(item, '''title=['"]([^"^']+?)['"]''')[0]))
+            desc = ensure_str(unescapeHTML(self.cm.ph.getSearchGroups(item, '''data-text=['"]([^"^']+?)['"]''')[0]))
             if desc == '':
                 desc = self.cleanHtmlStr(self.cm.ph.getDataBeetwenNodes(item, ('<div', '>', 'description'), ('</div', '>'), False)[1])
 #            quality = self.cleanHtmlStr(self.cm.ph.getDataBeetwenNodes(item, ('<div', '>', 'quality-version'), ('</div', '>'), False)[1])
@@ -227,7 +226,8 @@ class Vizjer(CBaseHostClass):
 
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("Vizjer.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
-        url = self.getFullUrl('/wyszukiwarka?phrase=%s') % urllib.quote_plus(searchPattern)
+        #url = self.getFullUrl('/wyszukiwarka?phrase=%s') % urllib_quote_plus(searchPattern)
+        url = self.getFullUrl('/wyszukaj?phrase=%s') % urllib_quote_plus(searchPattern)
         params = {'name': 'category', 'category': 'list_items', 'good_for_fav': False, 'url': url}
         self.listItems(params)
 
@@ -260,7 +260,7 @@ class Vizjer(CBaseHostClass):
 
         for item in data:
 #            printDBG("Vizjer.getLinksForVideo item[%s]" % item)
-            playerUrl = base64.b64decode(self.cm.ph.getSearchGroups(item, '''data-iframe=['"]([^"^']+?)['"]''')[0]).replace('\\r', '').replace('\\', '')
+            playerUrl = ensure_str(base64.b64decode(self.cm.ph.getSearchGroups(item, '''data-iframe=['"]([^"^']+?)['"]''')[0])).replace('\\r', '').replace('\\', '')
             playerUrl = self.getFullUrl(self.cm.ph.getSearchGroups(playerUrl, '''src['"]:['"]([^"^']+?)['"]''')[0])
             name = self.up.getHostName(playerUrl)
             item = item.split('</td>\n')

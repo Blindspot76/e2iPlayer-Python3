@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -7,13 +7,13 @@ from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT
 from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostClass
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetDefaultLang, rm, byteify
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
-from Plugins.Extensions.IPTVPlayer.libs.recaptcha_v2 import UnCaptchaReCaptcha
-from Plugins.Extensions.IPTVPlayer.components.recaptcha_v2helper import CaptchaHelper
+from Plugins.Extensions.IPTVPlayer.components.captcha_helper import CaptchaHelper
 from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 from Plugins.Extensions.IPTVPlayer.libs import ph
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 ###################################################
 # E2 GUI COMMPONENTS
 ###################################################
@@ -23,8 +23,6 @@ from Screens.MessageBox import MessageBox
 ###################################################
 import base64
 import re
-import urlparse
-import urllib
 from Components.config import config, ConfigText, ConfigSelection, getConfigListEntry
 ###################################################
 
@@ -96,7 +94,7 @@ class EkinoTv(CBaseHostClass, CaptchaHelper):
             if self.cm.isValidUrl(url):
                 return url
             else:
-                return urlparse.urljoin(baseUrl, url)
+                return urljoin(baseUrl, url)
         addParams['cloudflare_params'] = {'domain': self.up.getDomain(baseUrl), 'cookie_file': self.COOKIE_FILE, 'User-Agent': self.USER_AGENT, 'full_url_handle': _getFullUrl}
         return self.cm.getPageCFProtection(baseUrl, addParams, post_data)
 
@@ -266,12 +264,12 @@ class EkinoTv(CBaseHostClass, CaptchaHelper):
         printDBG("EkinoTv.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
         searchPattern = searchPattern.replace(' ', '+')
 
-        url = 'https://ekino-tv.pl/search/qf/?q=' + urllib.quote_plus(searchPattern)
+        url = 'https://ekino-tv.pl/search/qf/?q=' + urllib_quote_plus(searchPattern)
         sts, data = self.getPage(url)
         if not sts:
             return
 #        if not 'search' in self.cm.meta['url']:
-#            url = 'https://ekino-tv.pl/se/search?q=' + urllib.quote_plus(searchPattern)
+#            url = 'https://ekino-tv.pl/se/search?q=' + urllib_quote_plus(searchPattern)
 #            sts, data = self.getPage(url)
 #            if not sts: return
         printDBG("EkinoTv.listSearchResult data[%s]" % data)
@@ -316,7 +314,7 @@ class EkinoTv(CBaseHostClass, CaptchaHelper):
 
         def _findHostingLinks(data, linkTab, premium):
             if premium:
-                jscode = [base64.b64decode('''dmFyIGRvY3VtZW50PXt9LHdpbmRvdz10aGlzLGVsZW1lbnQ9ZnVuY3Rpb24obil7dGhpcy5odG1sPWZ1bmN0aW9uKG4pe3ByaW50KG4pfSx0aGlzLmhpZGU9ZnVuY3Rpb24oKXt9fSwkPWZ1bmN0aW9uKG4pe3JldHVybiBuZXcgZWxlbWVudChuKX07''')]
+                jscode = [base64.b64decode('''dmFyIGRvY3VtZW50PXt9LHdpbmRvdz10aGlzLGVsZW1lbnQ9ZnVuY3Rpb24obil7dGhpcy5odG1sPWZ1bmN0aW9uKG4pe3ByaW50KG4pfSx0aGlzLmhpZGU9ZnVuY3Rpb24oKXt9LHRoaXMuZmluZD1mdW5jdGlvbigpe3JldHVybntlbXB0eTpmdW5jdGlvbigpe30sc2hvdzpmdW5jdGlvbigpe319fX0sJD1mdW5jdGlvbihuKXtyZXR1cm4gbmV3IGVsZW1lbnQobil9Ow==''')]
                 tmp = self.cm.ph.getAllItemsBeetwenNodes(data, ('<script', '>'), ('</script', '>'), False)
                 for item in tmp:
                     if 'function ShowPlayer(' in item:
@@ -428,9 +426,7 @@ class EkinoTv(CBaseHostClass, CaptchaHelper):
                 if sitekey == '':
                     sitekey = self.cm.ph.getSearchGroups(data, '''['"]?sitekey['"]?\s*:\s*['"]([^"^']+?)['"]''')[0]
                 if sitekey != '':
-                    from Plugins.Extensions.IPTVPlayer.libs.hcaptcha_2captcha import UnCaptchahCaptcha
-                    recaptcha = UnCaptchahCaptcha(lang=GetDefaultLang())
-                    token = recaptcha.processCaptcha(sitekey, self.cm.meta['url'])
+                    token, errorMsgTab = self.processCaptcha(sitekey, self.MAIN_URL, captchaType="h1")
                     if token != '':
                         vUrl = self.getFullUrl('/watch/verify.php')
                         urlParams['header']['Referer'] = baseUrl
@@ -469,11 +465,11 @@ class EkinoTv(CBaseHostClass, CaptchaHelper):
                 url = data.meta.get('url', '')
 
             if meta.get('is_premium', False):
-                data = self.cm.ph.getDataBeetwenMarkers(data, '<video', '</video>', False)[1]
-                vidUrl = self.cm.ph.getSearchGroups(data, '''\ssrc=['"]([^'^"]+?)['"]''')[0]
-                name = self.cm.ph.getSearchGroups(data, '''\stype=['"]([^'^"]+?)['"]''')[0]
+                data = self.cm.ph.getDataBeetwenMarkers(data, 'player.setup', '</script>', False)[1]
+                vidUrl = self.cm.ph.getSearchGroups(data, 'file:\s*?"([^"]+?)"')[0]
+#                name = self.cm.ph.getSearchGroups(data, '''\stype=['"]([^'^"]+?)['"]''')[0]
                 if self.cm.isValidUrl(vidUrl):
-                    urlTab.append({'name': name, 'url': vidUrl, 'need_resolve': 0})
+                    urlTab.append({'name': 'premium', 'url': vidUrl, 'need_resolve': 0})
                     return urlTab
 
             printDBG("|||" + url)
@@ -519,21 +515,32 @@ class EkinoTv(CBaseHostClass, CaptchaHelper):
                 if not sts:
                     return False
 
+                cookieHeader = self.cm.getCookieHeader(self.COOKIE_FILE, ['PHPSESSID'])
+                printDBG('tryTologin cookieHeader [%s]' % cookieHeader)
+
                 sts, data = self.cm.ph.getDataBeetwenNodes(data, ('<form', '>', 'login'), ('</form', '>'))
                 if not sts:
                     return False
 
                 actionUrl = self.getFullUrl(self.cm.ph.getSearchGroups(data, '''action=['"]([^'^"]+?)['"]''')[0])
-                post_data = {'login': self.login, 'password': self.password, 'csrf_token': '1'}
+                post_data = {'login': self.login, 'password': self.password}
+
+                inputData = self.cm.ph.getAllItemsBeetwenMarkers(data, '<input type="hidden"', '>')
+                for item in inputData:
+                    name = self.cm.ph.getSearchGroups(item, '''name=['"]([^'^"]+?)['"]''')[0]
+                    value = self.cm.ph.getSearchGroups(item, '''value=['"]([^'^"]+?)['"]''')[0]
+                    post_data[name] = value
+
                 httpParams = dict(self.defaultParams)
                 httpParams['header'] = dict(httpParams['header'])
                 httpParams['header']['Referer'] = self.getMainUrl()
+                httpParams['header']['Cookie'] = cookieHeader
 
                 if 'data-sitekey' in data:
                     sitekey = self.cm.ph.getSearchGroups(data, 'data\-sitekey="([^"]+?)"')[0]
 
                 if sitekey != '':
-                    token, errorMsgTab = self.processCaptcha(sitekey, self.cm.meta['url'], bypassCaptchaService='2captcha.com')
+                    token, errorMsgTab = self.processCaptcha(sitekey, self.cm.meta['url'], captchaType="INVISIBLE")
                     if token != '':
                         post_data['g-recaptcha-response'] = token
 

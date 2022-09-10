@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2022.08.21. by Blindspot
-###################################################
 # LOCAL import
 ###################################################
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _
@@ -10,12 +8,11 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, by
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 try:
     import json
 except Exception:
@@ -24,7 +21,7 @@ except Exception:
 
 
 def gettytul():
-    return 'https://www.tantifilm.run/'
+    return 'https://tantifilm.eu/'
 
 
 class TantiFilmOrg(CBaseHostClass):
@@ -39,7 +36,7 @@ class TantiFilmOrg(CBaseHostClass):
         self.cm.HEADER = self.HEADER # default header
         self.defaultParams = {'header': self.HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': self.COOKIE_FILE}
 
-        self.MAIN_URL = 'https://www.tantifilm.run/'
+        self.MAIN_URL = 'https://tantifilm.eu/'
         self.DEFAULT_ICON_URL = 'https://raw.githubusercontent.com/Zanzibar82/images/master/posters/tantifilm.png'
 
         self.MAIN_CAT_TAB = [{'category': 'list_categories', 'title': _('Categories'), 'url': self.MAIN_URL},
@@ -119,8 +116,8 @@ class TantiFilmOrg(CBaseHostClass):
             if title.upper() == 'HOME':
                 continue # not items on home page
             url = self.getFullUrl(self.cm.ph.getSearchGroups(item, '''href=['"]([^'^"]+?)['"]''')[0])
-            if 'supporto' in url:
-                break
+            if self.cm.getBaseUrl(self.getMainUrl(), True) != self.cm.getBaseUrl(url, True) or '/supporto/' in url:
+                continue
             params = dict(cItem)
             if 'elenco-saghe' not in url:
                 params.update({'category': nextCategory, 'title': title, 'url': url})
@@ -211,7 +208,7 @@ class TantiFilmOrg(CBaseHostClass):
                 tmp = self.cm.ph.rgetDataBeetwenMarkers2(data, '</body>', '<h1 class="page-title">', withMarkers=False)[1]
             if tmp == '':
                 tmp = data
-            data = self.cm.ph.getAllItemsBeetwenMarkers(tmp, '<div class="mediaWrap', '</ul>', withMarkers=True)
+            data = self.cm.ph.getAllItemsBeetwenMarkers(tmp, '<div class="mediaWrap', '</span>', withMarkers=True)
         for item in data:
             idx = item.find('</h2>')
             if idx > 0:
@@ -357,7 +354,7 @@ class TantiFilmOrg(CBaseHostClass):
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("TantiFilmOrg.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
 
-        baseUrl = self.getFullUrl('?s=' + urllib.quote_plus(searchPattern))
+        baseUrl = self.getFullUrl('?s=' + urllib_quote_plus(searchPattern))
         cItem = dict(cItem)
         cItem['url'] = baseUrl
         self.listItems(cItem, 'list_content')
@@ -380,20 +377,18 @@ class TantiFilmOrg(CBaseHostClass):
         urlTab = []
         if type == 'movie':
             tmp = self.cm.ph.getDataBeetwenMarkers(data, '<div id="wpwm-movie-links">', '<div class="film-left">', False)[1]
-            url = self.cm.ph.getSearchGroups(tmp, '''<iframe[^>]+?src=['"]([^'^"]+?)['"]''', ignoreCase=True)[0]
-            if url.startswith('//'):
-                url = "https:" + url
-            sts, data = self.getPage(url)
-            links = self.cm.ph.getAllItemsBeetwenMarkers(data, '<li class=', '</li>')
-            for i in links:
-                url = self.cm.ph.getDataBeetwenMarkers(i, 'data-link="', '"', False)[1]
-                if url.startswith('//'):
-                    url = "https:" + url
-                title = self.cm.ph.getDataBeetwenMarkers(i, '">', '</li>', False)[1]
-                title = title.strip()
-                url_params = {'name': title, 'url': strwithmeta(url, {'url': cItem['url']}), 'need_resolve': 1}
-                printDBG(str(url_params))
-                urlTab.append(url_params)
+            tmp = tmp.split('</ul>')
+            printDBG(tmp)
+            for item in tmp:
+                url = self.cm.ph.getSearchGroups(item, '''<iframe[^>]+?src=['"]([^'^"]+?)['"]''', ignoreCase=True)[0]
+                if not self.cm.isValidUrl(url):
+                    continue
+                id = self.cm.ph.getSearchGroups(item, '''id=['"]([^'^"]+?)['"]''', ignoreCase=True)[0]
+                title = self.cm.ph.getDataBeetwenReMarkers(data, re.compile('''<a[^>]+?href=['"]\#%s['"][^>]*?>''' % re.escape(id)), re.compile('</a>'))[1]
+                title = self.cleanHtmlStr(title)
+                if title == '':
+                    title = self.up.getDomain(url)
+                urlTab.append({'name': title, 'url': strwithmeta(url, {'url': cItem['url']}), 'need_resolve': 1})
         elif type == 'episode':
             data = self.cm.ph.getAllItemsBeetwenMarkers(data, '<nav class="', '</select>')
             if len(data) < 3:
@@ -411,16 +406,62 @@ class TantiFilmOrg(CBaseHostClass):
                 title = self.cleanHtmlStr(item)
                 if title == '':
                     continue
-                url_params = {'name': title, 'url': strwithmeta(url, {'url': cItem['url']}), 'need_resolve': 1}
-                printDBG(str(url_params))
-                urlTab.append(url_params)
+                urlTab.append({'name': title, 'url': strwithmeta(url, {'url': cItem['url']}), 'need_resolve': 1})
 
         self.cacheLinks[cItem['url']] = urlTab
         return urlTab
 
     def getVideoLinks(self, videoUrl):
-        printDBG("Tantifilm.getVideoLinks [%s]" % videoUrl)
-        return self.up.getVideoLinkExt(videoUrl)
+        printDBG("TantiFilmOrg.getVideoLinks [%s]" % videoUrl)
+        urlTab = []
+
+        # mark requested link as used one
+        if len(self.cacheLinks.keys()):
+            key = self.cacheLinks.keys()[0]
+            for idx in range(len(self.cacheLinks[key])):
+                if videoUrl in self.cacheLinks[key][idx]['url']:
+                    if not self.cacheLinks[key][idx]['name'].startswith('*'):
+                        self.cacheLinks[key][idx]['name'] = '*' + self.cacheLinks[key][idx]['name']
+                    break
+        tries = 0
+        while tries < 4:
+            tries += 1
+            printDBG(">> tries [%d]" % tries)
+            if not self.cm.isValidUrl(videoUrl):
+                break
+            if 1 != self.up.checkHostSupport(videoUrl):
+                addParams = dict(self.defaultParams)
+                addParams['with_metadata'] = True
+                sts, data = self.getPage(videoUrl, addParams)
+                if sts:
+                    videoUrl = data.meta['url']
+                    jscode = ['var document={},window=this;function typeOf(r){return{}.toString.call(r).match(/\s(\w+)/)[1].toLowerCase()}function jQuery(){return"function"==typeOf(arguments[0])&&arguments[0](),jQuery}jQuery.ready=jQuery,jQuery.attr=function(r,t){"src"==r&&print(t)},$=jQuery;']
+                    tmp = self.cm.ph.getAllItemsBeetwenNodes(data, ('<script', '>'), ('</script', '>'), False)
+                    for item in tmp:
+                        jscode.append(item)
+                    ret = js_execute('\n'.join(jscode))
+                    if ret['sts'] and 0 == ret['code']:
+                        data = ret['data'].strip()
+                        if self.cm.isValidUrl(data):
+                            videoUrl = data
+
+            if 'hostvid.xyz' in self.up.getDomain(videoUrl):
+                sts, data = self.getPage(videoUrl)
+                if not sts:
+                    return []
+                videoUrl = self.cm.ph.getSearchGroups(data, '''<iframe[^>]+?src=['"]([^'^"]+?)['"]''', ignoreCase=True)[0]
+            if self.cm.isValidUrl(videoUrl):
+                urlTab = self.up.getVideoLinkExt(videoUrl)
+                if len(urlTab):
+                    break
+            try:
+                data = self.cm.ph.getSearchGroups(data, '''<iframe[^>]+?src=['"]([^'^"]+?)['"]''', ignoreCase=True)[0]
+                if self.cm.isValidUrl(data):
+                    videoUrl = data
+            except Exception:
+                printExc()
+                break
+        return urlTab
 
     def handleService(self, index, refresh=0, searchPattern='', searchType=''):
         printDBG('handleService start')

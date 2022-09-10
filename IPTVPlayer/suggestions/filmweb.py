@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-import urllib
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote
 try:
     import json
 except Exception:
@@ -20,7 +20,7 @@ class SuggestionsProvider:
         return _("Filmweb Suggestions")
 
     def getSuggestions(self, text, locale):
-        url = 'http://www.filmweb.pl/search/live?q=' + urllib.quote(text)
+        url = 'http://www.filmweb.pl/search/live?q=' + urllib_quote(text)
         sts, data = self.cm.getPage(url)
         if sts and data.startswith("f\\c"):
             retList = []

@@ -8,12 +8,11 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, Ge
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_urlencode, urllib_quote
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 from datetime import datetime
 from hashlib import md5
 from copy import deepcopy
@@ -257,13 +256,13 @@ class PlusDEDE(CBaseHostClass):
                     if key in cItem:
                         query[key[2:]] = cItem[key]
 
-                query = urllib.urlencode(query)
+                query = urllib_urlencode(query)
                 if '?' in url:
                     url += '&' + query
                 else:
                     url += '?' + query
             else:
-                url += urllib.quote(cItem['f_search_query'])
+                url += urllib_quote(cItem['f_search_query'])
 
         sts, data = self.getPage(url)
         if not sts:
@@ -586,7 +585,7 @@ class PlusDEDE(CBaseHostClass):
                 header = dict(self.HTTP_HEADER)
                 header['Accept'] = 'image/png,image/*;q=0.8,*/*;q=0.5'
                 params = dict(self.defaultParams)
-                params.update({'maintype': 'image', 'subtypes': ['jpeg', 'png'], 'check_first_bytes': ['\xFF\xD8', '\xFF\xD9', '\x89\x50\x4E\x47'], 'header': header})
+                params.update({'maintype': 'image', 'subtypes': ['jpeg', 'png'], 'check_first_bytes': [b'\xFF\xD8', b'\xFF\xD9', b'\x89\x50\x4E\x47'], 'header': header})
                 filePath = GetTmpDir('.iptvplayer_captcha.jpg')
                 ret = self.cm.saveWebFile(filePath, imgUrl.replace('&amp;', '&'), params)
                 if not ret.get('sts'):

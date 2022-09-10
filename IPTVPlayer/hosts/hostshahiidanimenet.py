@@ -7,14 +7,13 @@ from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostC
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_urlencode
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin
 ###################################################
 # FOREIGN import
 ###################################################
-import urlparse
 import time
 import re
-import urllib
 try:
     import json
 except Exception:
@@ -59,7 +58,7 @@ class ShahiidAnime(CBaseHostClass):
             if self.cm.isValidUrl(url):
                 return url
             else:
-                return urlparse.urljoin(baseUrl, url)
+                return urljoin(baseUrl, url)
 
         addParams['cloudflare_params'] = {'domain': self.up.getDomain(baseUrl), 'cookie_file': self.COOKIE_FILE, 'User-Agent': self.USER_AGENT, 'full_url_handle': _getFullUrl}
         return self.cm.getPageCFProtection(baseUrl, addParams, post_data)
@@ -136,7 +135,7 @@ class ShahiidAnime(CBaseHostClass):
             baseKey = key[2:] # "f_"
             if key in cItem:
                 query[baseKey] = cItem[key]
-        query = urllib.urlencode(query)
+        query = urllib_urlencode(query)
         if query != '':
             url += '?' + query
 
@@ -294,7 +293,7 @@ class ShahiidAnime(CBaseHostClass):
                         break
         data = videoUrl.split('|')
         query = {'action': 'play_video', 'code': data[2], 'type': data[1], '_': str(int(time.time() * 1000))}
-        query = urllib.urlencode(query)
+        query = urllib_urlencode(query)
         url = self.getFullUrl('?' + query)
 
         sts, data = self.getPage(url)

@@ -21,7 +21,7 @@ try:
 except Exception:
     import simplejson as json
 import re
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import os
 import codecs
 from Components.config import config, ConfigDirectory, getConfigListEntry
@@ -246,9 +246,9 @@ class Youtube(CBaseHostClass):
 
         if url:
             printDBG("URL ricerca -----------> %s" % url)
-            tmpList = self.ytp.getSearchResult(urllib.quote_plus(pattern), searchType, page, 'search', config.plugins.iptvplayer.ytSortBy.value, url)
+            tmpList = self.ytp.getSearchResult(urllib.parse.quote_plus(pattern), searchType, page, 'search', config.plugins.iptvplayer.ytSortBy.value, url)
         else:
-            tmpList = self.ytp.getSearchResult(urllib.quote_plus(pattern), searchType, page, 'search', config.plugins.iptvplayer.ytSortBy.value)
+            tmpList = self.ytp.getSearchResult(urllib.parse.quote_plus(pattern), searchType, page, 'search', config.plugins.iptvplayer.ytSortBy.value)
 
         for item in tmpList:
             item.update({'name': 'category'})

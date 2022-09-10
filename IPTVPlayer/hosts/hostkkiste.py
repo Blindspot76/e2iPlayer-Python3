@@ -9,13 +9,13 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute
 from Plugins.Extensions.IPTVPlayer.libs import ph
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urlsplit, urlunsplit, urlparse
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_urlencode, urllib_quote_plus
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import iterDictItems
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
-from urlparse import urlsplit, urlunsplit, urlparse
 from Components.config import config, ConfigSelection, ConfigText, getConfigListEntry
 ###################################################
 
@@ -190,7 +190,7 @@ class KKisteAG(CBaseHostClass):
                 if not val:
                     continue
                 query[key] = val
-            url = self.getFullUrl('?c=movie&m=filter&' + urllib.urlencode(query))
+            url = self.getFullUrl('?c=movie&m=filter&' + urllib_urlencode(query))
         else:
             url = cItem['url']
 
@@ -247,7 +247,7 @@ class KKisteAG(CBaseHostClass):
         sts, data = self.getPage(self.getMainUrl())
         if not sts:
             return
-        url = self.getFullUrl('?c=movie&m=filter&keyword=' + urllib.quote_plus(searchPattern))
+        url = self.getFullUrl('?c=movie&m=filter&keyword=' + urllib_quote_plus(searchPattern))
         self.listItems({'name': 'category', 'category': 'list_items', 'url': url})
 
     def exploreItem(self, cItem):
@@ -278,7 +278,7 @@ class KKisteAG(CBaseHostClass):
 
     def joinLink(self, params):
         tab = []
-        for key, value in params[1].iteritems():
+        for key, value in iterDictItems(params[1]):
             tab.append('%s=%s' % (key, value))
         return params[0] + '?' + '&'.join(tab)
 

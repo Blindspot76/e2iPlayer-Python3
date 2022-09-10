@@ -158,7 +158,7 @@ class IPTVPlayerNotificationList(object):
 
                 if notification.timestamp != None:
                     timestamp = time.time()
-                    self.repeatMessages = dict((k, v) for k, v in self.repeatMessages.items() if v.timestamp > timestamp)
+                    self.repeatMessages = dict((k, v) for k, v in list(self.repeatMessages.items()) if v.timestamp > timestamp)
                     if notification.messageHash in self.repeatMessages:
                         notification = None
                     else:

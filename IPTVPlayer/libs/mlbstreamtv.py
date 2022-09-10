@@ -8,13 +8,12 @@ from Plugins.Extensions.IPTVPlayer.components.ihost import CBaseHostClass
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Playlist
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_unquote
 ###################################################
 # FOREIGN import
 ###################################################
 from Components.config import config, getConfigListEntry, ConfigInteger
 import re
-import urllib
 import base64
 from datetime import datetime, timedelta
 ############################################
@@ -175,7 +174,7 @@ class MLBStreamTVApi(CBaseHostClass):
 
         cUrl = self.cm.meta['url']
         tmp = self.cm.ph.getDataBeetwenMarkers(data, 'unescape(', ')', False)[1].strip()
-        data = urllib.unquote(data[1:-1]) + data
+        data = urllib_unquote(data[1:-1]) + data
 
         printDBG("+++")
         printDBG(data)

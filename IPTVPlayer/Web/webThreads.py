@@ -17,7 +17,10 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import GetHostsList, IsHostEn
 from Components.config import config
 
 ########################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
+if not isPY2():
+    basestring = str
+######################################################
 
 def _async_raise(tid, exctype):
     """raises the exception, performs cleanup if needed"""
@@ -61,7 +64,7 @@ class buildActiveHostsHTML(threading.Thread):
                 continue
             # column 1 containing logo and link if available
             try:
-                _temp = __import__('Plugins.Extensions.IPTVPlayer.hosts.host' + hostName, globals(), locals(), ['gettytul'], -1)
+                _temp = __import__('Plugins.Extensions.IPTVPlayer.hosts.host' + hostName, globals(), locals(), ['gettytul'], 0) #absolute import for P3 compatybility
                 title = _temp.gettytul()
                 _temp = None
             except Exception:
@@ -189,7 +192,7 @@ class buildConfigsHTML(threading.Thread):
         for hostName in SortHostsList(GetHostsList()):
             # column 1 containing logo and link if available
             try:
-                _temp = __import__('Plugins.Extensions.IPTVPlayer.hosts.host' + hostName, globals(), locals(), ['gettytul'], -1)
+                _temp = __import__('Plugins.Extensions.IPTVPlayer.hosts.host' + hostName, globals(), locals(), ['gettytul'], 0) #absolute import for P3 compatybility
                 title = _temp.gettytul()
             except Exception:
                 continue # we do NOT use broken hosts!!!
@@ -213,7 +216,7 @@ class buildConfigsHTML(threading.Thread):
 
             # Column 4 host configuration options
             try:
-                _temp = __import__('Plugins.Extensions.IPTVPlayer.hosts.host' + hostName, globals(), locals(), ['GetConfigList'], -1)
+                _temp = __import__('Plugins.Extensions.IPTVPlayer.hosts.host' + hostName, globals(), locals(), ['GetConfigList'], 0) #absolute import for P3 compatybility
                 OptionsList = _temp.GetConfigList()
             except Exception:
                 OptionsList = []
@@ -383,7 +386,7 @@ class doGlobalSearch(threading.Thread):
                 continue
             #print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ---------------- %s ---------------- !!!!!!!!!!!!!!!!!!!!!!!!!" % hostName)
             try:
-                _temp = __import__('Plugins.Extensions.IPTVPlayer.hosts.host' + hostName, globals(), locals(), ['IPTVHost'], -1)
+                _temp = __import__('Plugins.Extensions.IPTVPlayer.hosts.host' + hostName, globals(), locals(), ['IPTVHost'], 0) #absolute import for P3 compatybility
             except Exception:
                 print("doGlobalSearch: Exception importing %s" % hostName)
                 continue

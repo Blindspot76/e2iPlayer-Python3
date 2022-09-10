@@ -7,13 +7,12 @@ from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostC
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, rm
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 ###################################################
 # FOREIGN import
 ###################################################
-import urlparse
 import re
-import urllib
 try:
     import json
 except Exception:
@@ -22,16 +21,16 @@ except Exception:
 
 
 def gettytul():
-    return 'https://www.filmaon.cc/'
+    return 'http://filmaon.com/'
 
 
 class FilmaonCom(CBaseHostClass):
 
     def __init__(self):
-        CBaseHostClass.__init__(self, {'history': 'filmaon.cc', 'cookie': 'filmaon.io.cookie'})
+        CBaseHostClass.__init__(self, {'history': 'filmaon.com', 'cookie': 'filmaon.com.cookie'})
         self.USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0'
-        self.MAIN_URL = 'https://www.filmaon.cc/'
-        self.DEFAULT_ICON_URL = 'https://www.filmaon.cc/wp-content/uploads/2021/08/logo445.png'
+        self.MAIN_URL = 'http://www.filmaon.com/'
+        self.DEFAULT_ICON_URL = 'http://www.filmaon.com/wp-content/themes/Dooplay_/assets/img/Logomakr1.png'
         self.HTTP_HEADER = {'User-Agent': self.USER_AGENT, 'DNT': '1', 'Accept': 'text/html', 'Accept-Encoding': 'gzip, deflate', 'Referer': self.getMainUrl(), 'Origin': self.getMainUrl()}
         self.AJAX_HEADER = dict(self.HTTP_HEADER)
         self.AJAX_HEADER.update({'X-Requested-With': 'XMLHttpRequest', 'Accept-Encoding': 'gzip, deflate', 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'Accept': 'application/json, text/javascript, */*; q=0.01'})
@@ -49,7 +48,7 @@ class FilmaonCom(CBaseHostClass):
             if self.cm.isValidUrl(url):
                 return url
             else:
-                return urlparse.urljoin(baseUrl, url)
+                return urljoin(baseUrl, url)
         addParams['cloudflare_params'] = {'domain': self.up.getDomain(baseUrl), 'cookie_file': self.COOKIE_FILE, 'User-Agent': self.USER_AGENT, 'full_url_handle': _getFullUrl}
         return self.cm.getPageCFProtection(baseUrl, addParams, post_data)
 
@@ -179,7 +178,7 @@ class FilmaonCom(CBaseHostClass):
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("FilmaonCom.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
 
-        url = self.getFullUrl('?s=') + urllib.quote_plus(searchPattern)
+        url = self.getFullUrl('?s=') + urllib_quote_plus(searchPattern)
         cItem = dict(cItem)
         cItem.update({'url': url, 'category': 'list_items'})
         self.listItems(cItem, 'explore_item')
@@ -271,7 +270,7 @@ class FilmaonCom(CBaseHostClass):
             id = self.cm.ph.getSearchGroups(item, '''href=['"]#([^"^']+?)['"]''', 1, True)[0]
             namesData[id] = name
 
-        tmp = self.cm.ph.getAllItemsBeetwenNodes(data, ('<div' , '>', 'play-box-iframe fixidtab'), ('</div', '>'))
+        tmp = self.cm.ph.getAllItemsBeetwenNodes(data, ('<div', '>', 'play-box'), ('</div', '>'))
         for item in tmp:
             url = self.getFullUrl(self.cm.ph.getSearchGroups(item, '''<iframe[^>]+?src=['"]([^"^']+?)['"]''', 1, True)[0])
             if 1 != self.up.checkHostSupport(url):

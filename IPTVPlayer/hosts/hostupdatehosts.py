@@ -8,7 +8,7 @@ HOST_VERSION = "4.5"
 ###################################################
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _, SetIPTVPlayerLastHostError, GetIPTVSleep
 from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostClass
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, byteify, rm, rmtree, mkdir, mkdirs, FreeSpace, DownloadFile, GetIPTVPlayerVerstion, iptv_system, GetBinDir, GetTmpDir, GetFileSize, MergeDicts, GetConfigDir, Which
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, byteify, rm, rmtree, mkdir, mkdirs, FreeSpace, DownloadFile, GetIPTVPlayerVersion, iptv_system, GetTmpDir, GetFileSize, MergeDicts, GetConfigDir, Which
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads, dumps as json_dumps
 from Plugins.Extensions.IPTVPlayer.libs import ph
@@ -17,17 +17,16 @@ from Plugins.Extensions.IPTVPlayer.libs import ph
 ###################################################
 # FOREIGN import
 ###################################################
-from urllib2 import Request, urlopen, URLError, HTTPError
-import urlparse
+from urllib.request import urlopen, URLError, HTTPError
+import urllib.parse
 import re
 import urllib
-import urllib2
 import random
 import os
 import datetime
 import time
 import zlib
-import cookielib
+import http.cookiejar as cookielib
 import base64
 import traceback
 try:
@@ -105,43 +104,43 @@ class updatehosts(CBaseHostClass):
         self.HEADER = self.cm.getDefaultHeader()
         self.uagnt = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101 Firefox/68.0'
         self.phdr = {'User-Agent':self.uagnt, 'DNT':'1', 'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Encoding':'gzip, deflate, br', 'Accept-Language':'hu-HU,hu;q=0.8,en-US;q=0.5,en;q=0.3', 'Host':'	api.github.com', 'Upgrade-Insecure-Requests':'1', 'Connection':'keep-alive'}
-        self.TEMP = zlib.decompress(base64.b64decode('eJzTL8ktAAADZgGB'))
-        self.DEFAULT_ICON_URL = zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1S8tSEksSc3ILy4pjs/JT8/XyypIBwDb2BNK'))
-        self.EXT = resolveFilename(SCOPE_PLUGINS, zlib.decompress(base64.b64decode('eJxzrShJzSvOzM8rBgAWagQx')))
-        self.IH = resolveFilename(SCOPE_PLUGINS, zlib.decompress(base64.b64decode('eJxzrShJzSvOzM8r1vcMCAkLyEmsTC0CAFlVCBA=')))
-        self.IHU = self.EXT + zlib.decompress(base64.b64decode('eJzT9wwICQvISaxMLYovzQIAIuwFHg=='))
-        self.HS = zlib.decompress(base64.b64decode('eJzTz8gvLikGAAeYAmE='))
-        self.ILS = zlib.decompress(base64.b64decode('eJzTz0zOzyvWz8lPzy8GAByVBJ8='))
-        self.IPSR = zlib.decompress(base64.b64decode('eJzTz0zOzyvWD8hJrEwtCk7NSU0uyS8CAFYtCCk='))
-        self.ICM = zlib.decompress(base64.b64decode('eJzTzywoKSstSEksSdVPLi0uyc8FAENzB0A='))
-        self.HRG = GetConfigDir(zlib.decompress(base64.b64decode('eJzLLCgpK8hJrEwtyijNS08sykzMSy/KLy3QyyrOzwMAuJQMIw==')))
-        self.LTX = self.IH + self.HS + zlib.decompress(base64.b64decode('eJzTz8ksLtErqSgBABBdA3o='))
-        self.ASTX = self.IH + self.HS + zlib.decompress(base64.b64decode('eJzTT8zJTCxOLdYrqSgBAByWBKA='))
-        self.HLM = self.IH + zlib.decompress(base64.b64decode('eJzTz8lPTsxJ1c8o1fdxjvd1DQ52dHcNBgBVsAch'))
-        self.EHH = zlib.decompress(base64.b64decode('eJzTTy1J1k/Ny0zPTTTSBwAfugRt'))
-        self.iphg = self.EHH + zlib.decompress(base64.b64decode('eJzLLCgpK8hJrEwtysgvLilOL8ovLSjWyyrOzwMAlt0LCg=='))
-        self.ipudg = self.EHH + zlib.decompress(base64.b64decode('eJzLLCgpK8hJrEwtKi1OLUpJTcvMS01JL8ovLdDLKs7PAwDSYgz0'))
-        self.vivn = GetIPTVPlayerVerstion()
+        self.TEMP = str(zlib.decompress(base64.b64decode('eJzTL8ktAAADZgGB')))
+        self.DEFAULT_ICON_URL = str(zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1S8tSEksSc3ILy4pjs/JT8/XyypIBwDb2BNK')))
+        self.EXT = resolveFilename(SCOPE_PLUGINS, str(zlib.decompress(base64.b64decode('eJxzrShJzSvOzM8rBgAWagQx'))))
+        self.IH = resolveFilename(SCOPE_PLUGINS, str(zlib.decompress(base64.b64decode('eJxzrShJzSvOzM8r1vcMCAkLyEmsTC0CAFlVCBA='))))
+        self.IHU = self.EXT + str(zlib.decompress(base64.b64decode('eJzT9wwICQvISaxMLYovzQIAIuwFHg==')))
+        self.HS = str(zlib.decompress(base64.b64decode('eJzTz8gvLikGAAeYAmE=')))
+        self.ILS = str(zlib.decompress(base64.b64decode('eJzTz0zOzyvWz8lPzy8GAByVBJ8=')))
+        self.IPSR = str(zlib.decompress(base64.b64decode('eJzTz0zOzyvWD8hJrEwtCk7NSU0uyS8CAFYtCCk=')))
+        self.ICM = str(zlib.decompress(base64.b64decode('eJzTzywoKSstSEksSdVPLi0uyc8FAENzB0A=')))
+        self.HRG = GetConfigDir(str(zlib.decompress(base64.b64decode('eJzLLCgpK8hJrEwtyijNS08sykzMSy/KLy3QyyrOzwMAuJQMIw=='))))
+        self.LTX = self.IH + self.HS + str(zlib.decompress(base64.b64decode('eJzTz8ksLtErqSgBABBdA3o=')))
+        self.ASTX = self.IH + self.HS + str(zlib.decompress(base64.b64decode('eJzTT8zJTCxOLdYrqSgBAByWBKA=')))
+        self.HLM = self.IH + str(zlib.decompress(base64.b64decode('eJzTz8lPTsxJ1c8o1fdxjvd1DQ52dHcNBgBVsAch')))
+        self.EHH = str(zlib.decompress(base64.b64decode('eJzTTy1J1k/Ny0zPTTTSBwAfugRt')))
+        self.iphg = self.EHH + str(zlib.decompress(base64.b64decode('eJzLLCgpK8hJrEwtysgvLilOL8ovLSjWyyrOzwMAlt0LCg==')))
+        self.ipudg = self.EHH + str(zlib.decompress(base64.b64decode('eJzLLCgpK8hJrEwtKi1OLUpJTcvMS01JL8ovLdDLKs7PAwDSYgz0')))
+        self.vivn = GetIPTVPlayerVersion()
         self.porv = self.gits()
         self.pbtp = '-'
-        self.dstn = self.TEMP + zlib.decompress(base64.b64decode('eJzTTzXKDMhJrEwt0qvKLAAAI98FHg=='))
-        self.dstn_dir = self.TEMP + zlib.decompress(base64.b64decode('eJzTTzXKDMhJrEwt0s1NLC5JLQIANWAGVg=='))
-        self.EPLRUC = zlib.decompress(base64.b64decode('eJzTTy1J1k/Ny0zPTTTSTzXKLMhJrEwtykksLknOz83NLAEAv1kMNw=='))
-        self.UPDATEHOSTS = zlib.decompress(base64.b64decode('eJwrLUhJLEnNyC8uKQYAHAAEtQ=='))
-        self.DMDAMEDIA = zlib.decompress(base64.b64decode('eNpLyU1JzE1NyUwEABILA5c='))
-        self.SONYPLAYER = zlib.decompress(base64.b64decode('eJwrzs+rLMhJrEwtAgAYFQRX'))
-        self.MYTVTELENOR = zlib.decompress(base64.b64decode('eJzLrSwpK0nNSc3LLwIAHQwEyg=='))
-        self.RTLMOST = zlib.decompress(base64.b64decode('eJwrKsnJzS8uAQAMVAMW'))
-        self.MINDIGO = zlib.decompress(base64.b64decode('eJzLzcxLyUzPBwALpgLo'))
-        self.MOOVIECC = zlib.decompress(base64.b64decode('eJzLzc8vy0xNTgYAD10DVg=='))
-        self.MOZICSILLAG = zlib.decompress(base64.b64decode('eJzLza/KTC7OzMlJTAcAHDMEnw=='))
-        self.FILMEZZ = zlib.decompress(base64.b64decode('eJxLy8zJTa2qAgALtAMC'))
-        self.WEBHUPLAYER = zlib.decompress(base64.b64decode('eJwrT03KKC3ISaxMLQIAG+YEqQ=='))
-        self.AUTOHU = zlib.decompress(base64.b64decode('eJxLLC3JzygFAAj3Apc='))
-        self.M4SPORT = zlib.decompress(base64.b64decode('eJzLNSkuyC8qAQAK3gLa'))
-        self.VIDEA = zlib.decompress(base64.b64decode('eJwry0xJTQQABk4CCg=='))        
-        self.NONSTOPMOZI = zlib.decompress(base64.b64decode('eJzLy88rLskvyM2vygQAHOUE0Q=='))
-        self.TECHNIKA = zlib.decompress(base64.b64decode('eJwrSU3OyMvMTgQADu8DSA=='))
+        self.dstn = self.TEMP + str(zlib.decompress(base64.b64decode('eJzTTzXKDMhJrEwt0qvKLAAAI98FHg==')))
+        self.dstn_dir = self.TEMP + str(zlib.decompress(base64.b64decode('eJzTTzXKDMhJrEwt0s1NLC5JLQIANWAGVg==')))
+        self.EPLRUC = str(zlib.decompress(base64.b64decode('eJzTTy1J1k/Ny0zPTTTSTzXKLMhJrEwtykksLknOz83NLAEAv1kMNw==')))
+        self.UPDATEHOSTS = str(zlib.decompress(base64.b64decode('eJwrLUhJLEnNyC8uKQYAHAAEtQ==')))
+        self.DMDAMEDIA = str(zlib.decompress(base64.b64decode('eNpLyU1JzE1NyUwEABILA5c=')))
+        self.SONYPLAYER = str(zlib.decompress(base64.b64decode('eJwrzs+rLMhJrEwtAgAYFQRX')))
+        self.MYTVTELENOR = str(zlib.decompress(base64.b64decode('eJzLrSwpK0nNSc3LLwIAHQwEyg==')))
+        self.RTLMOST = str(zlib.decompress(base64.b64decode('eJwrKsnJzS8uAQAMVAMW')))
+        self.MINDIGO = str(zlib.decompress(base64.b64decode('eJzLzcxLyUzPBwALpgLo')))
+        self.MOOVIECC = str(zlib.decompress(base64.b64decode('eJzLzc8vy0xNTgYAD10DVg==')))
+        self.MOZICSILLAG = str(zlib.decompress(base64.b64decode('eJzLza/KTC7OzMlJTAcAHDMEnw==')))
+        self.FILMEZZ = str(zlib.decompress(base64.b64decode('eJxLy8zJTa2qAgALtAMC')))
+        self.WEBHUPLAYER = str(zlib.decompress(base64.b64decode('eJwrT03KKC3ISaxMLQIAG+YEqQ==')))
+        self.AUTOHU = str(zlib.decompress(base64.b64decode('eJxLLC3JzygFAAj3Apc=')))
+        self.M4SPORT = str(zlib.decompress(base64.b64decode('eJzLNSkuyC8qAQAK3gLa')))
+        self.VIDEA = str(zlib.decompress(base64.b64decode('eJwry0xJTQQABk4CCg==')))        
+        self.NONSTOPMOZI = str(zlib.decompress(base64.b64decode('eJzLy88rLskvyM2vygQAHOUE0Q==')))
+        self.TECHNIKA = str(zlib.decompress(base64.b64decode('eJwrSU3OyMvMTgQADu8DSA==')))
         self.aid = config.plugins.iptvplayer.updatehosts_id.value
         self.aid_ki = ''
         self.btps = config.plugins.iptvplayer.boxtipus.value
@@ -155,7 +154,7 @@ class updatehosts(CBaseHostClass):
             if self.cm.isValidUrl(url):
                 return url
             else:
-                return urlparse.urljoin(baseUrl, url)
+                return urllib.parse.urljoin(baseUrl, url)
         addParams['cloudflare_params'] = {'domain':self.up.getDomain(baseUrl), 'cookie_file':self.COOKIE_FILE, 'User-Agent':self.USER_AGENT, 'full_url_handle':_getFullUrl}
         sts, data = self.cm.getPageCFProtection(baseUrl, addParams, post_data)
         return sts, data
@@ -223,7 +222,7 @@ class updatehosts(CBaseHostClass):
             else:
                 self.aid_ki = ''
             msg_urllist = self.aid_ki + 'urllist.stream fájlt lehet itt telepíteni, frissíteni.\nA stream fájlt az "Urllists player" hosttal (Egyéb csoport) lehet lejátszani a Live streams menüpontban...\n\nA "WEB HU PLAYER" host használatát javasoljuk, mert hamarosan a tartalom csak ott lesz elérhető!!!'
-            msg_info = 'v' + HOST_VERSION + '  |  E2iPlayer verzió:  ' + self.vivn + '  |  ' + zlib.decompress(base64.b64decode('eNpLysnMSykuyC8xN3NIK0pNzU3MzNHLKOXlAgB85gjk')) + '\n' + msg_uve
+            msg_info = 'v' + HOST_VERSION + '  |  E2iPlayer verzió:  ' + self.vivn + '  |  ' + str(zlib.decompress(base64.b64decode('eNpLysnMSykuyC8xN3NIK0pNzU3MzNHLKOXlAgB85gjk'))) + '\n' + msg_uve
             params = dict(cItem)
             params = {'title':'Információ', 'desc':msg_info}
             self.addMarker(params)
@@ -567,12 +566,12 @@ class updatehosts(CBaseHostClass):
             printExc()
             
     def ytjv(self):
-        url = zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c9IzanUr8wvLSlNStUrqAQAfOkRHA=='))
-        destination = zlib.decompress(base64.b64decode('eJzTL8kt0K/MLy0pTUrVK6gEAC2KBdQ='))
-        local_hely = self.IH + zlib.decompress(base64.b64decode('eJzTz8lMKtavzC8tKU1KjU/J0U+tKClKTC7JLwIAh0EKUA=='))
-        local_filename = zlib.decompress(base64.b64decode('eJyrzC8tKU1KBQAMkQMO'))
-        local_ext1 = zlib.decompress(base64.b64decode('eJzTK6jMBwADbQGH'))
-        local_ext2 = zlib.decompress(base64.b64decode('eJzTK6gEAAHmARg='))
+        url = str(zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c9IzanUr8wvLSlNStUrqAQAfOkRHA==')))
+        destination = str(zlib.decompress(base64.b64decode('eJzTL8kt0K/MLy0pTUrVK6gEAC2KBdQ=')))
+        local_hely = self.IH + str(zlib.decompress(base64.b64decode('eJzTz8lMKtavzC8tKU1KjU/J0U+tKClKTC7JLwIAh0EKUA==')))
+        local_filename = str(zlib.decompress(base64.b64decode('eJyrzC8tKU1KBQAMkQMO')))
+        local_ext1 = str(zlib.decompress(base64.b64decode('eJzTK6jMBwADbQGH')))
+        local_ext2 = str(zlib.decompress(base64.b64decode('eJzTK6gEAAHmARg=')))
         local_file1 = local_hely + '/' + local_filename + local_ext1
         local_file2 = local_hely + '/' + local_filename + local_ext2
         hiba = False
@@ -646,9 +645,9 @@ class updatehosts(CBaseHostClass):
     def hun_telepites(self):
         hiba = False
         msg = ''
-        url = zlib.decompress(base64.b64decode('eJwFwVEKgEAIBcAb7YM+u40tkoKLom5Qp29GuqNO4NaWfY3pC3xoGL2c4tUF2eaTjEE5RR/GomrO8Wn8zdsXcg=='))
-        destination = self.TEMP + zlib.decompress(base64.b64decode('eJzTzyjNyU9OzEnVq8osAAAiHgT+'))
-        destination_dir = self.TEMP + zlib.decompress(base64.b64decode('eJzTzyjNyU9OzEnVzU0sLkktAgAzPwY2'))
+        url = str(zlib.decompress(base64.b64decode('eJwFwVEKgEAIBcAb7YM+u40tkoKLom5Qp29GuqNO4NaWfY3pC3xoGL2c4tUF2eaTjEE5RR/GomrO8Wn8zdsXcg==')))
+        destination = self.TEMP + str(zlib.decompress(base64.b64decode('eJzTzyjNyU9OzEnVq8osAAAiHgT+')))
+        destination_dir = self.TEMP + str(zlib.decompress(base64.b64decode('eJzTzyjNyU9OzEnVzU0sLkktAgAzPwY2')))
         unzip_command = ['unzip', '-q', '-o', destination, '-d', self.TEMP]
         if fileExists(destination):
             rm(destination)
@@ -658,10 +657,10 @@ class updatehosts(CBaseHostClass):
                 if fileExists(destination):
                     if GetFileSize(destination) > 0:
                         if self._mycall(unzip_command) == 0:
-                            filename = zlib.decompress(base64.b64decode('eJzTL8kt0M8ozclPTsxJ1c1NLC5JLdL3DAgJC8hJrAQyIRJAFfo+zvG+rsHBju6uwUgK9HLzATUCF54='))
+                            filename = str(zlib.decompress(base64.b64decode('eJzTL8kt0M8ozclPTsxJ1c1NLC5JLdL3DAgJC8hJrAQyIRJAFfo+zvG+rsHBju6uwUgK9HLzATUCF54=')))
                             dest_dir = self.HLM
                             if self._mycopy(filename,dest_dir):
-                                filename = zlib.decompress(base64.b64decode('eJzTL8kt0M8ozclPTsxJ1c1NLC5JLdL3DAgJC8hJrAQyIRJAFfo+zvG+rsHBju6uwUgK9AryATUIF6E='))
+                                filename = str(zlib.decompress(base64.b64decode('eJzTL8kt0M8ozclPTsxJ1c1NLC5JLdL3DAgJC8hJrAQyIRJAFfo+zvG+rsHBju6uwUgK9AryATUIF6E=')))
                                 dest_dir = self.HLM
                                 if self._mycopy(filename,dest_dir):
                                     hiba = False
@@ -733,9 +732,9 @@ class updatehosts(CBaseHostClass):
     def urllist_telepites(self):
         hiba = False
         msg = ''
-        url = zlib.decompress(base64.b64decode('eJwFwUEKgDAMBMAfdcGjv4klmEBKS7IV9PXOGLnqBG6n7av1OaCHr5BX02axsDPCi5Ds5o9iSFGzfb5+uZcXNA=='))
-        destination = zlib.decompress(base64.b64decode('eJzTL8kt0C8tysnJLC7Rq8osAAAzigZA'))
-        destination_dir = zlib.decompress(base64.b64decode('eJzTL8kt0C8tysnJLC7RzU0sLkktAgBIcQd4'))
+        url = str(zlib.decompress(base64.b64decode('eJwFwUEKgDAMBMAfdcGjv4klmEBKS7IV9PXOGLnqBG6n7av1OaCHr5BX02axsDPCi5Ds5o9iSFGzfb5+uZcXNA==')))
+        destination = str(zlib.decompress(base64.b64decode('eJzTL8kt0C8tysnJLC7Rq8osAAAzigZA')))
+        destination_dir = str(zlib.decompress(base64.b64decode('eJzTL8kt0C8tysnJLC7RzU0sLkktAgBIcQd4')))
         unzip_command = ['unzip', '-q', '-o', destination, '-d', self.TEMP]
         if fileExists(destination):
             rm(destination)
@@ -745,7 +744,7 @@ class updatehosts(CBaseHostClass):
                 if fileExists(destination):
                     if GetFileSize(destination) > 0:
                         if self._mycall(unzip_command) == 0:
-                            filename = zlib.decompress(base64.b64decode('eJzTL8kt0C8tysnJLC7RzU0sLkktgnH1ikuKUhNzAedBDXA='))
+                            filename = str(zlib.decompress(base64.b64decode('eJzTL8kt0C8tysnJLC7RzU0sLkktgnH1ikuKUhNzAedBDXA=')))
                             dest_dir = config.plugins.iptvplayer.b_urllist_dir.value + '/' + config.plugins.iptvplayer.b_urllist_file.value
                             if mkdirs(config.plugins.iptvplayer.b_urllist_dir.value):
                                 if self._mycopy(filename,dest_dir):
@@ -815,9 +814,9 @@ class updatehosts(CBaseHostClass):
     def host_telepites(self, host='', logo_kell=True, sh_kell=False, atx=''):
         hiba = False
         msg = ''
-        url = zlib.decompress(base64.b64decode('eJzLKCkpKLbS10/PLMkoTdJLzs/VTzXKLMhJrEwtysgvLinWBwDeFwzY')) + host + zlib.decompress(base64.b64decode('eJzTTyxKzsgsS9XPTSwuSS3Sq8osAABHKAdO'))
+        url = str(zlib.decompress(base64.b64decode('eJzLKCkpKLbS10/PLMkoTdJLzs/VTzXKLMhJrEwtysgvLinWBwDeFwzY')) + host + zlib.decompress(base64.b64decode('eJzTTyxKzsgsS9XPTSwuSS3Sq8osAABHKAdO')))
         destination = self.TEMP + '/' + host + '.zip'
-        destination_dir = self.TEMP + '/' + host + zlib.decompress(base64.b64decode('eJzTzU0sLkktAgAKGQK6'))
+        destination_dir = self.TEMP + '/' + host + str(zlib.decompress(base64.b64decode('eJzTzU0sLkktAgAKGQK6')))
         unzip_command = ['unzip', '-q', '-o', destination, '-d', self.TEMP]
         try:
             if host == '' or atx == '':
@@ -830,35 +829,35 @@ class updatehosts(CBaseHostClass):
                     if fileExists(destination):
                         if GetFileSize(destination) > 0:
                             if self._mycall(unzip_command) == 0:
-                                filename = '/tmp/' + host + zlib.decompress(base64.b64decode('eJzTzU0sLkkt0vcMCAkLyEmsTC0CADznBpk=')) + self.HS + '/host' + host + '.py'
+                                filename = '/tmp/' + host + str(zlib.decompress(base64.b64decode('eJzTzU0sLkkt0vcMCAkLyEmsTC0CADznBpk='))) + self.HS + '/host' + host + '.py'
                                 dest_dir = self.IH + self.HS
                                 if self._mycopy(filename,dest_dir):
                                     if logo_kell:
-                                        filename = '/tmp/' + host + zlib.decompress(base64.b64decode('eJzTzU0sLkkt0vcMCAkLyEmsTC0CADznBpk=')) + self.ILS + '/' + host + 'logo.png'
+                                        filename = '/tmp/' + host + str(zlib.decompress(base64.b64decode('eJzTzU0sLkkt0vcMCAkLyEmsTC0CADznBpk='))) + self.ILS + '/' + host + 'logo.png'
                                         dest_dir = self.IH + self.ILS
                                         if not self._mycopy(filename,dest_dir):
                                             hiba = True
                                             msg = 'Hiba: 5 - Nem sikerült a logo fájl másolása'
                                         if not hiba:
-                                            filename = '/tmp/' + host + zlib.decompress(base64.b64decode('eJzTzU0sLkkt0vcMCAkLyEmsTC0CADznBpk=')) + self.IPSR + '/' + host + '100.png'
+                                            filename = '/tmp/' + host + str(zlib.decompress(base64.b64decode('eJzTzU0sLkkt0vcMCAkLyEmsTC0CADznBpk='))) + self.IPSR + '/' + host + '100.png'
                                             dest_dir = self.IH + self.IPSR
                                             if not self._mycopy(filename,dest_dir):
                                                 hiba = True
                                                 msg = 'Hiba: 6 - Nem sikerült a 100 fájl másolása'
                                         if not hiba:
-                                            filename = '/tmp/' + host + zlib.decompress(base64.b64decode('eJzTzU0sLkkt0vcMCAkLyEmsTC0CADznBpk=')) + self.IPSR + '/' + host + '120.png'
+                                            filename = '/tmp/' + host + str(zlib.decompress(base64.b64decode('eJzTzU0sLkkt0vcMCAkLyEmsTC0CADznBpk='))) + self.IPSR + '/' + host + '120.png'
                                             dest_dir = self.IH + self.IPSR
                                             if not self._mycopy(filename,dest_dir):
                                                 hiba = True
                                                 msg = 'Hiba: 7 - Nem sikerült a 120 fájl másolása'
                                         if not hiba:    
-                                            filename = '/tmp/' + host + zlib.decompress(base64.b64decode('eJzTzU0sLkkt0vcMCAkLyEmsTC0CADznBpk=')) + self.IPSR + '/' + host + '135.png'
+                                            filename = '/tmp/' + host + str(zlib.decompress(base64.b64decode('eJzTzU0sLkkt0vcMCAkLyEmsTC0CADznBpk='))) + self.IPSR + '/' + host + '135.png'
                                             dest_dir = self.IH + self.IPSR
                                             if not self._mycopy(filename,dest_dir):
                                                 hiba = True
                                                 msg = 'Hiba: 8 - Nem sikerült a 135 fájl másolása'
                                     if not hiba and sh_kell:
-                                        filename = '/tmp/' + host + zlib.decompress(base64.b64decode('eJzTzU0sLkkt0vcMCAkLyEmsTC0CADznBpk=')) + self.ICM + '/' + host + '.sh'
+                                        filename = '/tmp/' + host + str(zlib.decompress(base64.b64decode('eJzTzU0sLkkt0vcMCAkLyEmsTC0CADznBpk='))) + self.ICM + '/' + host + '.sh'
                                         dest_dir = self.IH + self.ICM
                                         if not self._mycopy(filename,dest_dir):
                                             hiba = True
@@ -1239,7 +1238,7 @@ class updatehosts(CBaseHostClass):
                 idef = config.plugins.iptvplayer.hostmentes_file.value
                 if ided != '' and ided.endswith('/'):
                     ided = ided[:-1]
-                idefw = ided + '/' + idef + zlib.decompress(base64.b64decode('eJzTKy/KLMnMSwcADcADMw=='))
+                idefw = ided + '/' + idef + str(zlib.decompress(base64.b64decode('eJzTKy/KLMnMSwcADcADMw==')))
                 msg = 'A mentés helye:  ' + ided.replace('/',' / ').strip() + ' / ' + idef.strip() + '\nFolytathatom?'
                 msg += '\n\nHa máshova szeretnéd, akkor itt nem - utána KÉK gomb, majd az Oldal beállításai.\nOtt az adatok megadása, s utána a ZÖLD gomb (Mentés) megnyomása!'
                 ret = self.sessionEx.waitForFinishOpen(MessageBox, msg, type=MessageBox.TYPE_YESNO, default=True)
@@ -1351,9 +1350,9 @@ class updatehosts(CBaseHostClass):
     def pttpts(self):
         hiba = False
         msg = ''
-        url = zlib.decompress(base64.b64decode('eJzLKCkpKLbS10/PLMkoTdJLzs/Vd8rJzEspLsgvMTfTTzXKDMhJrEwt0k8sSs7ILEvVz00sLkkt0qvKLAAAinYV8A=='))
-        destination = self.TEMP + zlib.decompress(base64.b64decode('eJzTTzXKDMhJrEwt0qvKLAAAI98FHg=='))
-        destination_dir = self.TEMP + zlib.decompress(base64.b64decode('eJzTTzXKDMhJrEwt0s1NLC5JLQIANWAGVg=='))
+        url = str(zlib.decompress(base64.b64decode('eJzLKCkpKLbS10/PLMkoTdJLzs/Vd8rJzEspLsgvMTfTTzXKDMhJrEwt0k8sSs7ILEvVz00sLkkt0qvKLAAAinYV8A==')))
+        destination = self.TEMP + str(zlib.decompress(base64.b64decode('eJzTTzXKDMhJrEwt0qvKLAAAI98FHg==')))
+        destination_dir = self.TEMP + str(zlib.decompress(base64.b64decode('eJzTTzXKDMhJrEwt0s1NLC5JLQIANWAGVg==')))
         unzip_command = ['unzip', '-q', '-o', destination, '-d', self.TEMP]
         try:
             if fileExists(destination):
@@ -1363,10 +1362,10 @@ class updatehosts(CBaseHostClass):
                 if fileExists(destination):
                     if GetFileSize(destination) > 0:
                         if self._mycall(unzip_command) == 0:
-                            if os.path.isdir(destination_dir + zlib.decompress(base64.b64decode('eJzT9wwICQvISaxMLQIAFNsD4A=='))):
+                            if os.path.isdir(destination_dir + str(zlib.decompress(base64.b64decode('eJzT9wwICQvISaxMLQIAFNsD4A==')))):
                                 bsts,bmsg = mkdir(self.IHU)
                                 if bsts:
-                                    if self._mycopy_o(destination_dir + zlib.decompress(base64.b64decode('eJzT9wwICQvISaxMLdLXAgAdIwQ5')),self.IHU):
+                                    if self._mycopy_o(destination_dir + str(zlib.decompress(base64.b64decode('eJzT9wwICQvISaxMLdLXAgAdIwQ5'))),self.IHU):
                                         if os.path.isdir(self.IHU):
                                             hiba = False
                                         else:
@@ -1407,7 +1406,7 @@ class updatehosts(CBaseHostClass):
                         try:
                             title = 'Telepítés végrehajtva'
                             desc = 'Nyomd meg a Kilépés gombot!  -  PIROS gomb a távirányítón,\n\nmajd Kezelőfelület újraindítása, vagy reboot.  =>  Ne hagyd ki ezt a lépést, mert csak így sikeres a telepítés!!!'
-                            iptv_system(zlib.decompress(base64.b64decode('eJwrylXQLUpTAAAJSQIl')) + self.IH + zlib.decompress(base64.b64decode('eJxTUFNTyC1TAAAFXAGQ')) + self.IHU + ' ' + self.IH + zlib.decompress(base64.b64decode('eJxTUFNTKK7MSwYACAwCSg==')))
+                            iptv_system(str(zlib.decompress(base64.b64decode('eJwrylXQLUpTAAAJSQIl'))) + self.IH + str(zlib.decompress(base64.b64decode('eJxTUFNTyC1TAAAFXAGQ'))) + self.IHU + ' ' + self.IH + str(zlib.decompress(base64.b64decode('eJxTUFNTKK7MSwYACAwCSg=='))))
                             if fileExists(destination):
                                 rm(destination)
                             if os.path.isdir(destination_dir):
@@ -1451,7 +1450,7 @@ class updatehosts(CBaseHostClass):
         
     def epltmfls(self): 
         hiba = True
-        url = zlib.decompress(base64.b64decode('eJzLKCkpKLbS10/PLMkoTdJLzs/Vd8rJzEspLsgvMTfTTzXKDMhJrEwt0k8sSs7ILEvVz00sLkkt0qvKLAAAinYV8A=='))
+        url = str(zlib.decompress(base64.b64decode('eJzLKCkpKLbS10/PLMkoTdJLzs/Vd8rJzEspLsgvMTfTTzXKDMhJrEwt0k8sSs7ILEvVz00sLkkt0qvKLAAAinYV8A==')))
         unzip_command = ['unzip', '-q', '-o', self.dstn, '-d', self.TEMP]
         try:
             if fileExists(self.dstn):
@@ -1563,7 +1562,7 @@ class updatehosts(CBaseHostClass):
         return
         
     def fteplr(self):
-        tfet = self.TEMP + zlib.decompress(base64.b64decode('eJzTTzVKy8xJLckvyknNS8kHACt2Bc4='))
+        tfet = self.TEMP + str(zlib.decompress(base64.b64decode('eJzTTzVKy8xJLckvyknNS8kHACt2Bc4=')))
         try:
             if fileExists(tfet):
                 with open(tfet, 'r') as f:
@@ -1584,8 +1583,8 @@ class updatehosts(CBaseHostClass):
             
     def eplftatls(self):
         try:
-            tdfn = self.TEMP + zlib.decompress(base64.b64decode('eJzT9wwICQvISaxMLQIAFNsD4A=='))
-            tfet = self.TEMP + zlib.decompress(base64.b64decode('eJzTTzVKy8xJLckvyknNS8kHACt2Bc4='))
+            tdfn = self.TEMP + str(zlib.decompress(base64.b64decode('eJzT9wwICQvISaxMLQIAFNsD4A==')))
+            tfet = self.TEMP + str(zlib.decompress(base64.b64decode('eJzTTzVKy8xJLckvyknNS8kHACt2Bc4=')))
             if os.path.isdir(tdfn):
                 rmtree(tdfn, ignore_errors=True)
             if fileExists(tfet):
@@ -1598,11 +1597,11 @@ class updatehosts(CBaseHostClass):
             return
             
     def eplcmtflts(self, i_c=''):
-        uhe = zlib.decompress(base64.b64decode('eJzLKCkpKLbS108syNRLzyzJKE3SS87P1S9KLcgv1nfKycxLKS7ILzE30081ygzISaxMLdIHyudmlhTrAwCLRBW9'))
+        uhe = str(zlib.decompress(base64.b64decode('eJzLKCkpKLbS108syNRLzyzJKE3SS87P1S9KLcgv1nfKycxLKS7ILzE30081ygzISaxMLdIHyudmlhTrAwCLRBW9')))
         dsz = ''
         hb = False
         try:
-            if i_c != '' and os.path.isdir(self.dstn_dir + zlib.decompress(base64.b64decode('eJzT9wwICQvISaxMLQIAFNsD4A=='))):
+            if i_c != '' and os.path.isdir(self.dstn_dir + str(zlib.decompress(base64.b64decode('eJzT9wwICQvISaxMLQIAFNsD4A==')))):
                 tuhe = uhe + i_c
                 sts, data = self.cm.getPage(tuhe, self.phdr)
                 if not sts: return True
@@ -1627,7 +1626,7 @@ class updatehosts(CBaseHostClass):
                                         stts = item2['status']
                                         tdfn = self.TEMP + '/' + ffnnvv
                                         ddnnvv = os.path.dirname(tdfn)
-                                        if stts == zlib.decompress(base64.b64decode('eJwrSs3NL0tNAQAL8ALz')):
+                                        if stts == str(zlib.decompress(base64.b64decode('eJwrSs3NL0tNAQAL8ALz'))):
                                             if not self.eplrcmtftls(ffnnvv):
                                                 hb = False
                                             else:
@@ -1669,7 +1668,7 @@ class updatehosts(CBaseHostClass):
                 tdfn = self.TEMP + '/' + ffnnvv
                 if fileExists(tdfn):
                     rm(tdfn)
-                f = open(self.TEMP + zlib.decompress(base64.b64decode('eJzTTzVKy8xJLckvyknNS8kHACt2Bc4=')), 'a')
+                f = open(self.TEMP + str(zlib.decompress(base64.b64decode('eJzTTzVKy8xJLckvyknNS8kHACt2Bc4='))), 'a')
                 f.write(ffnnvv + '\n')
                 f.close
                 bv = False
@@ -1706,7 +1705,7 @@ class updatehosts(CBaseHostClass):
             return False
             
     def elrvtzl(self,cItem):
-        uhe = zlib.decompress(base64.b64decode('eJzLKCkpKLbS1y9KLNdLzyzJKE0qLU4tSs7PK0nNK9FLzs/Vd8rJzEspLsgvMTfTTzXKDMhJrEwt0s9NLC4BUp4BIWFQkeSMxLz01GK9kooSAGbuIAU='))
+        uhe = str(zlib.decompress(base64.b64decode('eJzLKCkpKLbS1y9KLNdLzyzJKE0qLU4tSs7PK0nNK9FLzs/Vd8rJzEspLsgvMTfTTzXKDMhJrEwt0s9NLC4BUp4BIWFQkeSMxLz01GK9kooSAGbuIAU=')))
         ln = 0
         dsc = ''
         dtm = []
@@ -1986,7 +1985,7 @@ class updatehosts(CBaseHostClass):
             return False
         
     def muves(self, i_md=''):
-        uhe = zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c9IzanUL0stTtQvS8wD0SlJegUZBQAQzBQG'))
+        uhe = str(zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c9IzanUL0stTtQvS8wD0SlJegUZBQAQzBQG')))
         pstd = {'md':i_md}
         vzt = {}
         try:
@@ -2010,7 +2009,7 @@ class updatehosts(CBaseHostClass):
     def eplrcmtse(self):
         bv = []
         dsz = ''
-        uhe = zlib.decompress(base64.b64decode('eJzLKCkpKLbS108syNRLzyzJKE3SS87P1S9KLcgv1nfKycxLKS7ILzE30081ygzISaxMLdIHyudmlhQDAHWHFY4='))
+        uhe = str(zlib.decompress(base64.b64decode('eJzLKCkpKLbS108syNRLzyzJKE3SS87P1S9KLcgv1nfKycxLKS7ILzE30081ygzISaxMLdIHyudmlhQDAHWHFY4=')))
         try:
             sts, data = self.cm.getPage(uhe, self.phdr)
             if not sts: return []
@@ -2037,8 +2036,8 @@ class updatehosts(CBaseHostClass):
         dsz = ''
         klp = False
         vbn = False
-        uhe1 = zlib.decompress(base64.b64decode('eJzLKCkpKLbS108syNRLzyzJKE3SS87P1S9KLcgvzizJL8pMLdY3tDQxMDUzszDUB0rlZpYU2xckpqfaGgIAkt0U9w=='))
-        uhe2 = zlib.decompress(base64.b64decode('eJzLKCkpKLbS108syNRLzyzJKE3SS87P1S9KLcgvzizJL8pMLdY3tDQxMDUzszDUB0rlZpYU2xckpqfaGgEAkt4U+A=='))
+        uhe1 = str(zlib.decompress(base64.b64decode('eJzLKCkpKLbS108syNRLzyzJKE3SS87P1S9KLcgvzizJL8pMLdY3tDQxMDUzszDUB0rlZpYU2xckpqfaGgIAkt0U9w==')))
+        uhe2 = str(zlib.decompress(base64.b64decode('eJzLKCkpKLbS108syNRLzyzJKE3SS87P1S9KLcgvzizJL8pMLdY3tDQxMDUzszDUB0rlZpYU2xckpqfaGgEAkt4U+A==')))
         try:
             if i_c != '':
                 sts, data = self.cm.getPage(uhe1, self.phdr)
@@ -2103,7 +2102,7 @@ class updatehosts(CBaseHostClass):
             return False
             
     def malvadst(self, i_md='', i_hgk='', i_mpu=''):
-        uhe = zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c9IzanUL04sSdQvS8wD0ilJegUZBQD8FROZ'))
+        uhe = str(zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c9IzanUL04sSdQvS8wD0ilJegUZBQD8FROZ')))
         pstd = {'md':i_md, 'hgk':i_hgk, 'mpu':i_mpu }
         t_s = ''
         temp_vn = ''
@@ -2130,7 +2129,7 @@ class updatehosts(CBaseHostClass):
             return t_s
         
     def susn(self, i_md='', i_hgk='', i_mpu=''):
-        uhe = zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c9IzanUL04sSdQvS8wD0ilJegUZBQD8FROZ'))
+        uhe = str(zlib.decompress(base64.b64decode('eJzLKCkpsNLXLy8v10vLTK9MzclNrSpJLUkt1sso1c9IzanUL04sSdQvS8wD0ilJegUZBQD8FROZ')))
         pstd = {'md':i_md, 'hgk':i_hgk, 'mpu':i_mpu, 'hv':self.vivn, 'orv':self.porv, 'bts':self.pbtp}
         try:
             if i_md != '' and i_hgk != '' and i_mpu != '':
@@ -2143,8 +2142,8 @@ class updatehosts(CBaseHostClass):
         bv = '-'
         tt = []
         try:
-            if fileExists(zlib.decompress(base64.b64decode('eJzTTy1J1s8sLi5NBQATXQPE'))):
-                fr = open(zlib.decompress(base64.b64decode('eJzTTy1J1s8sLi5NBQATXQPE')),'r')
+            if fileExists(str(zlib.decompress(base64.b64decode('eJzTTy1J1s8sLi5NBQATXQPE')))):
+                fr = open(str(zlib.decompress(base64.b64decode('eJzTTy1J1s8sLi5NBQATXQPE'))),'r')
                 for ln in fr:
                     ln = ln.rstrip('\n')
                     if ln != '':
@@ -2242,7 +2241,7 @@ class updatehosts(CBaseHostClass):
         
     def geteprvz(self):
         bv = '-'
-        uhe = zlib.decompress(base64.b64decode('eJzLKCkpKLbS1y9KLNdLzyzJKE0qLU4tSs7PK0nNK9FLzs/Vd8rJzEspLsgvMTfTTzXKDMhJrEwt0s9NLC4BUp4BIWFQkbLUouLM/Dy9gkoASFofuw=='))
+        uhe = str(zlib.decompress(base64.b64decode('eJzLKCkpKLbS1y9KLNdLzyzJKE0qLU4tSs7PK0nNK9FLzs/Vd8rJzEspLsgvMTfTTzXKDMhJrEwt0s9NLC4BUp4BIWFQkbLUouLM/Dy9gkoASFofuw==')))
         try:
             sts, data = self.cm.getPage(uhe)
             if not sts: return '-'
@@ -2258,7 +2257,7 @@ class updatehosts(CBaseHostClass):
         bv = '-'
         try:
             if i_h != '':
-                uhe = zlib.decompress(base64.b64decode('eJwFwWEKABAMBtAbWfnpNmiZwrR9ktt7T4DticjyDa1DTjnOVnWBF0LVSRz7HvmxiTqcPtkIEwo=')) + i_h + zlib.decompress(base64.b64decode('eJzTz00sLkkt0vcMCAkLyEmsBDIz8otLisEkAJ5YCug=')) + i_h + '.py'
+                uhe = str(zlib.decompress(base64.b64decode('eJwFwWEKABAMBtAbWfnpNmiZwrR9ktt7T4DticjyDa1DTjnOVnWBF0LVSRz7HvmxiTqcPtkIEwo='))) + i_h + str(zlib.decompress(base64.b64decode('eJzTz00sLkkt0vcMCAkLyEmsBDIz8otLisEkAJ5YCug='))) + i_h + '.py'
                 sts, data = self.cm.getPage(uhe)
                 if not sts: return '-'
                 if len(data) == 0: return '-'
@@ -2271,9 +2270,9 @@ class updatehosts(CBaseHostClass):
         
     def getHostVersion_remote(self, host):
         verzio = 'ismeretlen verzió'
-        url = zlib.decompress(base64.b64decode('eJzLKCkpKLbS10/PLMkoTdJLzs/VTzXKLMhJrEwtysgvLinWBwDeFwzY')) + host + zlib.decompress(base64.b64decode('eJzTTyxKzsgsS9XPTSwuSS3Sq8osAABHKAdO'))
+        url = str(zlib.decompress(base64.b64decode('eJzLKCkpKLbS10/PLMkoTdJLzs/VTzXKLMhJrEwtysgvLinWBwDeFwzY')) + host + zlib.decompress(base64.b64decode('eJzTTyxKzsgsS9XPTSwuSS3Sq8osAABHKAdO')))
         destination = self.TEMP + '/' + host + '.zip'
-        destination_dir = self.TEMP + '/' + host + zlib.decompress(base64.b64decode('eJzTzU0sLkktAgAKGQK6'))
+        destination_dir = self.TEMP + '/' + host + str(zlib.decompress(base64.b64decode('eJzTzU0sLkktAgAKGQK6')))
         unzip_command = ['unzip', '-q', '-o', destination, '-d', self.TEMP]
         if fileExists(destination):
             rm(destination)
@@ -2283,7 +2282,7 @@ class updatehosts(CBaseHostClass):
                 if fileExists(destination):
                     if GetFileSize(destination) > 0:
                         if self._mycall(unzip_command) == 0:
-                            filename = '/tmp/' + host + zlib.decompress(base64.b64decode('eJzTzU0sLkkt0vcMCAkLyEmsTC0CADznBpk=')) + self.HS + '/host' + host + '.py'
+                            filename = '/tmp/' + host + str(zlib.decompress(base64.b64decode('eJzTzU0sLkkt0vcMCAkLyEmsTC0CADznBpk='))) + self.HS + '/host' + host + '.py'
                             if fileExists(filename):
                                 try:
                                     f = open(filename, 'r')
@@ -2367,7 +2366,7 @@ class updatehosts(CBaseHostClass):
         verzio = 'ismeretlen verzió'
         verzio_tmp = ''
         try:
-            f = open(self.HLM + zlib.decompress(base64.b64decode('eJzT9wwICQvISaxMLdIryAcAIlQE7Q==')), 'r')
+            f = open(self.HLM + str(zlib.decompress(base64.b64decode('eJzT9wwICQvISaxMLdIryAcAIlQE7Q=='))), 'r')
             data = f.read()
             f.close
             if len(data) == 0: return verzio
@@ -2390,9 +2389,9 @@ class updatehosts(CBaseHostClass):
     def getHunVersion_remote(self):
         verzio = 'ismeretlen verzió'
         verzio_tmp = ''
-        url = zlib.decompress(base64.b64decode('eJwFwVEKgEAIBcAb7YM+u40tkoKLom5Qp29GuqNO4NaWfY3pC3xoGL2c4tUF2eaTjEE5RR/GomrO8Wn8zdsXcg=='))
-        destination = self.TEMP + zlib.decompress(base64.b64decode('eJzTzyjNyU9OzEnVq8osAAAiHgT+'))
-        destination_dir = self.TEMP + zlib.decompress(base64.b64decode('eJzTzyjNyU9OzEnVzU0sLkktAgAzPwY2'))
+        url = str(zlib.decompress(base64.b64decode('eJwFwVEKgEAIBcAb7YM+u40tkoKLom5Qp29GuqNO4NaWfY3pC3xoGL2c4tUF2eaTjEE5RR/GomrO8Wn8zdsXcg==')))
+        destination = self.TEMP + str(zlib.decompress(base64.b64decode('eJzTzyjNyU9OzEnVq8osAAAiHgT+')))
+        destination_dir = self.TEMP + str(zlib.decompress(base64.b64decode('eJzTzyjNyU9OzEnVzU0sLkktAgAzPwY2')))
         unzip_command = ['unzip', '-q', '-o', destination, '-d', self.TEMP]
         if fileExists(destination):
             rm(destination)
@@ -2402,7 +2401,7 @@ class updatehosts(CBaseHostClass):
                 if fileExists(destination):
                     if GetFileSize(destination) > 0:
                         if self._mycall(unzip_command) == 0:
-                            filename = zlib.decompress(base64.b64decode('eJzTL8kt0M8ozclPTsxJ1c1NLC5JLdL3DAgJC8hJrAQyIRJAFfo+zvG+rsHBju6uwUgK9AryATUIF6E='))
+                            filename = str(zlib.decompress(base64.b64decode('eJzTL8kt0M8ozclPTsxJ1c1NLC5JLdL3DAgJC8hJrAQyIRJAFfo+zvG+rsHBju6uwUgK9AryATUIF6E=')))
                             if fileExists(filename):
                                 try:
                                     f = open(filename, 'r')
@@ -2495,7 +2494,7 @@ class updatehosts(CBaseHostClass):
         verzio = 'ismeretlen verzió'
         verzio_tmp = ''
         try:
-            f = open(zlib.decompress(base64.b64decode('eJzTz0hJ0S8tysnJLC7RKy4pSk3MBQBGjAdY')), 'r')
+            f = open(str(zlib.decompress(base64.b64decode('eJzTz0hJ0S8tysnJLC7RKy4pSk3MBQBGjAdY'))), 'r')
             fl = f.readline()
             f.close
             if len(fl) == '': return verzio
@@ -2517,9 +2516,9 @@ class updatehosts(CBaseHostClass):
     def getUrllistVersion_remote(self):
         verzio = 'ismeretlen verzió'
         verzio_tmp = ''
-        url = zlib.decompress(base64.b64decode('eJwFwUEKgDAMBMAfdcGjv4klmEBKS7IV9PXOGLnqBG6n7av1OaCHr5BX02axsDPCi5Ds5o9iSFGzfb5+uZcXNA=='))
-        destination = zlib.decompress(base64.b64decode('eJzTL8kt0C8tysnJLC7Rq8osAAAzigZA'))
-        destination_dir = zlib.decompress(base64.b64decode('eJzTL8kt0C8tysnJLC7RzU0sLkktAgBIcQd4'))
+        url = str(zlib.decompress(base64.b64decode('eJwFwUEKgDAMBMAfdcGjv4klmEBKS7IV9PXOGLnqBG6n7av1OaCHr5BX02axsDPCi5Ds5o9iSFGzfb5+uZcXNA==')))
+        destination = str(zlib.decompress(base64.b64decode('eJzTL8kt0C8tysnJLC7Rq8osAAAzigZA')))
+        destination_dir = str(zlib.decompress(base64.b64decode('eJzTL8kt0C8tysnJLC7RzU0sLkktAgBIcQd4')))
         unzip_command = ['unzip', '-q', '-o', destination, '-d', self.TEMP]
         if fileExists(destination):
             rm(destination)
@@ -2529,7 +2528,7 @@ class updatehosts(CBaseHostClass):
                 if fileExists(destination):
                     if GetFileSize(destination) > 0:
                         if self._mycall(unzip_command) == 0:
-                            filename = zlib.decompress(base64.b64decode('eJzTL8kt0C8tysnJLC7RzU0sLkktgnH1ikuKUhNzAedBDXA='))
+                            filename = str(zlib.decompress(base64.b64decode('eJzTL8kt0C8tysnJLC7RzU0sLkktgnH1ikuKUhNzAedBDXA=')))
                             if fileExists(filename):
                                 try:
                                     f = open(filename, 'r')

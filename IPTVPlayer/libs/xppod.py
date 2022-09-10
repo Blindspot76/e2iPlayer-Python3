@@ -4,6 +4,7 @@
 # uppod decoder
 #-------------------------------------------------------------------------------
 
+
 def Decode(param):
     #-- define variables
     loc_3 = [0, 0, 0, 0]
@@ -41,9 +42,12 @@ def Decode(param):
             if loc_3[j + 1] == 64:
                 break
             try:
-                loc_2 += unichr(loc_4[j])
+                loc_2 += unichr(loc_4[j]) #PY2
             except Exception:
-                pass
+                try:
+                    loc_2 += chr(loc_4[j]) #PY3
+                except Exception:
+                    pass
             j = j + 1
 
         i = i + 4

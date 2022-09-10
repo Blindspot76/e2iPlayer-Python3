@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -11,12 +11,11 @@ from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Play
 from Plugins.Extensions.IPTVPlayer.components.ihost import CBaseHostClass
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_urlencode
 ###################################################
 # FOREIGN import
 ###################################################
 from Components.config import config, ConfigSelection, ConfigYesNo, ConfigText, getConfigListEntry
-import urllib
 from datetime import datetime, timedelta
 ############################################
 
@@ -81,7 +80,7 @@ class UstvnowApi:
 
     def _getChannelsNames(self):
         printDBG("UstvnowApi._getChannelsNames")
-        url = 'http://m.ustvnow.com/gtv/1/live/listchannels?%s' % urllib.urlencode({'token': self.token})
+        url = 'http://m.ustvnow.com/gtv/1/live/listchannels?%s' % urllib_urlencode({'token': self.token})
         sts, data = self.cm.getPage(url)
         if not sts:
             return []
@@ -198,7 +197,7 @@ class UstvnowApi:
 
     def getPasskey(self):
 
-        url = 'http://m.ustvnow.com/gtv/1/live/viewdvrlist?%s' % urllib.urlencode({'token': self.token})
+        url = 'http://m.ustvnow.com/gtv/1/live/viewdvrlist?%s' % urllib_urlencode({'token': self.token})
         sts, data = self.cm.getPage(url)
         if not sts:
             return ''

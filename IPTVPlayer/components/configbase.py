@@ -3,8 +3,6 @@
 #  Konfigurator dla iptv 2013
 #  autorzy: j00zek, samsamsam
 #
-
-
 ###################################################
 # LOCAL import
 ###################################################
@@ -13,7 +11,9 @@ from Plugins.Extensions.IPTVPlayer.components.iptvdirbrowser import IPTVDirector
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _
 from Plugins.Extensions.IPTVPlayer.components.e2ivkselector import GetVirtualKeyboard
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
+if not isPY2():
+    basestring = str
 ###################################################
 # FOREIGN import
 ###################################################
@@ -312,8 +312,12 @@ class ConfigBaseWidget(Screen, ConfigListScreen):
         self.runSetup()
         self.keyPageDown()
 
-    def keyMenu(self):
-        pass
+    def keyMenu(self): # hide/unhide hidden options
+        if self.hiddenOptionsSecretCode == "ybybyybb":
+            self.hiddenOptionsSecretCode = ""
+        else:
+            self.hiddenOptionsSecretCode = "ybybyybb"
+        self.runSetup()
 
     def keyUp(self):
         if self["config"].instance is not None:

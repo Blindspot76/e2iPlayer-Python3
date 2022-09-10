@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -12,7 +12,7 @@ class UnCaptchaReCaptcha:
     def __init__(self, lang='en'):
         self.sessionEx = MainSessionWrapper()
 
-    def processCaptcha(self, sitekey, referer=''):
+    def processCaptcha(self, sitekey, referer='', captchaType=''):
         answer = ''
         retArg = self.sessionEx.waitForFinishOpen(UnCaptchaReCaptchaMyJDWidget, title=_("My JDownloader reCAPTCHA v2 solution"), sitekey=sitekey, referer=referer)
         if retArg is not None and len(retArg) and retArg[0]:

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# 2022.01.13. by Blindspot
 ###################################################
 # LOCAL import
 ###################################################
@@ -12,13 +11,12 @@ from Plugins.Extensions.IPTVPlayer.libs import ph
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin
 ###################################################
 # FOREIGN import
 ###################################################
 import re
 import base64
-import urlparse
 try:
     import json
 except Exception:
@@ -53,9 +51,9 @@ def gettytul():
 class ustvgo(CBaseHostClass):
     def __init__(self):
         CBaseHostClass.__init__(self, {'history': 'ustvgo.tv', 'cookie': 'ustvgo.cookie'})
-        self.DEFAULT_ICON_URL = '/usr/lib/enigma2/python/Plugins/Extensions/IPTVPlayer/icons/logos/ustvlogo.png'
-        self.USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36 Edg/97.0.1072.55'
-        self.HEADER = {'User-Agent': self.USER_AGENT, 'DNT': '1', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language': 'pl,en-US;q=0.7,en;q=0.3', 'Accept-Encoding': 'gzip, deflate', 'x-content-type-options': 'nosniff', 'x-frame-options': 'SAMEORIGIN', 'x-xss-protection': '1, mode=block'}
+
+        self.USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0'
+        self.HEADER = {'User-Agent': self.USER_AGENT, 'DNT': '1', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language': 'pl,en-US;q=0.7,en;q=0.3', 'Accept-Encoding': 'gzip, deflate'}
         self.MAIN_URL = None
         self.defaultParams = {'with_metadata': True, 'header': self.HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': self.COOKIE_FILE}
 
@@ -70,7 +68,7 @@ class ustvgo(CBaseHostClass):
             if self.cm.isValidUrl(url):
                 return url
             else:
-                return urlparse.urljoin(baseUrl, url)
+                return urljoin(baseUrl, url)
 
         addParams['cloudflare_params'] = {'domain': self.up.getDomain(baseUrl), 'cookie_file': self.COOKIE_FILE, 'User-Agent': self.USER_AGENT, 'full_url_handle': _getFullUrl}
 
@@ -201,16 +199,14 @@ class ustvgo(CBaseHostClass):
         if not sts:
             return
 
-        data = self.cm.ph.getDataBeetwenMarkers(data, "<iframe src='", "' allowfullscreen=", False)[1]
-        params = dict(self.defaultParams)
-        printDBG(data)
-        sts, data = self.getPage(self.getFullUrl(data), params)
-        printDBG(data)
+        data = self.cm.ph.getDataBeetwenNodes(data, ('<iframe', '>', 'allowfullscreen'), ('</iframe', '>'))[1]
+        url = self.getFullUrl(self.cm.ph.getSearchGroups(data, '''\ssrc=['"]([^"^']+?)['"]''')[0])
+        sts, data = self.getPage(url)
         if not sts:
             return
 
-        url = self.cm.ph.getDataBeetwenMarkers(data, "var hls_src='", "';", False) [1]
-        printDBG(url)
+        data = self.getFullUrl(self.cm.ph.getSearchGroups(data, '''\shls_src=['"]([^"^']+?)['"]''')[0])
+        url = strwithmeta(data, {'User-Agent': self.USER_AGENT, 'Origin': self.MAIN_URL, 'Referer': cItem['url']})
         return getDirectM3U8Playlist(url)
 
     def handleService(self, index, refresh=0, searchPattern='', searchType=''):

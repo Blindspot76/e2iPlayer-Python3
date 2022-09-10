@@ -1,14 +1,22 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import print_function
-import urllib
-import urllib2
+
+###################################################
+#module run in different context then e2iplayer, must have separate version checking and assigments
 import sys
+if sys.version_info[0] == 2: #PY2
+    from urllib2 import Request as urllib2_Request, urlopen as urllib2_urlopen, build_opener as urllib2_build_opener, install_opener as urllib2_install_opener
+    import SocketServer
+    from SimpleHTTPServer import SimpleHTTPRequestHandler
+else: #PY3
+    from urllib.request import Request as urllib2_Request, urlopen as urllib2_urlopen, build_opener as urllib2_build_opener, install_opener as urllib2_install_opener
+    import socketserver as SocketServer
+    from http.server import SimpleHTTPRequestHandler
+###################################################
+
 import time
 import traceback
-import urlparse
-import SocketServer
-import SimpleHTTPServer
+#import urlparse
 
 import signal
 import os
@@ -31,14 +39,14 @@ def getPage(url, params={}, post_data=None):
     data = None
     return_data = params.get('return_data', True)
     try:
-        req = urllib2.Request(url, post_data, params)
+        req = urllib2_Request(url, post_data, params)
         if 'Referer' in params:
             req.add_header('Referer', params['Referer'])
         if 'User-Agent' in params:
             req.add_header('User-Agent', params['User-Agent'])
         if 'Connection' in params:
             req.add_header('Connection', params['Connection'])
-        resp = urllib2.urlopen(req)
+        resp = urllib2_urlopen(req)
         if return_data:
             data = resp.read()
             resp.close()
@@ -97,8 +105,8 @@ if __name__ == "__main__":
         sys.path.insert(1, libsPath)
         from keepalive import HTTPHandler
         keepalive_handler = HTTPHandler()
-        opener = urllib2.build_opener(keepalive_handler)
-        urllib2.install_opener(opener)
+        opener = urllib2_build_opener(keepalive_handler)
+        urllib2_install_opener(opener)
 
         HTTP_HEADER.update({'User-Agent': userAgent, 'Referer': refererUrl})
         SocketServer.TCPServer.allow_reuse_address = True

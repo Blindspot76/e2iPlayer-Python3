@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -10,13 +10,12 @@ from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Play
 from Plugins.Extensions.IPTVPlayer.components.ihost import CBaseHostClass
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
-############################################
+###################################################
 
 ###################################################
 # Config options for HOST
@@ -56,7 +55,7 @@ class LivetvhdNetApi(CBaseHostClass):
     def getFullIconUrl(self, url):
         url = self.getFullUrl(url)
         if url != '' and self.isNeedProxy():
-            proxy = 'http://www.proxy-german.de/index.php?q={0}&hl=2e1'.format(urllib.quote(url, ''))
+            proxy = 'http://www.proxy-german.de/index.php?q={0}&hl=2e1'.format(urllib_quote(url, ''))
             params = {}
             params['User-Agent'] = self.HEADER['User-Agent'],
             params['Referer'] = proxy

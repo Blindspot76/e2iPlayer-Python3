@@ -12,9 +12,19 @@
     2002-06-01
 """
 
-from rijndael import Rijndael
-from base import BlockCipher, padWithPadLen, noPadding
-from ..errors import BadKeySizeError
+try:
+    from rijndael import Rijndael
+    from base import BlockCipher, padWithPadLen, noPadding
+    from ..errors import BadKeySizeError
+except Exception:
+    try:
+        from .rijndael import Rijndael
+        from .base import BlockCipher, padWithPadLen, noPadding
+        from ..errors import BadKeySizeError
+    except Exception:
+        from Plugins.Extensions.IPTVPlayer.libs.crypto.cipher.rijndael import Rijndael
+        from Plugins.Extensions.IPTVPlayer.libs.crypto.cipher.base import BlockCipher, padWithPadLen, noPadding
+        from Plugins.Extensions.IPTVPlayer.libs.crypto.errors import BadKeySizeError
 
 
 class AES(Rijndael):
@@ -25,7 +35,7 @@ class AES(Rijndael):
     def __init__(self, key=None, padding=padWithPadLen(), keySize=16):
         """ Initialize AES, keySize is in bytes """
         if not (keySize == 16 or keySize == 24 or keySize == 32):
-            raise(BadKeySizeError, 'Illegal AES key size, must be 16, 24, or 32 bytes')
+            raise BadKeySizeError('Illegal AES key size, must be 16, 24, or 32 bytes')
 
         Rijndael.__init__(self, key, padding=padding, keySize=keySize, blockSize=16)
 

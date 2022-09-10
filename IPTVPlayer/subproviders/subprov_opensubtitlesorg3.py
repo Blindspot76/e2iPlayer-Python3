@@ -8,12 +8,11 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, Ge
                                                           RemoveDisallowedFilenameChars, GetSubtitlesDir
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import hex_md5
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 try:
     import json
 except Exception:
@@ -190,7 +189,7 @@ class OpenSubtitlesRest(CBaseSubProviderClass):
                 title = self.imdbGetOrginalByTitle(cItem['imdbid'])[1].get('title', cItem.get('base_title', ''))
             else:
                 title = self.params['confirmed_title']
-            queryTab.append('query-%s' % urllib.quote(title))
+            queryTab.append('query-%s' % urllib_quote(title))
 
         if langid != '':
             queryTab.append('sublanguageid-%s' % langid)

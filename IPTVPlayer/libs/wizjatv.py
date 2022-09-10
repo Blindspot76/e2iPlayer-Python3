@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -8,12 +8,11 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, GetCookieDir
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import SetIPTVPlayerLastHostError
 from Plugins.Extensions.IPTVPlayer.components.ihost import CBaseHostClass
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_unquote
 ###################################################
 # FOREIGN import
 ###################################################
 from Components.config import config, ConfigText, getConfigListEntry
-import urllib
 try:
     import json
 except Exception:
@@ -161,7 +160,7 @@ class WizjaTvApi(CBaseHostClass):
                     if not sts:
                         break
                     printDBG(tmp)
-                    videoUrl = urllib.unquote(self.cm.ph.getSearchGroups(tmp, '''['"]?src['"]?\s*:\s*['"](rtmp[^'^"]+?)['"]''')[0])
+                    videoUrl = urllib_unquote(self.cm.ph.getSearchGroups(tmp, '''['"]?src['"]?\s*:\s*['"](rtmp[^'^"]+?)['"]''')[0])
                     killUrl = self.getFullUrl(self.cm.ph.getSearchGroups(tmp, '''<a[^>]+?href=["']([^'^"]*?killme\.php[^'^"]*?)''')[0])
                     if videoUrl != '':
                         urlTab = self.cm.ph.getSearchGroups(videoUrl, '''rtmp://([^/]+?)/([^/]+?)/([^/]+?)\?(.+?)&streamType''', 4)

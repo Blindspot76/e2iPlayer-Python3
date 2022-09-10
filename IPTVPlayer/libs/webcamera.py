@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -8,12 +8,11 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, Ge
 from Plugins.Extensions.IPTVPlayer.components.ihost import CBaseHostClass
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_urlencode
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 ###################################################
 
 ###################################################
@@ -169,7 +168,7 @@ class WebCameraApi(CBaseHostClass):
                     #urlPrams['columns'] = '12'
 
                     url = self.getFullUrl(cItem['more_url'])
-                    url += '?' + urllib.urlencode(urlPrams)
+                    url += '?' + urllib_urlencode(urlPrams)
                     getPageParams['header']['X-Requested-With'] = 'XMLHttpRequest'
                     sts, data = self.getPage(url, getPageParams)
 

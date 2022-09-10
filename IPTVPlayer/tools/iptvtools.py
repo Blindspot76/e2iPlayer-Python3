@@ -8,6 +8,13 @@
 ###################################################
 # LOCAL import
 ###################################################
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
+if not isPY2():
+    basestring = str
+    unicode = str
+    from functools import cmp_to_key
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib2_urlopen
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import strDecode, iterDictItems, ensure_str
 ###################################################
 
 ###################################################
@@ -18,9 +25,6 @@ from Tools.Directories import resolveFilename, fileExists, SCOPE_PLUGINS, SCOPE_
 from enigma import eConsoleAppContainer
 from Components.Language import language
 from time import sleep as time_sleep, time
-from urllib2 import Request, urlopen, URLError, HTTPError
-import urllib
-import urllib2
 import traceback
 import re
 import sys
@@ -28,10 +32,11 @@ import os
 import stat
 import codecs
 import datetime
+import socket
 
-SERVER_DOMAINS = {'vline': 'http://iptvplayer.vline.pl/', 'gitlab': 'https://gitlab.com/maxbambi/e2iplayer/', 'private': 'http://www.e2iplayer.gitlab.io/'}
-SERVER_UPDATE_PATH = {'vline': 'download/update2/', 'gitlab': 'raw/master/IPTVPlayer/iptvupdate/', 'private': 'update2/'}
-
+SERVER_DOMAINS = {'vline': 'http://iptvplayer.vline.pl/', 'gitlab': 'http://zadmario.gitlab.io/', 'private': 'http://www.e2iplayer.gitlab.io/'}
+SERVER_UPDATE_PATH = {'vline': 'download/update2/', 'gitlab': 'update2/', 'private': 'update2/'}
+CACHED_DATA_DICT = {}
 
 def GetServerKey(serverNum=None):
     if serverNum == None:
@@ -56,7 +61,7 @@ def GetUpdateServerUri(file='', serverNum=None):
 
 def GetResourcesServerUri(file='', serverNum=None):
     serverKey = GetServerKey(serverNum)
-    uri = 'http://iptvplayer.vline.pl/resources/' + file
+    uri = SERVER_DOMAINS[serverKey] + 'resources/' + file
     printDBG("GetResourcesServerUri -> %s" % uri)
     return uri
 
@@ -281,7 +286,7 @@ class iptv_system:
 
     def _dataAvail(self, data):
         if None != data:
-            self.outData += data
+            self.outData += strDecode(data)
 
     def _cmdFinished(self, code):
         printDBG("iptv_system._cmdFinished cmd[%s] code[%r]" % (self.cmd, code))
@@ -382,8 +387,8 @@ def ClearTmpCookieDir():
     global gE2iPlayerTempCookieDir
     if gE2iPlayerTempCookieDir != None:
         try:
-            for file in os.listdir(gE2iPlayerTempCookieDir):
-                rm(gE2iPlayerTempCookieDir + '/' + file)
+            for fileName in os.listdir(gE2iPlayerTempCookieDir):
+                rm(os.path.join(gE2iPlayerTempCookieDir , fileName))
         except Exception:
             printExc()
 
@@ -401,7 +406,7 @@ def TestTmpCookieDir():
 def GetCookieDir(file='', forceFromConfig=False):
     global gE2iPlayerTempCookieDir
     if gE2iPlayerTempCookieDir == None or forceFromConfig:
-        cookieDir = config.plugins.iptvplayer.SciezkaCache.value + '/cookies/'
+        cookieDir = os.path.join(config.plugins.iptvplayer.SciezkaCache.value , 'cookies/')
     else:
         cookieDir = gE2iPlayerTempCookieDir
     try:
@@ -426,8 +431,8 @@ def ClearTmpJSCacheDir():
     global gE2iPlayerTempJSCache
     if gE2iPlayerTempJSCache != None:
         try:
-            for file in os.listdir(gE2iPlayerTempJSCache):
-                rm(gE2iPlayerTempJSCache + '/' + file)
+            for fileName in os.listdir(gE2iPlayerTempJSCache): #file is native p2 function renamed for clarity
+                rm(os.path.join(gE2iPlayerTempJSCache , fileName))
         except Exception:
             printExc()
     gE2iPlayerTempJSCache = None
@@ -441,10 +446,10 @@ def TestTmpJSCacheDir():
         f.write("test")
 
 
-def GetJSCacheDir(file='', forceFromConfig=False):
+def GetJSCacheDir(fileName='', forceFromConfig=False):
     global gE2iPlayerTempJSCache
     if gE2iPlayerTempJSCache == None or forceFromConfig:
-        cookieDir = config.plugins.iptvplayer.SciezkaCache.value + '/JSCache/'
+        cookieDir = os.path.join(config.plugins.iptvplayer.SciezkaCache.value , 'JSCache/')
     else:
         cookieDir = gE2iPlayerTempJSCache
     try:
@@ -452,23 +457,23 @@ def GetJSCacheDir(file='', forceFromConfig=False):
             mkdirs(cookieDir)
     except Exception:
         printExc()
-    return cookieDir + file
+    return os.path.join(cookieDir , fileName)
 ##############################
 
 
-def GetTmpDir(file=''):
+def GetTmpDir(fileName=''):
     path = config.plugins.iptvplayer.NaszaTMP.value
     path = path.replace('//', '/')
     mkdirs(path)
-    return path + '/' + file
+    return os.path.join(path , fileName)
 
 
-def GetE2iPlayerRootfsDir(file=''):
-    return '/iptvplayer_rootfs/' + file
+def GetE2iPlayerRootfsDir(fileName=''):
+    return os.path.join('/iptvplayer_rootfs' , fileName)
 
 
-def GetE2iPlayerVKLayoutDir(file=''):
-    return GetE2iPlayerRootfsDir('etc/vk/' + file)
+def GetE2iPlayerVKLayoutDir(fileName=''):
+    return GetE2iPlayerRootfsDir(os.path.join('etc/vk/' , fileName))
 
 
 def CreateTmpFile(filename, data=''):
@@ -483,57 +488,52 @@ def CreateTmpFile(filename, data=''):
     return sts, filePath
 
 
-def GetCacheSubDir(dir, file=''):
-    path = config.plugins.iptvplayer.SciezkaCache.value + "/" + dir
-    path = path.replace('//', '/')
+def GetCacheSubDir(dirName, fileName=''):
+    path = os.path.join(config.plugins.iptvplayer.SciezkaCache.value , dirName)
     mkdirs(path)
-    return path + '/' + file
+    return os.path.join(path , fileName)
 
 
-def GetSearchHistoryDir(file=''):
-    return GetCacheSubDir('SearchHistory', file)
+def GetSearchHistoryDir(fileName=''):
+    return GetCacheSubDir('SearchHistory', fileName)
 
 
-def GetFavouritesDir(file=''):
-    return GetCacheSubDir('IPTVFavourites', file)
+def GetFavouritesDir(fileName=''):
+    return GetCacheSubDir('IPTVFavourites', fileName)
 
 
-def GetSubtitlesDir(file=''):
-    return GetCacheSubDir('Subtitles', file)
+def GetSubtitlesDir(fileName=''):
+    return GetCacheSubDir('Subtitles', fileName)
 
 
-def GetMovieMetaDataDir(file=''):
-    return GetCacheSubDir('MovieMetaData', file)
+def GetMovieMetaDataDir(fileName=''):
+    return GetCacheSubDir('MovieMetaData', fileName)
 
 
-def GetIPTVDMImgDir(file=''):
-    return resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/icons/') + file
+def GetIPTVDMImgDir(fileName=''):
+    return os.path.join(resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/icons/') , fileName)
 
 
-def GetIconDir(file=''):
-    return resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/icons/') + file
+def GetIconDir(fileName=''):
+    return os.path.join(resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/icons/') , fileName)
 
 
-def GetBinDir(file='', platform=None):
+def GetBinDir(fileName='', platform=None):
     if None == platform:
         platform = config.plugins.iptvplayer.plarform.value
-    return resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/bin/') + platform + '/' + file
+    return os.path.join(resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/bin/') , platform , fileName)
 
 
-def GetPluginDir(file=''):
-    return resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/') + file
+def GetPluginDir(fileName=''):
+    return os.path.join(resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/') , fileName)
 
 
-def GetExtensionsDir(file=''):
-    return resolveFilename(SCOPE_PLUGINS, 'Extensions/') + file
+def GetExtensionsDir(fileName=''):
+    return os.path.join(resolveFilename(SCOPE_PLUGINS, 'Extensions/') , fileName)
 
 
 def GetSkinsDir(path=''):
-    return resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/skins/') + path
-
-
-def GetPlayerSkinDir(path=''):
-    return resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/playerskins/') + path
+    return os.path.join(resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/skins/') , path)
 
 
 def GetConfigDir(path=''):
@@ -598,7 +598,10 @@ class CSelOneLink():
     def getBestSortedList(self):
         printDBG('getBestSortedList')
         sortList = self.listOfLinks[::-1]
-        sortList.sort(self._cmpLinksBest)
+        if isPY2():
+            sortList.sort(self._cmpLinksBest)
+        else:
+            sortList.sort(key=cmp_to_key(self._cmpLinksBest))
         retList = []
         tmpList = []
         for item in sortList:
@@ -613,7 +616,10 @@ class CSelOneLink():
     def getSortedLinks(self, defaultFirst=True):
         printDBG('getSortedLinks defaultFirst[%r]' % defaultFirst)
         sortList = self.listOfLinks[::-1]
-        sortList.sort(self._cmpLinks)
+        if isPY2():
+            sortList.sort(self._cmpLinks)
+        else:
+            sortList.sort(key=cmp_to_key(self._cmpLinks))
         if len(self.listOfLinks) < 2 or None == self.maxRes:
             return self.listOfLinks
 
@@ -628,9 +634,13 @@ class CSelOneLink():
                     group1.append(self.listOfLinks[idx])
                 else:
                     group2.append(self.listOfLinks[idx])
-            group1.sort(self._cmpLinks)
+            if isPY2():
+                group1.sort(self._cmpLinks)
+                group2.sort(self._cmpLinks)
+            else:
+                group1.sort(key=cmp_to_key(self._cmpLinks))
+                group2.sort(key=cmp_to_key(self._cmpLinks))
             group1.reverse()
-            group2.sort(self._cmpLinks)
             group1.extend(group2)
             return group1
 
@@ -661,7 +671,6 @@ class CSelOneLink():
 #############################################################
 # debugs
 
-
 def getDebugMode():
     DBG = ''
     try:
@@ -682,10 +691,14 @@ def printDBG(DBGtxt):
         return
     elif DBG == 'console':
         print(DBGtxt)
-    elif DBG == 'debugfile':
+    else:
+        if DBG == 'debugfile':
+            DBGfile = '/hdd/iptv.dbg' #backward compatibility
+        else:
+            DBGfile = DBG
         try:
-            f = open('/hdd/iptv.dbg', 'a')
-            f.write(DBGtxt + '\n')
+            f = open(DBGfile, 'a')
+            f.write(str(DBGtxt) + '\n')
             f.close
         except Exception:
             print("======================EXC printDBG======================")
@@ -693,8 +706,8 @@ def printDBG(DBGtxt):
             print("========================================================")
             try:
                 msg = '%s' % traceback.format_exc()
-                f = open('/tmp/iptv.dbg', 'a')
-                f.write(DBGtxt + '\n')
+                f = open(DBGfile, 'a')
+                f.write(str(DBGtxt) + '\n')
                 f.close
             except Exception:
                 print("======================EXC printDBG======================")
@@ -707,7 +720,7 @@ def printDBG(DBGtxt):
 #####################################################
 g_cacheHostsFromList = None
 g_cacheHostsFromFolder = None
-
+g_cachePluginFolder = None
 
 def __isHostNameValid(hostName):
     BLOCKED_MARKER = '_blocked_'
@@ -716,18 +729,19 @@ def __isHostNameValid(hostName):
     return False
 
 
-def __getHostsPath(file=''):
-    return resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/hosts/' + file)
+def __getHostsPath(fileName=''):
+    return os.path.join(resolveFilename(SCOPE_PLUGINS) , 'Extensions/IPTVPlayer/hosts/' , fileName)
 
 
 def GetHostsFromList(useCache=True):
     global g_cacheHostsFromList
-    if useCache and g_cacheHostsFromList != None:
+    if useCache and g_cacheHostsFromList != None and len(g_cacheHostsFromList) > 0:
+        printDBG('iptvtools.GetHostsFromList returns cached list (%s)' % str(g_cacheHostsFromList))
         return list(g_cacheHostsFromList)
 
     lhosts = []
     try:
-        sts, data = ReadTextFile(__getHostsPath('/list.txt'))
+        sts, data = ReadTextFile(__getHostsPath('list.txt'))
         if sts:
             data = data.split('\n')
             for item in data:
@@ -738,18 +752,21 @@ def GetHostsFromList(useCache=True):
     except Exception:
         printExc()
 
-    g_cacheHostsFromList = list(lhosts)
+    g_cacheHostsFromList = lhosts
+    printDBG(str(g_cacheHostsFromList))
     return lhosts
 
 
 def GetHostsFromFolder(useCache=True):
     global g_cacheHostsFromFolder
-    if useCache and g_cacheHostsFromFolder != None:
+    if useCache and g_cacheHostsFromFolder != None and len(g_cacheHostsFromFolder) > 0:
+        printDBG('iptvtools.GetHostsFromFolder returns cached list (%s)' % str(g_cacheHostsFromFolder))
         return g_cacheHostsFromFolder
 
     lhosts = []
     try:
         fileList = os.listdir(__getHostsPath())
+        printDBG('\t len(fileList)=%s'% len(fileList))
         for wholeFileName in fileList:
             # separate file name and file extension
             fileName, fileExt = os.path.splitext(wholeFileName)
@@ -758,26 +775,26 @@ def GetHostsFromFolder(useCache=True):
                 if fileName[4:] not in lhosts:
                     lhosts.append(fileName[4:])
                     printDBG('getHostsList add host with fileName: "%s"' % fileName[4:])
-        printDBG('getHostsList end')
+        printDBG('iptvtools.getHostsList end')
         lhosts.sort()
     except Exception:
-        printDBG('GetHostsList EXCEPTION')
+        printDBG('iptvtools.GetHostsList EXCEPTION')
 
-    g_cacheHostsFromFolder = list(lhosts)
+    g_cacheHostsFromFolder = lhosts
     return lhosts
 
 
 def GetHostsList(fromList=True, fromHostFolder=True, useCache=True):
-    printDBG('getHostsList begin')
-
     lhosts = []
     if fromHostFolder:
+        printDBG('iptvtools.getHostsList(fromHostFolder)')
         lhosts = GetHostsFromFolder(useCache)
 
     # when new option to remove not enabled host is enabled
     # on list should be also host which are not normally in
     # the folder, so we will read first predefined list
     if fromList:
+        printDBG('iptvtools.getHostsList(fromList)')
         tmp = GetHostsFromList(useCache)
         for host in tmp:
             if host not in lhosts:
@@ -791,7 +808,7 @@ def GetHostsAliases():
     ret = {}
     try:
         HOST_PATH = resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/hosts/')
-        sts, data = ReadTextFile(HOST_PATH + '/aliases.txt')
+        sts, data = ReadTextFile(os.path.join(HOST_PATH , 'aliases.txt'))
         if sts:
             data = json_loads(data)
             if isinstance(data, dict):
@@ -966,7 +983,7 @@ def mkdirs(newdir, raiseException=False):
             if tail:
                 os.mkdir(newdir)
         return True
-    except Exception, e:
+    except Exception as e:
         printDBG('Exception mkdirs["%s"]' % e)
         if raiseException:
             raise e
@@ -975,7 +992,8 @@ def mkdirs(newdir, raiseException=False):
 
 def rm(fullname):
     try:
-        os.remove(fullname)
+        if os.path.exists(fullname):
+            os.remove(fullname)
         return True
     except Exception:
         printExc()
@@ -1008,7 +1026,7 @@ def rmtree(path, ignore_errors=False, onerror=None):
     names = []
     try:
         names = os.listdir(path)
-    except os.error, err:
+    except os.error as err:
         onerror(os.listdir, path)
     for name in names:
         fullname = os.path.join(path, name)
@@ -1021,7 +1039,7 @@ def rmtree(path, ignore_errors=False, onerror=None):
         else:
             try:
                 os.remove(fullname)
-            except os.error, err:
+            except os.error as err:
                 onerror(os.remove, fullname)
     try:
         os.rmdir(path)
@@ -1039,7 +1057,7 @@ def GetFileSize(filepath):
 def DownloadFile(url, filePath):
     printDBG('DownloadFile [%s] from [%s]' % (filePath, url))
     try:
-        downloadFile = urllib2.urlopen(url)
+        downloadFile = urllib2_urlopen(url)
         output = open(filePath, 'wb')
         output.write(downloadFile.read())
         output.close()
@@ -1256,7 +1274,7 @@ class CSearchHistoryHelper():
                 value = line.replace('\n', '').strip()
                 if len(value) > 0:
                     try:
-                        historyList.insert(0, value.encode('utf-8', 'ignore'))
+                        historyList.insert(0, ensure_str(value))
                     except Exception:
                         printExc()
             file.close()
@@ -1341,6 +1359,7 @@ def ReadTextFile(filePath, encode='utf-8', errors='ignore'):
         if ret.startswith(codecs.BOM_UTF8):
             ret = ret[3:]
         sts = True
+        ret = strDecode(ret, errors)
     except Exception:
         printExc()
     return sts, ret
@@ -1385,7 +1404,7 @@ class CMoviePlayerPerHost():
                 sts = True
             else:
                 file = codecs.open(self.filePath, 'r', 'utf-8', 'ignore')
-                ret = file.read().encode('utf-8', 'ignore')
+                ret = ensure_str(file.read(), encoding='utf-8', errors='ignore')
                 file.close()
                 activePlayer = {}
                 ret = json_loads(ret)
@@ -1403,11 +1422,13 @@ class CMoviePlayerPerHost():
         try:
             if {} == self.activePlayer and os.path.isfile(self.filePath):
                 os.remove(self.filePath)
+            elif self.activePlayer.get('buffering', None) == None:
+                printDBG('WARNING: buffering NOT set')
             else:
                 data = {}
                 data['buffering'] = self.activePlayer['buffering']
                 data['player'] = {'value': self.activePlayer['player'].value, 'text': self.activePlayer['player'].getText()}
-                data = json_dumps(data).encode('utf-8')
+                data = json_dumps(ensure_str(data))
                 file = codecs.open(self.filePath, 'w', 'utf-8', 'replace')
                 file.write(data)
                 file.close
@@ -1424,29 +1445,41 @@ class CMoviePlayerPerHost():
         self.save()
 
 
-def byteify(input, noneReplacement=None, baseTypesAsString=False):
-    if isinstance(input, dict):
-        return dict([(byteify(key, noneReplacement, baseTypesAsString), byteify(value, noneReplacement, baseTypesAsString)) for key, value in input.iteritems()])
-    elif isinstance(input, list):
-        return [byteify(element, noneReplacement, baseTypesAsString) for element in input]
-    elif isinstance(input, unicode):
-        return input.encode('utf-8')
-    elif input == None and noneReplacement != None:
+def byteify(inData, noneReplacement=None, baseTypesAsString=False):
+    if isinstance(inData, dict):
+        return dict([(byteify(key, noneReplacement, baseTypesAsString), byteify(value, noneReplacement, baseTypesAsString)) for key, value in iterDictItems(inData)])
+    elif isinstance(inData, list):
+        return [byteify(element, noneReplacement, baseTypesAsString) for element in inData]
+    elif isinstance(inData, unicode):
+        return ensure_str(inData)
+    elif inData == None and noneReplacement != None:
         return noneReplacement
     elif baseTypesAsString:
-        return str(input)
+        return str(inData)
     else:
-        return input
+        return inData
 
 
-def printExc(msg=''):
+def printExc(msg='', WarnOnly = False):
     printDBG("===============================================")
-    printDBG("                   EXCEPTION                   ")
+    if WarnOnly or msg.startswith('WARNING'):
+        printDBG("                    WARNING                    ")
+        msg = ''
+    else:
+        printDBG("                   EXCEPTION                   ")
     printDBG("===============================================")
-    msg = msg + ': \n%s' % traceback.format_exc()
+    exc_formatted = traceback.format_exc()
+    if msg == '' or msg == 'WARNING':
+        msg = '\n%s' % exc_formatted
+    else:
+        msg = msg + ': \n%s' % exc_formatted
     printDBG(msg)
     printDBG("===============================================")
-
+    try:
+        retMSG = exc_formatted.splitlines()[-1]
+    except Exception:
+        pass
+    return retMSG #returns the error description to possibly use in main code. E.g. inform about failed login
 
 def GetIPTVPlayerVerstion():
     try:
@@ -1455,6 +1488,8 @@ def GetIPTVPlayerVerstion():
         IPTV_VERSION = "XX.YY.ZZ"
     return IPTV_VERSION
 
+def GetIPTVPlayerVersion(): # just for compatibility
+    return GetIPTVPlayerVerstion()
 
 def GetIPTVPlayerComitStamp():
     try:
@@ -1469,6 +1504,8 @@ def GetShortPythonVersion():
 
 
 def GetVersionNum(ver):
+    if ver == '':
+        return 0
     try:
         if None == re.match("[0-9]+\.[0-9][0-9]\.[0-9][0-9]\.[0-9][0-9]", ver):
             raise Exception("Wrong version!")
@@ -1773,7 +1810,6 @@ def ReadGnuMIPSABIFP(elfFileName):
         printExc()
     return Val_HAS_MIPS_ABI_FLAGS, Val_GNU_MIPS_ABI_FP
 
-
 def MergeDicts(*dict_args):
     result = {}
     for dictionary in dict_args:
@@ -1804,3 +1840,38 @@ def isOPKGinstall():
         return True
     else:
         return False
+
+def getIPTVplayerOPKGVersion():
+    global CACHED_DATA_DICT
+    if None == CACHED_DATA_DICT.get('IPTVplayerOPKGVersion', None):
+        if not isOPKGinstall():
+            CACHED_DATA_DICT['IPTVplayerOPKGVersion'] = ''
+        else:
+            for controlFile in ('/var/lib/opkg/info/enigma2-plugin-extensions--j00zeks-e2iplayer-mod-zadmario.control',
+                                '/var/lib/opkg/info/enigma2-plugin-extensions-e2iplayer.control'):
+                if os.path.exists(controlFile):
+                    lines = []
+                    with open(controlFile, 'r') as f:
+                        lines = f.readlines()
+                        f.close()
+                    for line in lines:
+                        if line.startswith('Version: '):
+                            CACHED_DATA_DICT['IPTVplayerOPKGVersion'] = line[9:].strip()
+    return CACHED_DATA_DICT.get('IPTVplayerOPKGVersion', '')
+
+def defaultToolPath(fileName):
+    toolPaths = []
+    if isPY2():
+        toolPaths.append(os.path.join(resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/bin/') , config.plugins.iptvplayer.plarform.value))
+        toolPaths.append(resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/bin/'))
+        toolPaths.append('/usr/bin/')
+    else: #PY3
+        toolPaths.append('/usr/bin/')
+        toolPaths.append(resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/bin/'))
+        toolPaths.append(os.path.join(resolveFilename(SCOPE_PLUGINS, 'Extensions/IPTVPlayer/bin/') , config.plugins.iptvplayer.plarform.value))
+      
+    for toolPath in toolPaths:
+        if os.path.exists(os.path.join(toolPath, fileName)):
+            return os.path.join(toolPath, fileName)
+    
+    return ""

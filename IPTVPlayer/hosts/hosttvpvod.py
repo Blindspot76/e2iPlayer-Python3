@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -9,16 +9,16 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import CSelOneLink, printDBG,
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Playlist
 from Plugins.Extensions.IPTVPlayer.libs import ph
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads, dumps as json_dumps
-from Plugins.Extensions.IPTVPlayer.components.recaptcha_v2helper import CaptchaHelper
+from Plugins.Extensions.IPTVPlayer.components.captcha_helper import CaptchaHelper
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 ###################################################
 # FOREIGN import
 ###################################################
 from Components.config import config, ConfigSelection, ConfigYesNo, ConfigText, getConfigListEntry
 from datetime import datetime, timedelta, date
 import re
-import urllib
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote
 import time
 ###################################################
 
@@ -145,7 +145,7 @@ class TvpVod(CBaseHostClass, CaptchaHelper):
                 def inner(*args):
                     try:
                         return func(*args)
-                    except httplib.IncompleteRead, e:
+                    except httplib.IncompleteRead as e:
                         return e.partial
                 return inner
             prev_read = httplib.HTTPResponse.read
@@ -163,12 +163,7 @@ class TvpVod(CBaseHostClass, CaptchaHelper):
         return self.cleanHtmlStr(self._encodeStr(v, default))
 
     def _encodeStr(self, v, default=''):
-        if type(v) == type(u''):
-            return v.encode('utf-8')
-        elif type(v) == type(''):
-            return v
-        else:
-            return default
+        return ensure_str(v)
 
     def _getNum(self, v, default=0):
         try:
@@ -649,7 +644,7 @@ class TvpVod(CBaseHostClass, CaptchaHelper):
 
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("TvpVod.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
-        url = TvpVod.SEARCH_VOD_URL % urllib.quote(searchPattern)
+        url = TvpVod.SEARCH_VOD_URL % urllib_quote(searchPattern)
         cItem = dict(cItem)
         cItem['url'] = url
 

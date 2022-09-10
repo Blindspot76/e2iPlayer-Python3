@@ -13,7 +13,7 @@
         Fi = Ek(t,P[i-1]) ; Fi, with i=0 is nonce or a fixed value
         C[i] = Fi^Ek(N,P[i]^Fi)
 
-    Copyright © (c) 2002 by Paul A. Lambert
+    Copyright (c) 2002 by Paul A. Lambert
     Read LICENSE.txt for license information.
 
     June 2002
@@ -21,9 +21,13 @@
                      http://theory.lcs.mit.edu/~rivest/publications.html
                      These are about the same concept ....
 """
+try:
+    from crypto.cipher.base import BlockCipherWithIntegrity, padWithPadLen, noPadding
+    from crypto.cipher.rijndael import *
+except Exception:
+    from Plugins.Extensions.IPTVPlayer.libs.crypto.cipher.base import BlockCipherWithIntegrity, padWithPadLen, noPadding
+    from Plugins.Extensions.IPTVPlayer.libs.crypto.cipher.rijndael import *
 
-from crypto.cipher.base import BlockCipherWithIntegrity, padWithPadLen, noPadding
-from crypto.cipher.rijndael import *
 from binascii_plus import b2a_hex
 from copy import deepcopy
 

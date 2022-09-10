@@ -6,12 +6,11 @@ from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT
 from Plugins.Extensions.IPTVPlayer.components.isubprovider import CSubProviderBase, CBaseSubProviderClass
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetDefaultLang, RemoveDisallowedFilenameChars, GetSubtitlesDir, rm
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_unquote
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 from Components.config import config, ConfigSelection, ConfigYesNo, ConfigText, getConfigListEntry
 ###################################################
 
@@ -319,7 +318,7 @@ class PrijevodiOnline(CBaseSubProviderClass):
             url = self.cm.ph.getSearchGroups(item, 'href="(https?://[^"]+?\.(?:rar|zip))"')[0]
             if not self.cm.isValidUrl(url):
                 continue
-            title = urllib.unquote(url.split('/')[-1])
+            title = urllib_unquote(url.split('/')[-1])
             url = url.replace(' ', '%20')
 
             desc = self.cleanHtmlStr(item)

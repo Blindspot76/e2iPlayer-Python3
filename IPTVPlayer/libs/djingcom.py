@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -79,14 +79,7 @@ class DjingComApi(CBaseHostClass):
         printDBG("hlsUrl||||||||||||||||| " + hlsUrl)
         if hlsUrl != '':
             hlsUrl = strwithmeta(hlsUrl, {'User-Agent': self.defaultParams['header']['User-Agent'], 'Referer': cItem['url']})
-            try:
-                urlsTab = getDirectM3U8Playlist(hlsUrl, checkContent=True)
-            except:
-                printExc()
-
-            if not urlsTab:
-                hlsUrl = "https://www" + hlsUrl[hlsUrl.find(".djing"):]
-                urlsTab = getDirectM3U8Playlist(hlsUrl, checkContent=True)
+            urlsTab = getDirectM3U8Playlist(hlsUrl, checkContent=True)
 
         def __getLinkQuality(itemLink):
             try:

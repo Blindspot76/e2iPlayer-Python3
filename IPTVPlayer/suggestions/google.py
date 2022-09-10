@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-import urllib
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote
 try:
     import json
 except Exception:
@@ -22,12 +22,12 @@ class SuggestionsProvider:
 
     def getSuggestions(self, text, locale):
         lang = locale.split('-', 1)[0]
-        url = 'http://suggestqueries.google.com/complete/search?output=firefox&hl=%s&gl=%s%s&q=%s' % (lang, lang, '&ds=yt' if self.forYouyube else '', urllib.quote(text))
+        url = 'http://suggestqueries.google.com/complete/search?output=firefox&hl=%s&gl=%s%s&q=%s' % (lang, lang, '&ds=yt' if self.forYouyube else '', urllib_quote(text))
         sts, data = self.cm.getPage(url)
         if sts:
             retList = []
             for item in json.loads(data)[1]:
-                retList.append(item.encode('UTF-8'))
+                retList.append(str(item))
 
             return retList
         return None

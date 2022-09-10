@@ -8,13 +8,12 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, by
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote, urllib_quote_plus
 ###################################################
 # FOREIGN import
 ###################################################
 import time
 import re
-import urllib
 try:
     import json
 except Exception:
@@ -196,10 +195,10 @@ class FilmeOnlineTo(CBaseHostClass):
             valsTab = []
             if 'f_search' not in cItem:
                 for key in ['f_tip', 'f_genres[]', 'f_year', 'f_quality', 'f_subbed', 'f_sort']:
-                    valsTab.append(urllib.quote(cItem.get(key, 'all')))
+                    valsTab.append(urllib_quote(cItem.get(key, 'all')))
                 url = self.getFullUrl('tip/' + '/'.join(valsTab))
             else:
-                url = self.getFullUrl('search/' + urllib.quote_plus(cItem['f_search']))
+                url = self.getFullUrl('search/' + urllib_quote_plus(cItem['f_search']))
             sts, data = self.getPage(url)
             if not sts:
                 return

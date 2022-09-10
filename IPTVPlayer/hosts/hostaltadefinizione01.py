@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ###################################################
 # LOCAL import
 ###################################################
@@ -20,20 +20,20 @@ except Exception:
 
 
 def gettytul():
-    return 'https://www.altadefinizione01.immo/#gsc.tab=0'
+    return 'https://altadefinizione01.builders/'
 
 
 class Altadefinizione(CBaseHostClass):
 
     def __init__(self):
-        CBaseHostClass.__init__(self, {'history': 'altadefinizione01.homes', 'cookie': 'altadefinizione01.sbs.cookie'})
+        CBaseHostClass.__init__(self, {'history': 'altadefinizione01.zone', 'cookie': 'altadefinizione01.zone.cookie'})
 
         self.USER_AGENT = 'Mozilla/5.0'
         self.HEADER = {'User-Agent': self.USER_AGENT, 'Accept': 'text/html'}
         self.AJAX_HEADER = dict(self.HEADER)
         self.AJAX_HEADER.update({'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'})
 
-        self.MAIN_URL = 'https://www.altadefinizione01.immo/#gsc.tab=0'
+        self.MAIN_URL = 'https://www.altadefinizione01.builders/'
         self.DEFAULT_ICON_URL = 'http://www.sabinacornovac.ro/wp-content/uploads/2017/04/42557652-Cinema-Camera-icon-Movie-Lover-Series-Icon-Stock-Vector-585x355.jpg'
 
         self.defaultParams = {'header': self.HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': self.COOKIE_FILE}
@@ -399,5 +399,3 @@ class IPTVHost(CHostBase):
             return True
         else:
             return False
-
-

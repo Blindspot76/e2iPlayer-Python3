@@ -15,9 +15,9 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvsubtitles import IPTVSubtitlesHandl
 from Plugins.Extensions.IPTVPlayer.libs.youtube_dl.utils import clean_html
 
 from Plugins.Extensions.IPTVPlayer.components.ihost import CDisplayListItem, RetHost
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus, urllib_unquote
 
 import re
-import urllib
 from os import listdir as os_listdir, path as os_path
 
 
@@ -391,7 +391,7 @@ class CBaseSubProviderClass:
     def imdbGetMoviesByTitle(self, title):
         printDBG('CBaseSubProviderClass.imdbGetMoviesByTitle title[%s]' % (title))
 
-        sts, data = self.cm.getPage("http://www.imdb.com/find?ref_=nv_sr_fn&q=%s&s=tt" % urllib.quote_plus(title))
+        sts, data = self.cm.getPage("http://www.imdb.com/find?ref_=nv_sr_fn&q=%s&s=tt" % urllib_quote_plus(title))
         if not sts:
             return False, []
         list = []
@@ -501,7 +501,7 @@ class CBaseSubProviderClass:
                     printDBG("downloadFileData: replace fileName[%s] with [%s]" % (fileName, tmpFileName))
                     fileName = tmpFileName
             else:
-                fileName = urllib.unquote(self.cm.meta['url'].split('/')[-1])
+                fileName = urllib_unquote(self.cm.meta['url'].split('/')[-1])
 
             return data, fileName
 

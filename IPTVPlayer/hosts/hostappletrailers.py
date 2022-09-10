@@ -6,12 +6,12 @@ from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT
 from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostClass
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, byteify
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import iterDictItems
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 try:
     import json
 except Exception:
@@ -138,8 +138,8 @@ class TrailersApple(CBaseHostClass):
                 icon = self.getFullIconUrl(item['thumb'])
 
                 urls = []
-                for version, versionData in item.get('versions', {}).iteritems():
-                    for size, sizeData in versionData.get('sizes', {}).iteritems():
+                for version, versionData in iterDictItems(item.get('versions', {})):
+                    for size, sizeData in iterDictItems(versionData.get('sizes', {})):
                         url = sizeData.get('src')
                         if not url:
                             continue
@@ -161,9 +161,9 @@ class TrailersApple(CBaseHostClass):
             printExc()
 
     def listSearchResult(self, cItem, searchPattern, searchType):
-        searchPattern = urllib.quote_plus(searchPattern)
+        searchPattern = urllib_quote_plus(searchPattern)
 
-        url = self.getFullUrl('/trailers/home/scripts/quickfind.php?q=') + urllib.quote_plus(searchPattern)
+        url = self.getFullUrl('/trailers/home/scripts/quickfind.php?q=') + urllib_quote_plus(searchPattern)
         self.listItems({'url': url}, 'explore_item')
 
     def getLinksForVideo(self, cItem):
@@ -173,7 +173,7 @@ class TrailersApple(CBaseHostClass):
     def getVideoLinks(self, videoUrl):
         printDBG("TrailersApple.getVideoLinks [%s]" % videoUrl)
         # mark requested link as used one
-        if len(self.cacheLinks.keys()):
+        if len(list(self.cacheLinks.keys())):
             for key in self.cacheLinks:
                 for idx in range(len(self.cacheLinks[key])):
                     if videoUrl in self.cacheLinks[key][idx]['url']:

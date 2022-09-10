@@ -10,11 +10,12 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs import ph
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote, urllib_urlencode
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import iterDictItems
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 ###################################################
 # FOREIGN import
 ###################################################
-import urllib
 from hashlib import sha1
 from datetime import timedelta
 ###################################################
@@ -128,7 +129,7 @@ class C7tvDe(CBaseHostClass):
         cUrl = self.cm.meta['url']
         try:
             data = json_loads(data)
-            for letter, value in data['facet'].iteritems():
+            for letter, value in iterDictItems(data['facet']):
                 if letter == '#':
                     letter = '0-9'
                 if value:
@@ -226,7 +227,7 @@ class C7tvDe(CBaseHostClass):
             desc = ph.clean_html(ph.find(item, ('<div', '>', 'caption'), '</div>', flags=0)[1])
             title = ph.clean_html(ph.find(item, ('<h5', '>', 'title'), '</h5>', flags=0)[1])
             if title == '':
-                title = url.rsplit('/', 1)[-1].replace('-', ' ').decode('utf-8').title().encode('utf-8')
+                title = ensure_str(url.rsplit('/', 1)[-1].replace('-', ' '))
             desc = [desc] if desc else []
             desc.append(ph.clean_html(ph.find(item, ('<p', '>'), '</p>', flags=0)[1]))
             if sTitle:
@@ -284,7 +285,7 @@ class C7tvDe(CBaseHostClass):
                 self.listItems(item, 'explore_item')
 
     def listSearchResult(self, cItem, searchPattern, searchType):
-        url = self.getFullUrl('/7tvsearch/search/(query)/%s/(type)/%s/(offset)/{0}/(limit)/{0}' % (urllib.quote(searchPattern), searchType))
+        url = self.getFullUrl('/7tvsearch/search/(query)/%s/(type)/%s/(offset)/{0}/(limit)/{0}' % (urllib_quote(searchPattern), searchType))
         cItem = MergeDicts(cItem, {'category': 'search_next', 'url': url})
         self.listSearchResultNext(cItem, 'explore_item')
 
@@ -387,7 +388,7 @@ class C7tvDe(CBaseHostClass):
 
             #client_name = 'kolibri-1.2.5'
             client_id = salt[:2] + sha1(''.join([salt, video_id, access_token, server_id, client_location, str(source_id), salt, client_name]).encode('utf-8')).hexdigest()
-            url_api_url = 'http://vas.sim-technik.de/vas/live/v2/videos/%s/sources/url?%s' % (video_id, urllib.urlencode({
+            url_api_url = 'http://vas.sim-technik.de/vas/live/v2/videos/%s/sources/url?%s' % (video_id, urllib_urlencode({
                 'access_token': access_token,
                 'client_id': client_id,
                 'client_location': client_location,
@@ -400,7 +401,7 @@ class C7tvDe(CBaseHostClass):
             while tries < 2:
                 tries += 1
                 if tries == 2:
-                    url = 'http://savansec.de/browse.php?u={0}&b=0&f=norefer'.format(urllib.quote(url_api_url))
+                    url = 'http://savansec.de/browse.php?u={0}&b=0&f=norefer'.format(urllib_quote(url_api_url))
                     params = dict(self.defaultParams)
                     params['header'] = dict(params['header'])
                     params['header']['Referer'] = url
@@ -427,7 +428,7 @@ class C7tvDe(CBaseHostClass):
     def getVideoLinks(self, videoUrl):
         printDBG("C7tvDe.getVideoLinks [%s]" % videoUrl)
         # mark requested link as used one
-        if len(self.cacheLinks.keys()):
+        if len(list(self.cacheLinks.keys())):
             for key in self.cacheLinks:
                 for idx in range(len(self.cacheLinks[key])):
                     if videoUrl in self.cacheLinks[key][idx]['url']:

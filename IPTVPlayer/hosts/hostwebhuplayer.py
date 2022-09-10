@@ -8,7 +8,7 @@ HOST_VERSION = "4.0"
 ###################################################
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _, SetIPTVPlayerLastHostError
 from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostClass, CDisplayListItem, RetHost, CUrlItem
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, GetLogoDir, rm, rmtree, mkdirs, DownloadFile, GetFileSize, GetConfigDir, Which, MergeDicts
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, GetLogoDir, GetIPTVPlayerVersion, rm, rmtree, mkdirs, DownloadFile, GetFileSize, GetConfigDir, Which, MergeDicts
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Playlist, getF4MLinksWithMeta, getMPDLinksWithMeta
 from Plugins.Extensions.IPTVPlayer.libs.urlparser import urlparser
 from Plugins.Extensions.IPTVPlayer.libs import ph

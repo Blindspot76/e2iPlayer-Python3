@@ -6,11 +6,10 @@ from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT
 from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostClass
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, byteify
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin
 ###################################################
 # FOREIGN import
 ###################################################
-import urlparse
 from copy import deepcopy
 try:
     import json
@@ -27,7 +26,7 @@ class Kabarety(CBaseHostClass):
 
     def __init__(self):
         CBaseHostClass.__init__(self, {'history': 'kabaret.tworzymyhistorie.pl', 'cookie': 'kabarettworzymyhistoriepl.cookie'})
-        self.DEFAULT_ICON_URL = 'http://kabaret.tworzymyhistorie.pl/images/logo_mobile.png'
+        self.DEFAULT_ICON_URL = 'http://m.ocdn.eu/_m/3db4aef7dfc39ec1230c837335a6ddfe,10,19,0.jpg'
         self.USER_AGENT = 'User-Agent=Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0'
         self.HEADER = {'User-Agent': self.USER_AGENT, 'DNT': '1', 'Accept': 'text/html'}
         self.AJAX_HEADER = dict(self.HEADER)
@@ -54,7 +53,7 @@ class Kabarety(CBaseHostClass):
             if self.cm.isValidUrl(url):
                 return url
             else:
-                return urlparse.urljoin(baseUrl, url)
+                return urljoin(baseUrl, url)
 
         addParams['cloudflare_params'] = {'domain': self.up.getDomain(baseUrl), 'cookie_file': self.COOKIE_FILE, 'User-Agent': self.USER_AGENT, 'full_url_handle': _getFullUrl}
         sts, data = self.cm.getPageCFProtection(baseUrl, addParams, post_data)

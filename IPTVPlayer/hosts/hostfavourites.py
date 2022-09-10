@@ -10,7 +10,7 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvfavourites import IPTVFavourites
 from Plugins.Extensions.IPTVPlayer.components.iptvchoicebox import IPTVChoiceBoxItem
 from Plugins.Extensions.IPTVPlayer.libs.crypto.hash.md5Hash import MD5
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
 ###################################################
 # FOREIGN import
 ###################################################
@@ -51,13 +51,13 @@ class Favourites(CBaseHostClass):
         self.host = None
         self.hostName = ''
         self.guestMode = False # main or guest
-        self.DEFAULT_ICON_URL = 'https://www.iconninja.com/files/637/891/649/512-favorites-icon.png'
+        self.DEFAULT_ICON_URL = 'http://sarah-bauer.weebly.com/uploads/4/2/2/3/42234635/1922500_orig.png'
 
     def _setHost(self, hostName):
         if hostName == self.hostName:
             return True
         try:
-            _temp = __import__('Plugins.Extensions.IPTVPlayer.hosts.host' + hostName, globals(), locals(), ['IPTVHost'], -1)
+            _temp = __import__('Plugins.Extensions.IPTVPlayer.hosts.host' + hostName, globals(), locals(), ['IPTVHost'], 0) #absolute import for P3 compatybility
             host = _temp.IPTVHost()
             if isinstance(host, IHost):
                 self.hostName = hostName
@@ -100,8 +100,7 @@ class Favourites(CBaseHostClass):
         for idx in range(len(data)):
             item = data[idx]
             addFun = typesMap.get(item.type, None)
-            desc = _("Source") + ": %s\n%s" % (item.hostName, item.description)
-            params = {'name': 'item', 'title': item.name, 'host': item.hostName, 'icon': item.iconimage, 'desc': desc, 'group_id': cItem['group_id'], 'item_idx': idx}
+            params = {'name': 'item', 'title': item.name, 'host': item.hostName, 'icon': item.iconimage, 'desc': item.description, 'group_id': cItem['group_id'], 'item_idx': idx}
             if None != addFun:
                 addFun(params)
 
@@ -211,6 +210,8 @@ class IPTVHost(CHostBase):
             hashAlg = MD5()
             hashData = ('%s_%s' % (str(displayItem.name), str(displayItem.type)))
             hashData = hexlify(hashAlg(hashData))
+            if not isPY2():
+                hashData = hashData.decode()
             return (hostName, hashData)
         return ret
 

@@ -13,7 +13,7 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import enum, strwithmeta
 from Plugins.Extensions.IPTVPlayer.iptvdm.basedownloader import BaseDownloader
 from Plugins.Extensions.IPTVPlayer.iptvdm.iptvdh import DMHelper
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import strDecode
 ###################################################
 # FOREIGN import
 ###################################################
@@ -181,7 +181,7 @@ class FFMPEGDownloader(BaseDownloader):
         if None == data:
             return
 
-        data = self.outData + data.replace('\n', '\r')
+        data = self.outData + strDecode(data).replace('\n', '\r')
 
         data = data.split('\r')
         if data[-1].endswith('\r'):

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-import urllib
+# seems not used  to DELETE import urllib
 try:
     import json
 except Exception:

@@ -4,7 +4,10 @@
 # LOCAL import
 ###################################################
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc
-
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
+if not isPY2():
+    from functools import cmp_to_key
 ###################################################
 # FOREIGN import
 ###################################################
@@ -38,9 +41,7 @@ class IPTVFileHost:
                     line = fp.readline()
                     if not line:
                         break
-                    line = line.strip()
-                    if type(line) == type(u''):
-                        line = line.encode('utf-8', 'replace')
+                    line = ensure_str(line.strip(), 'utf-8', 'replace')
                     if 0 == len(line) or '#' == line[0]:
                         continue
                     idx1 = line.find(';')
@@ -85,7 +86,10 @@ class IPTVFileHost:
                 return 1
         tmpList = list(self.groups)
         if sort:
-            tmpList.sort(_compare)
+            if isPY2():
+                tmpList.sort(_compare)
+            else:
+                tmpList.sort(key=cmp_to_key(_compare))
         return tmpList
 
     def getItemsInGroup(self, group, sort=False):
@@ -104,7 +108,10 @@ class IPTVFileHost:
             if item['group'] == group:
                 tmpList.append(item)
         if sort:
-            tmpList.sort(_compare)
+            if isPY2():
+                tmpList.sort(_compare)
+            else:
+                tmpList.sort(key=cmp_to_key(_compare))
         return tmpList
 
     def getAllItems(self, sort=False):
@@ -121,5 +128,8 @@ class IPTVFileHost:
                 return 0
         tmpList = list(self.items)
         if sort:
-            tmpList.sort(_compare)
+            if isPY2():
+                tmpList.sort(_compare)
+            else:
+                tmpList.sort(key=cmp_to_key(_compare))
         return tmpList

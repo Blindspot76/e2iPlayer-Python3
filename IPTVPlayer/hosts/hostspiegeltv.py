@@ -10,15 +10,14 @@ from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Play
 from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin, urlparse
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 ###################################################
 # FOREIGN import
 ###################################################
-import urlparse
 import time
 import re
 import hashlib
-import urllib
 import random
 from datetime import datetime
 ###################################################
@@ -258,7 +257,7 @@ class SpiegelTv(CBaseHostClass):
             if cItem.get('url', '').endswith('-livestream'):
                 self.listLiveVideos(cItem)
             self._fillOneConfig(cItem)
-            urlPath = urlparse.urlparse(cItem['url']).path[1:].split('/')
+            urlPath = urlparse(cItem['url']).path[1:].split('/')
             method = cItem.get('f_method', urlPath[0])
             param = cItem.get('f_param', urlPath[-1])
             start = 0
@@ -313,7 +312,7 @@ class SpiegelTv(CBaseHostClass):
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("SpiegelTv.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
         cItem = dict(cItem)
-        cItem['url'] = self.getFullUrl('/search/') + urllib.quote_plus(searchPattern)
+        cItem['url'] = self.getFullUrl('/search/') + urllib_quote_plus(searchPattern)
         cItem['category'] = 'list_items'
         cItem['f_method'] = 'search'
         cItem['f_param'] = searchPattern

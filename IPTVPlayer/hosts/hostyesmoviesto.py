@@ -8,14 +8,13 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, by
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Playlist
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urlparse
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 ###################################################
 # FOREIGN import
 ###################################################
 import time
 import re
-import urllib
-from urlparse import urlparse
 try:
     import json
 except Exception:
@@ -237,7 +236,7 @@ class YesMovies(CBaseHostClass):
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("YesMovies.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
         cItem = dict(cItem)
-        cItem['url'] = self.getFullUrl('movie/search/' + urllib.quote_plus(searchPattern))
+        cItem['url'] = self.getFullUrl('movie/search/' + urllib_quote_plus(searchPattern))
         self.listItems(cItem, 'list_episodes')
 
     def getLinksForVideo(self, cItem, forEpisodes=False):

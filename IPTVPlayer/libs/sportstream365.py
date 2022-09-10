@@ -6,7 +6,9 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, Me
 from Plugins.Extensions.IPTVPlayer.components.ihost import CBaseHostClass
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
+if not isPY2():
+    from functools import cmp_to_key
 ###################################################
 # FOREIGN import
 ###################################################
@@ -176,7 +178,10 @@ class SportStream365Api(CBaseHostClass):
                         return parseInt(x['FirstGameId']) - parseInt(y['FirstGameId'])
 
                 data = json_loads(data['arguments'][0])['Value']
-                data.sort(cmp=cmp) #key = lambda item: (parseInt(item['SportId']), item['Liga'], parseInt(item['FirstGameId']))
+                if isPY2():
+                    data.sort(cmp=cmp) #key = lambda item: (parseInt(item['SportId']), item['Liga'], parseInt(item['FirstGameId']))
+                else:
+                    data.sort(key=cmp_to_key(cmp)) #key = lambda item: (parseInt(item['SportId']), item['Liga'], parseInt(item['FirstGameId']))
                 printDBG(data)
                 for item in data:
                     if None == item.get('VI'):

@@ -17,12 +17,18 @@ from Components.config import config, configfile
 from Screens.MessageBox import MessageBox
 from Screens.ChoiceBox import ChoiceBox
 
+###################################################
+# LOCAL import
+###################################################
 from Plugins.Extensions.IPTVPlayer.components.cover import Cover3
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, mkdirs, GetDefaultLang, GetIconDir, GetE2iPlayerVKLayoutDir, GetResourcesServerUri
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _
 from Plugins.Extensions.IPTVPlayer.components.iptvlist import IPTVListComponentBase
 from Plugins.Extensions.IPTVPlayer.components.e2isimpledownloader import SingleFileDownloaderWidget
-
+###################################################
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
+from Plugins.Extensions.IPTVPlayer.p2p3.Widgets import getWidgetText, innerWidgetTextRight
+###################################################
 
 class E2iInput(Input):
     def __init__(self, *args, **kwargs):
@@ -405,7 +411,10 @@ class E2iVirtualKeyBoard(Screen):
     def setText(self, text):
         self["text"].setText(text)
         self["text"].right()
-        self["text"].currPos = len(text.decode('utf-8'))
+        if isPY2():
+            self["text"].currPos = len(text.decode('utf-8'))
+        else:
+            self["text"].currPos = len(text)
         self["text"].right()
         self.textUpdated()
 
@@ -440,8 +449,12 @@ class E2iVirtualKeyBoard(Screen):
         self['_57'].setText('Ctrl')
         self['_58'].setText('Alt')
         self['_60'].setText('Alt')
-        self['_61'].setText(u'\u2190'.encode('utf-8'))
-        self['_62'].setText(u'\u2192'.encode('utf-8'))
+        if isPY2():
+            self['_61'].setText(u'\u2190'.encode('utf-8'))
+            self['_62'].setText(u'\u2192'.encode('utf-8'))
+        else:
+            self['_61'].setText(u'\u2190')
+            self['_62'].setText(u'\u2192')
 
     def handleArrowKey(self, dx=0, dy=0):
         oldKeyId = self.KEYIDMAP[self.rowIdx][self.colIdx]
@@ -491,7 +504,7 @@ class E2iVirtualKeyBoard(Screen):
                 else:
                     break
             if maxKeyX - minKeyX > 2:
-                self.colIdx = (maxKeyX + minKeyX) / 2
+                self.colIdx = int((maxKeyX + minKeyX) / 2)
 
         self.currentKeyId = self.KEYIDMAP[self.rowIdx][self.colIdx]
         self.moveKeyMarker(oldKeyId, self.currentKeyId)
@@ -549,7 +562,10 @@ class E2iVirtualKeyBoard(Screen):
         elif keyid == 42: # Enter
             try:
                 # make sure that Input component return valid UTF-8 data
-                text = self["text"].getText().decode('UTF-8').encode('UTF-8')
+                if isPY2():
+                    text = self["text"].getText().decode('UTF-8').encode('UTF-8')
+                else:
+                    text = self["text"].getText() #p3 always uses utf-8
             except Exception:
                 text = ''
                 printExc()
@@ -657,7 +673,10 @@ class E2iVirtualKeyBoard(Screen):
         if layout != None:
             self.currentVKLayout = layout
         self.updateKeysLabels()
-        self['_56'].setText(self.currentVKLayout['locale'].encode('UTF-8').split('-', 1)[0].upper())
+        if isPY2():
+            self['_56'].setText(self.currentVKLayout['locale'].encode('UTF-8').split('-', 1)[0].upper())
+        else:
+            self['_56'].setText(self.currentVKLayout['locale'].split('-', 1)[0].upper())
         self['_56'].show()
         self.updateSuggestions()
 
@@ -715,7 +734,10 @@ class E2iVirtualKeyBoard(Screen):
 
         skinKey = self['_%s' % keyid]
         skinKey.instance.setForegroundColor(color)
-        skinKey.setText(val.encode('utf-8'))
+        if isPY2():
+            skinKey.setText(val.encode('utf-8'))
+        else:
+            skinKey.setText(val)
 
     def updateKeysLabels(self):
         for rangeItem in [(2, 14), (17, 28), (31, 41), (44, 54), (59, 59)]:
@@ -925,7 +947,7 @@ class E2iVirtualKeyBoard(Screen):
                 if self.currentKeyId in self.RIGHT_KEYS:
                     self.handleArrowKey(1, 0)
         elif self.focus == self.FOCUS_KEYBOARD:
-            if self.currentKeyId in self.RIGHT_KEYS or (self.currentKeyId == 0 and self['text'].currPos == len(self['text'].Text)):
+            if self.currentKeyId in self.RIGHT_KEYS or (self.currentKeyId == 0 and self['text'].currPos == len(getWidgetText(self['text']))):
                 if self.isSuggestionVisible:
                     self.switchToSuggestions()
                     return
@@ -997,7 +1019,7 @@ class E2iVirtualKeyBoard(Screen):
         for letter in text:
             try:
                 self["text"].insertChar(letter, self["text"].currPos, False, True)
-                self["text"].innerright()
+                innerWidgetTextRight(self["text"])
                 self["text"].update()
             except Exception:
                 printExc()
@@ -1013,18 +1035,21 @@ class E2iVirtualKeyBoard(Screen):
 
     def updateSuggestions(self):
         if self.isAutocompleteEnabled:
-            if not self["text"].Text:
+            if not getWidgetText(self["text"]):
                 self.setSuggestionVisible(False)
                 self['right_list'].setList([])
                 #self.autocomplete.stop()
             else:
                 self.autocomplete.start(self.setSuggestions)
-                self.autocomplete.set(self["text"].getText(), self.currentVKLayout['locale'].encode('UTF-8'))
+                if isPY2():
+                    self.autocomplete.set(self["text"].getText(), self.currentVKLayout['locale'].encode('UTF-8'))
+                else:
+                    self.autocomplete.set(self["text"].getText(), self.currentVKLayout['locale'])
 
     def setSuggestions(self, list, stamp):
         # we would not want to modify list when user
         # is under selection item from it
-        if self.focus != self.FOCUS_SUGGESTIONS and self["text"].Text:
+        if self.focus != self.FOCUS_SUGGESTIONS and getWidgetText(self["text"]):
             if list:
                 self['right_list'].setList([(x,) for x in list])
             self.setSuggestionVisible(True if list else False)

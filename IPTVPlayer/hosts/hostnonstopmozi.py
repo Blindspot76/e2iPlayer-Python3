@@ -8,7 +8,7 @@ HOST_VERSION = "1.2"
 ###################################################
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _, SetIPTVPlayerLastHostError
 from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostClass
-from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, rm, GetTmpDir, GetIPTVPlayerVerstion, MergeDicts
+from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, rm, GetTmpDir, GetIPTVPlayerVersion, MergeDicts
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads, dumps as json_dumps
 from Plugins.Extensions.IPTVPlayer.libs.urlparser import urlparser
@@ -18,7 +18,6 @@ from Plugins.Extensions.IPTVPlayer.libs import ph
 ###################################################
 # FOREIGN import
 ###################################################
-import urlparse
 import re
 import urllib
 import random
@@ -26,7 +25,6 @@ import os
 import datetime
 import time
 import zlib
-import cookielib
 import base64
 import traceback
 from copy import deepcopy
@@ -99,7 +97,7 @@ class NonstopMozi(CBaseHostClass):
         url = url + '/oldal/' + str(page)
         sts, data = self.cm.getPage(url)
         if not sts: 
-		    return
+            return
         Pgntr = self.cm.ph.getDataBeetwenMarkers(data, '<div class="blog-pagenat-wthree">', '</div>')[1]
         if 'Következő' in Pgntr:
             nextPage = True

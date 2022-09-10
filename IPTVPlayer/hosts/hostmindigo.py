@@ -24,7 +24,6 @@ from datetime import datetime
 from time import time
 
 import zlib
-import cookielib
 import urllib
 import base64
 from hashlib import sha1,sha256

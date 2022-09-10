@@ -4,14 +4,14 @@
 ###################################################
 from Plugins.Extensions.IPTVPlayer.components.iptvplayerinit import TranslateTXT as _
 from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostClass
-from Plugins.Extensions.IPTVPlayer.components.recaptcha_v2helper import CaptchaHelper
+from Plugins.Extensions.IPTVPlayer.components.captcha_helper import CaptchaHelper
 from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute_ext, is_js_cached
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, MergeDicts, rm, GetCookieDir, ReadTextFile, WriteTextFile
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 from Plugins.Extensions.IPTVPlayer.libs.pCommon import common
 from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 ###################################################
 # FOREIGN import
 ###################################################
@@ -46,11 +46,11 @@ def GetConfigList():
 
 
 def gettytul():
-    return 'https://hdfull.org/'
+    return 'https://hdfull.me/'
 
 
 class SuggestionsProvider:
-    MAIN_URL = 'https://hdfull.org/'
+    MAIN_URL = 'https://hdfull.me/'
     COOKIE_FILE = ''
 
     def __init__(self):
@@ -80,26 +80,24 @@ class SuggestionsProvider:
 
 def jstr(item, key, default=''):
     v = item.get(key, default)
-    if type(v) == type(u''):
-        return v.encode('utf-8')
-    elif type(v) == type(''):
-        return v
-    else:
+    if None == v:
         return default
+    else:
+        return ensure_str(v)
 
 
 class HDFull(CBaseHostClass, CaptchaHelper):
 
     def __init__(self):
-        CBaseHostClass.__init__(self, {'history': 'hdfull.cx', 'cookie': 'hdfull.cx.cookie'})
+        CBaseHostClass.__init__(self, {'history': 'hdfull.me', 'cookie': 'hdfull.me.cookie'})
         SuggestionsProvider.COOKIE_FILE = self.COOKIE_FILE
 
         self.HTTP_HEADER = self.cm.getDefaultHeader(browser='chrome')
         language = config.plugins.iptvplayer.hdfull_language.value
         self.defaultParams = {'header': self.HTTP_HEADER, 'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': self.COOKIE_FILE, 'cookie_items': {'language': language}}
 
-        self.MAIN_URL = 'https://hdfull.org/'
-        self.DEFAULT_ICON_URL = 'https://hdfull.org/templates/hdfull/images/logo.png'
+        self.MAIN_URL = 'https://hdfull.me/'
+        self.DEFAULT_ICON_URL = 'https://ocio.farodevigo.es/img_contenido/noticias/2018/02/642946/web_cine_pirata.jpg'
 
         self.filters = []
         self.cacheLinks = {}
@@ -288,19 +286,19 @@ class HDFull(CBaseHostClass, CaptchaHelper):
                 tabJs['view'] = {'url': self.getFullUrl(item), 'hash': version + '.1'}
 
         for key in tabJs.iterkeys():
-            tabJs[key]['name'] = 'hdfull.lv_%s' % key
+            tabJs[key]['name'] = 'hdfull.me_%s' % key
             if not is_js_cached(tabJs[key]['name'], tabJs[key]['hash']):
                 sts, jsdata = self.getPage(tabJs[key]['url'])
                 if sts:
                     if 'providers' == key:
-
-                        tabJs[key]['code'] = jsdata + "\nfunction buildIframeEmbed(){return arguments[0];}\n"
-
-                        printDBG(">>>> javascript code from tabJs['%s'] >>>>" % key)
+                        idx1 = jsdata.find('providers')
+                        idx2 = jsdata.find(';', idx1 + 9)
+                        funName = self.cm.ph.getSearchGroups(jsdata[idx2 + 1:], '''function\s+?([^\(]+?)\(''')[0]
+                        tabJs[key]['code'] = 'function buildIframeEmbed(){return arguments[0];}\nbuildIframeGenericEmbed=buildIframeEmbed;\n' + jsdata[:idx2 + 1] + '; function %s(){return function(){};}' % funName
+                        printDBG(">>>>")
                         printDBG(tabJs[key]['code'])
                         printDBG("<<<<")
-
-                    elif 'view' == key:
+                    else:
                         tmp = ['window=this,window.atob=function(e){e.length%4==3&&(e+="="),e.length%4==2&&(e+="=="),e=Duktape.dec("base64",e),decText="";for(var t=0;t<e.byteLength;t++)decText+=String.fromCharCode(e[t]);return decText};']
                         start = 0
                         while True:
@@ -328,7 +326,7 @@ class HDFull(CBaseHostClass, CaptchaHelper):
                         tt = 'function e2iLinks(r){r=%s;for(var i in r)provider=providers[r[i].provider],r[i].provider=provider.d.split("://")[1],r[i].embed=provider.e(r[i].code,"800","600"),r[i].download=provider.l(r[i].code,"800","600");print(JSON.stringify(r))}'
                         tmp.append(tt % self.cm.ph.getDataBeetwenMarkers(jsdata, mark + '=', ';', False)[1].replace(mark, 'r'))
                         tabJs[key]['code'] = '\n'.join(tmp)
-                        printDBG(">>>> javascript code from tabJs['%s'] >>>>" % key)
+                        printDBG(">>>>")
                         printDBG(tabJs[key]['code'])
                         printDBG("<<<<")
         try:
@@ -361,7 +359,6 @@ class HDFull(CBaseHostClass, CaptchaHelper):
 
         desc = []
         descObj = self.getArticleContent(cItem, data)[0]
-
         for item in descObj['other_info']['custom_items_list']:
             desc.append(item[1])
         desc = ' | '.join(desc) + '[/br]' + descObj['text']
@@ -510,7 +507,7 @@ class HDFull(CBaseHostClass, CaptchaHelper):
             return linksTab
         cUrl = self.cm.meta['url']
 
-        #printDBG(data)
+        printDBG(data)
 
         linksTab = self._getLinks(cUrl, data)
 
@@ -552,10 +549,6 @@ class HDFull(CBaseHostClass, CaptchaHelper):
             sts, data = self.getPage(url)
             if not sts:
                 data = ''
-
-        #printDBG("***********************************")
-        #printDBG(data)
-        #printDBG("***********************************")
 
         data = self.cm.ph.getDataBeetwenNodes(data, ('<div', '>', 'summary-title'), ('<div', '>', 'breakaway-wrapper'), False)[1]
         title = self.cleanHtmlStr(data[:data.find('</div')])
@@ -601,7 +594,7 @@ class HDFull(CBaseHostClass, CaptchaHelper):
 
             self.cm.clearCookie(self.COOKIE_FILE, removeNames=['language'])
 
-            loginCookie = GetCookieDir('hdfull.lv.login')
+            loginCookie = GetCookieDir('hdfull.me.login')
             self.login = config.plugins.iptvplayer.hdfull_login.value
             self.password = config.plugins.iptvplayer.hdfull_password.value
 

@@ -7,13 +7,12 @@ from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostC
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, rm
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urljoin
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus
 ###################################################
 # FOREIGN import
 ###################################################
-import urlparse
 import re
-import urllib
 ###################################################
 
 
@@ -45,7 +44,7 @@ class StreamingHDFun(CBaseHostClass):
             if self.cm.isValidUrl(url):
                 return url
             else:
-                return urlparse.urljoin(baseUrl, url)
+                return urljoin(baseUrl, url)
         addParams['cloudflare_params'] = {'domain': self.up.getDomain(baseUrl), 'cookie_file': self.COOKIE_FILE, 'User-Agent': self.USER_AGENT, 'full_url_handle': _getFullUrl}
         return self.cm.getPageCFProtection(baseUrl, addParams, post_data)
 
@@ -187,7 +186,7 @@ class StreamingHDFun(CBaseHostClass):
         else:
             url = '/serietv/'
 
-        url = self.getFullUrl(url + '?s=') + urllib.quote_plus(searchPattern)
+        url = self.getFullUrl(url + '?s=') + urllib_quote_plus(searchPattern)
         cItem = dict(cItem)
         cItem.update({'url': url, 'category': 'list_items'})
         self.listItems(cItem, 'explore_item')

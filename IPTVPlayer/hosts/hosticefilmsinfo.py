@@ -8,12 +8,11 @@ from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, rm
 from Plugins.Extensions.IPTVPlayer.libs.youtube_dl.utils import clean_html
 from Plugins.Extensions.IPTVPlayer.tools.iptvtypes import strwithmeta
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote_plus, urllib_unquote
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 import random
 try:
     import json
@@ -255,7 +254,7 @@ class IceFilms(CBaseHostClass):
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("IceFilms.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
 
-        baseUrl = self.getFullUrl('/search.php?q=%s&x=0&y=0' % urllib.quote_plus(searchPattern))
+        baseUrl = self.getFullUrl('/search.php?q=%s&x=0&y=0' % urllib_quote_plus(searchPattern))
         sts, data = self.getPage(baseUrl)
         if not sts:
             return
@@ -389,7 +388,7 @@ class IceFilms(CBaseHostClass):
             if 1 == self.up.checkHostSupport(videoUrl):
                 urlTab.extend(self.up.getVideoLinkExt(videoUrl))
 
-        videoUrl = urllib.unquote(data.split('?url=')[-1].strip())
+        videoUrl = urllib_unquote(data.split('?url=')[-1].strip())
         if self.cm.isValidUrl(videoUrl):
             return self.up.getVideoLinkExt(videoUrl)
         return urlTab

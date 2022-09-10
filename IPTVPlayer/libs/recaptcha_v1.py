@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 ###################################################
 # LOCAL import
@@ -9,11 +9,11 @@ from Plugins.Extensions.IPTVPlayer.libs.pCommon import common
 from Plugins.Extensions.IPTVPlayer.libs.youtube_dl.utils import clean_html
 from Plugins.Extensions.IPTVPlayer.components.asynccall import MainSessionWrapper
 from Plugins.Extensions.IPTVPlayer.components.iptvmultipleinputbox import IPTVMultipleInputBox
-
+###################################################
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_urlencode
 ###################################################
 # FOREIGN import
 ###################################################
-import urllib
 from copy import deepcopy
 ###################################################
 
@@ -58,7 +58,7 @@ class UnCaptchaReCaptcha:
             printDBG(">>>>>>>> Captcha accep label[%s]" % (accepLabel))
             printDBG(">>>>>>>> Captcha imgUrl[%s] filePath[%s]" % (imgUrl, filePath))
 
-            params = {'maintype': 'image', 'subtypes': ['jpeg'], 'check_first_bytes': ['\xFF\xD8', '\xFF\xD9']}
+            params = {'maintype': 'image', 'subtypes': ['jpeg'], 'check_first_bytes': [b'\xFF\xD8', b'\xFF\xD9']}
             ret = self.cm.saveWebFile(filePath, imgUrl, params)
             if not ret.get('sts'):
                 SetIPTVPlayerLastHostError(_('Fail to get "%s".') % imgUrl)
@@ -81,7 +81,7 @@ class UnCaptchaReCaptcha:
             if retArg is not None and len(retArg) and retArg[0]:
                 recaptcha_response_field = retArg[0]
                 printDBG('>>>>>>>> Captcha recaptcha_response_field[%s]' % (recaptcha_response_field))
-                post_data = urllib.urlencode({'recaptcha_challenge_field': recaptcha_challenge_field, 'recaptcha_response_field': recaptcha_response_field, 'submit': accepLabel}, doseq=True)
+                post_data = urllib_urlencode({'recaptcha_challenge_field': recaptcha_challenge_field, 'recaptcha_response_field': recaptcha_response_field, 'submit': accepLabel}, doseq=True)
             else:
                 break
 

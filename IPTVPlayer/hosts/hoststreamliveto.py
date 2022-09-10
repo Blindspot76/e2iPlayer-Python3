@@ -7,12 +7,11 @@ from Plugins.Extensions.IPTVPlayer.components.ihost import CHostBase, CBaseHostC
 from Plugins.Extensions.IPTVPlayer.tools.iptvtools import printDBG, printExc, GetTmpDir
 from Plugins.Extensions.IPTVPlayer.components.iptvmultipleinputbox import IPTVMultipleInputBox
 ###################################################
-
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_quote
 ###################################################
 # FOREIGN import
 ###################################################
 import re
-import urllib
 try:
     import json
 except Exception:
@@ -103,7 +102,7 @@ class StreamLiveTo(CBaseHostClass):
         tmp = self.cm.ph.getDataBeetwenMarkers(data, '<select name="category"', '</select>', False)[1]
         tmp = re.compile('<option [^>]*?value="([^"]*?)"[^>]*?>([^<]+?)</option>').findall(tmp)
         for item in tmp:
-            tmpTab.append({'title': item[1], 'f_cat': urllib.quote(item[0])})
+            tmpTab.append({'title': item[1], 'f_cat': urllib_quote(item[0])})
         if len(tmpTab):
             self.cacheFilters['f_cat'] = tmpTab
             self.cacheFiltersKeys.append('f_cat')
@@ -231,7 +230,7 @@ class StreamLiveTo(CBaseHostClass):
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("StreamLiveTo.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
         cItem = dict(cItem)
-        cItem['f_q'] = urllib.quote(searchPattern)
+        cItem['f_q'] = urllib_quote(searchPattern)
         self.listChannels(cItem)
 
     def getLinksForVideo(self, cItem):
@@ -316,7 +315,7 @@ class StreamLiveTo(CBaseHostClass):
 
         imgUrl = 'http://www.google.com/recaptcha/api/image?c=' + challenge
         #return
-        params = {'maintype': 'image', 'subtypes': ['jpeg'], 'check_first_bytes': ['\xFF\xD8', '\xFF\xD9']}
+        params = {'maintype': 'image', 'subtypes': ['jpeg'], 'check_first_bytes': [b'\xFF\xD8', b'\xFF\xD9']}
         filePath = GetTmpDir('.iptvplayer_captcha.jpg')
         ret = self.cm.saveWebFile(filePath, imgUrl, params)
         if not ret.get('sts'):
