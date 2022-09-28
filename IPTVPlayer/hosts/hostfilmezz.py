@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2022-09-03 by Blindspot
+# 2022-09-28 by Blindspot
 ###################################################
-HOST_VERSION = "3.0"
+HOST_VERSION = "3.1"
 ###################################################
 # LOCAL import
 ###################################################
@@ -88,11 +88,19 @@ class Filmezz(CBaseHostClass):
             title = self.cm.ph.getDataBeetwenMarkers(i, '<span class="title">', '</span>', False)[1]
             icon = self.cm.ph.getDataBeetwenMarkers(i, 'src="', '"', False)[1]
             desc = self.cm.ph.getDataBeetwenMarkers(i, '<ul class="list-unstyled more-info">', '</ul>', False)[1]
-            desc = self.cm.ph.getAllItemsBeetwenMarkers(desc, '</span>', '</li>', False)
+            desc = self.cm.ph.getAllItemsBeetwenMarkers(desc, '<span>', '</li>', False)
+            kat  = self.cm.ph.getSearchGroups(i, '''Kategória:</span[>]([^"^']+?)[<]''', 1, True)[0].strip()
+            
             if len(desc) == 3:
-                desc = "Rendező: " + desc[0] + "\n" + "Hossz: " + desc[1].strip('		') + "\n" + "Kategória: " + desc[2].strip('		') + "\n" + "IMDb értékelés: " + self.cm.ph.getDataBeetwenMarkers(i, 'IMDb értékelés">', '</span>', False)[1]
+                if "Rendező" in desc[0] or "rendező" in desc[0]:
+                    desc = desc[0].replace("</span>", "") + "\n"+ desc[1].replace("</span>", "").strip()+ "\n" + "Kategória: " + kat + "\n" + "IMDb értékelés: " + self.cm.ph.getDataBeetwenMarkers(i, 'IMDb értékelés">', '</span>', False)[1]
+                else:
+                   desc = "Rendező: " + desc[0].replace("</span>", "") + "\n" +desc[1].replace("</span>", "").strip('		') + "\n" + "Kategória: " + desc[2].replace("</span>", "") + "\n" + "IMDb értékelés: " + self.cm.ph.getDataBeetwenMarkers(i, 'IMDb értékelés">', '</span>', False)[1]
             else:
-               desc = "Rendező: " + desc[0] + "\n" + "Kategória: " + desc[1].strip('		') + "\n" + "IMDb értékelés: " + self.cm.ph.getDataBeetwenMarkers(i, 'IMDb értékelés">', '</span>', False)[1]
+               if "Rendező" in desc[0] or "rendező" in desc[0]:
+                   desc = desc[0].replace("</span>", "") + "\n" + "Kategória: " + desc[1].replace("</span>", "") + "\n" + "IMDb értékelés: " + self.cm.ph.getDataBeetwenMarkers(i, 'IMDb értékelés">', '</span>', False)[1]
+               else:
+                  desc = "Rendező: " + desc[0].replace("</span>", "") + "\n" + "Kategória: " + desc[1].replace("</span>", "") + "\n" + "IMDb értékelés: " + self.cm.ph.getDataBeetwenMarkers(i, 'IMDb értékelés">', '</span>', False)[1]
             params = {'category':'explore_items','title':title, 'icon': icon , 'url': url, 'desc': desc}
             self.addDir(params)
         if '<ul class="list-inline pagination">' in data:
@@ -105,15 +113,16 @@ class Filmezz(CBaseHostClass):
     def exploreItems(self, cItem):
         printDBG("Filmezz.exploreItems")
         sts, data = self.getPage(cItem['url'])
-        desc = self.cm.ph.getDataBeetwenMarkers(data, '<div class="text">', '</div>', False)[1]
-        desc = desc.strip('		')
+        desc  = self.cm.ph.getSearchGroups(data, '''<div class="text"[>]([^"^']+?)[<]''', 1, True)[0].strip()
         url = self.cm.ph.getDataBeetwenMarkers(data, 'Filmmel kapcsolatos linkek', 'Beküldött', False)[1]
-        url = self.cm.ph.getDataBeetwenMarkers(url, '<a href="', '"', False)[1]
+        url = self.cm.ph.getDataBeetwenMarkers(url, 'href="', '"', False)[1]
         sts, data = self.getPage(url)
         urls = self.cm.ph.getAllItemsBeetwenMarkers(data, '<div class="col-sm-4 col-xs-12 host">', '</a>', False)
         icon = self.cm.ph.getDataBeetwenMarkers(data, '" src="', '"', False)[1]
         for i in urls:
             host = self.cm.ph.getDataBeetwenMarkers(i, '</ul>', '<div', False)[1].strip()
+            if not host:
+               host = "Ismeretlen megosztó"
             title = self.cm.ph.getDataBeetwenMarkers(i, '<div class="col-sm-4 col-xs-12">', '</div>', False)[1].replace("&nbsp;", "")
             if title:
                 title = title + ", " + host
