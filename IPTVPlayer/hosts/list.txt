@@ -6,7 +6,6 @@ host9anime
 hostakoam
 hostaltadefinizione
 hostaltadefinizione01
-hostaltadefinizionecool
 hostandrijaiandjelka
 hostanimeodcinki
 hostappletrailers
@@ -15,17 +14,12 @@ hostartetv
 hostbajeczkiorg
 hostbbciplayer
 hostbbcsport
-hostbluewatchseries
-hostbildde
 hostbsto
 hostcartoonhd
-hostcasacinema
-hostcb01
 hostcdapl
 hostchomikuj
 hostchristusvincit
 hostcimaclubcom
-hostcinemalibero
 hostcinemay
 hostcineto
 hostclassiccinemaonline
@@ -37,7 +31,6 @@ hostdokumentalnenet
 hostdmdamedia
 hostdpstreamingcx
 hostdrdk
-hostdudeplayercom
 hostefilmytv
 hostegybest
 hostekinotv
@@ -50,12 +43,10 @@ hostfenixsite
 hostfilma24hdcom
 hostfilma24io
 hostfilmaoncom
-hostfilmancc
 hostfilmativa
 hostfilmehdnet
 hostfilmeonlineto
 hostfilmezz
-hostfilmoviplex
 hostfilmpalast
 hostfilmpapa
 hostfilmpertutti
@@ -65,7 +56,6 @@ hostfilmtar
 hostfilmvilag
 hostfilmynadzis
 hostforjatn
-hostfrancetv
 hostfreediscpl
 hostfullmatchtvcom
 hostgamatocom
@@ -77,10 +67,8 @@ hosthdfilmetv
 hosthdfull
 hosthdpopcornscom
 hosthdstreams
-hosthitboxtv
 hosthoofootcom
 hosticefilmsinfo
-hostiitvpl
 hostinteriatv
 hostipla
 hostitvcom
@@ -128,7 +116,6 @@ hostourmatchnet
 hostpinkbike
 hostplaypuls
 hostplayrtsiw
-hosttsiplayer
 hostplusdede
 hostputlockertvto
 hostquesttvcouk
@@ -137,7 +124,6 @@ hostredbull
 hostrtbfbe
 hostrteieplayer
 hostrtlmost
-hosts01pl
 hostserienstreamto
 hostseriesonline
 hostserijeonline
@@ -147,14 +133,12 @@ hostskstream
 hostsolarmovie
 hostspiegeltv
 hostsportdeutschland
-hostsportitalia
 hostspryciarze
 hoststreaminghdfun
 hoststreamliveto
 hoststreamstat
 hostsvtplayse
 hosttainieskaiseirestv
-hosttainiesonline
 hosttantifilmorg
 hostted
 hosttfarjocom
