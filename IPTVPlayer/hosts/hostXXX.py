@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
-# Modified by Blindspot - 2022.10.01.
-# Fixed Updating
+# Modified by Blindspot - 2022.10.09.
+# Fixed PornHub
 ###################################################
 # LOCAL import
 ###################################################
@@ -171,7 +171,7 @@ class IPTVHost(IHost):
     ###################################################
 
 class Host:
-    XXXversion = "2022.10.01.2"
+    XXXversion = "2022.10.09.1"
     XXXremote  = "0.0.0.0"
     currList = []
     MAIN_URL = ''
@@ -1350,18 +1350,18 @@ class Host:
            #printDBG( 'Host2 getResolvedURL data: '+str(data) )
            for item in data:
               phTitle = self.cm.ph.getSearchGroups(item, '''alt=['"]([^"^']+?)['"]''', 1, True)[0] 
-              phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^']+?)['"]''', 1, True)[0] 
+              phImage = self.cm.ph.getSearchGroups(item, '''data-thumb_url=['"]([^"^']+?)['"]''', 1, True)[0] 
               phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0] 
               valTab.append(CDisplayListItem(phTitle,phTitle,CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL+phUrl],'pornhub-clips', phImage, None)) 
            valTab.sort(key=lambda poz: poz.name)
-           valTab.insert(0,CDisplayListItem("--- HD ---",         "HD",          CDisplayListItem.TYPE_CATEGORY,["https://www.pornhub.com/video?c=38"], 'pornhub-clips', 'http://cdn1a.static.pornhub.phncdn.com/images/categories/38.jpg',None))
-           valTab.insert(0,CDisplayListItem("--- Longest ---",    "Longest",     CDisplayListItem.TYPE_CATEGORY,["https://www.pornhub.com/video?o=lg"], 'pornhub-clips', '',None))
-           valTab.insert(0,CDisplayListItem("--- Top Rated ---",  "Top Rated",   CDisplayListItem.TYPE_CATEGORY,["https://www.pornhub.com/video?o=tr"], 'pornhub-clips', '',None))
-           valTab.insert(0,CDisplayListItem("--- Most Viewed ---","Most Viewed", CDisplayListItem.TYPE_CATEGORY,["https://www.pornhub.com/video?o=mv"], 'pornhub-clips', '',None))
-           valTab.insert(0,CDisplayListItem("--- Most Recent ---","Most Recent", CDisplayListItem.TYPE_CATEGORY,["https://www.pornhub.com/video?o=mr"], 'pornhub-clips', '',None))
+           valTab.insert(0,CDisplayListItem("--- HD ---",         "HD",          CDisplayListItem.TYPE_CATEGORY,["https://www.pornhub.com/video?c=38"], 'pornhub-clips', 'https://di.phncdn.com/pics/albums/040/070/521/497659841/(m=e-yaaGqaa)(mh=5IMX8j5tduU5-So0)original_497659841.jpg',None))
+           valTab.insert(0,CDisplayListItem("--- Longest ---",    "Longest",     CDisplayListItem.TYPE_CATEGORY,["https://www.pornhub.com/video?o=lg"], 'pornhub-clips', 'https://di.phncdn.com/pics/albums/070/945/071/806198811/(m=e-yaaGqaa)(mh=aWFuxA3FxMpSLXHW)original_806198811.jpg',None))
+           valTab.insert(0,CDisplayListItem("--- Top Rated ---",  "Top Rated",   CDisplayListItem.TYPE_CATEGORY,["https://www.pornhub.com/video?o=tr"], 'pornhub-clips', 'https://ei.phncdn.com/pics/albums/023/349/722/289142082/(m=e-yaaGqaa)(mh=LOA3AVkcokHVrtW2)original_289142082.jpg',None))
+           valTab.insert(0,CDisplayListItem("--- Most Viewed ---","Most Viewed", CDisplayListItem.TYPE_CATEGORY,["https://www.pornhub.com/video?o=mv"], 'pornhub-clips', 'https://di.phncdn.com/pics/albums/053/871/972/646564462/(m=e-yaaGqaa)(mh=bCSnVeW9eZaU593L)original_646564462.jpg',None))
+           valTab.insert(0,CDisplayListItem("--- Most Recent ---","Most Recent", CDisplayListItem.TYPE_CATEGORY,["https://www.pornhub.com/video?o=mr"], 'pornhub-clips', 'https://di.phncdn.com/pics/albums/048/524/471/592194521/(m=e-yaaGqaa)(mh=O90ldi3949PJDXQE)original_592194521.jpg',None))
            self.SEARCH_proc='pornhub-search'
-           valTab.insert(0,CDisplayListItem(_('Search history'), _('Search history'), CDisplayListItem.TYPE_CATEGORY, [''], 'HISTORY', '', None)) 
-           valTab.insert(0,CDisplayListItem(_('Search'),  _('Search'),                       CDisplayListItem.TYPE_SEARCH,   [''], '',        '', None)) 
+           valTab.insert(0,CDisplayListItem(_('Search history'), _('Search history'), CDisplayListItem.TYPE_CATEGORY, [''], 'HISTORY', 'https://img2.thejournal.ie/inline/2398415/original/?width=630&version=2398415', None)) 
+           valTab.insert(0,CDisplayListItem(_('Search'),  _('Search'),                       CDisplayListItem.TYPE_SEARCH,   [''], '',        'https://www.hyperpoolgroup.co.za/wp-content/uploads/2018/07/Product-Search.jpg', None)) 
            return valTab
         if 'pornhub-search' == name:
            printDBG( 'Host listsItems begin name='+name )
@@ -1375,7 +1375,10 @@ class Host:
            sts, data = self._getPage(url, self.defaultParams)
            if not sts: return valTab
            #printDBG( 'Host2 getResolvedURL data: '+data )
-           next = self.cm.ph.getSearchGroups(data, '''"page_next"><a href=['"]([^"^']+?)['"]''')[0] 
+           next = self.cm.ph.getSearchGroups(data, '''"next" href=['"]([^"^']+?)['"]./>''')[0].replace('&amp;','&') 
+           if not next:
+              next = self.cm.ph.getSearchGroups(data, '''"<a href=['"]([^"^']+?)['"].class''')[0].replace('&amp;','&') 
+           if next.startswith('/'): next = self.MAIN_URL + next
            data = self.cm.ph.getAllItemsBeetwenMarkers(data, 'videoblock', '</li>')
            #printDBG( 'Host2 getResolvedURL data: '+str(data) )
            for item in data:
@@ -1389,7 +1392,7 @@ class Host:
               if not OldImage:
                  valTab.append(CDisplayListItem(decodeHtml(phTitle),'['+phRuntime+'] '+decodeHtml(phTitle)+ '\n[Added: '+phAdded+'] ',CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, phImage, None)) 
            if next:
-              valTab.append(CDisplayListItem('Next', 'Next '+re.sub('.+page=', '', next), CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL+next.replace('&amp;','&')], name, '', None))        
+              valTab.append(CDisplayListItem('Next', 'Next '+re.sub('.+page=', '', next), CDisplayListItem.TYPE_CATEGORY, [next], name, 'http://www.clker.com/cliparts/n/H/d/S/N/j/green-next-page-button-hi.png', None))        
            return valTab
 
         if 'hdporn' == name:

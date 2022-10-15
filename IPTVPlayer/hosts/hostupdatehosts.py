@@ -2,7 +2,7 @@
 ###################################################
 # 2022-10-15 - UPDATEHOSTS - Blindspot
 ###################################################
-HOST_VERSION = "4.6"
+HOST_VERSION = "4.7"
 ###################################################
 # LOCAL import
 ###################################################
@@ -99,7 +99,11 @@ class UPDATEHOSTS(CBaseHostClass):
             destination = "/tmp/" + fname
             if self.download(url+fname, destination):
                 if self._copy(destination, self.hostspath + "/" + fname):
-                    pass
+                    msg = 'Jelenlegi verzió: %s' % getversion()
+                    self.sessionEx.open(MessageBox, _("A frissítés sikeres. A rendszer most újraindul.")+ msg, type = MessageBox.TYPE_INFO, timeout = 10)
+                    sleep(3)
+                    from enigma import quitMainloop
+                    quitMainloop(3)
                 else:
                    msg = 'A frissítés sikertelen! (Másolási hiba)'
                    self.sessionEx.open(MessageBox, msg, type = MessageBox.TYPE_ERROR, timeout = 20 )

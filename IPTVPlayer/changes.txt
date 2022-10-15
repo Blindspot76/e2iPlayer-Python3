@@ -1,3 +1,6 @@
+#2022.10.15.02
+-XXX kiegészítő frissítve
+-Frissítési funkció javítva
 #2022.10.15.01
 -Kisebb javítások
 #2022.10.01.02
