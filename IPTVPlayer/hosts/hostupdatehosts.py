@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2022-09-10 - UPDATEHOSTS - Blindspot
+# 2022-10-15 - UPDATEHOSTS - Blindspot
 ###################################################
-HOST_VERSION = "4.5"
+HOST_VERSION = "4.6"
 ###################################################
 # LOCAL import
 ###################################################
@@ -98,7 +98,7 @@ class UPDATEHOSTS(CBaseHostClass):
             fname = i
             destination = "/tmp/" + fname
             if self.download(url+fname, destination):
-                if self._copy(destination, self.hostspath+fname):
+                if self._copy(destination, self.hostspath + "/" + fname):
                     pass
                 else:
                    msg = 'A frissítés sikertelen! (Másolási hiba)'
