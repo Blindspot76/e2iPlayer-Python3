@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
-# Modified by Blindspot - 2022.10.09.
-# Fixed PornHub
+# Modified by Blindspot - 2022.10.16.
+# Fixed Spankbang
 ###################################################
 # LOCAL import
 ###################################################
@@ -171,7 +171,7 @@ class IPTVHost(IHost):
     ###################################################
 
 class Host:
-    XXXversion = "2022.10.09.1"
+    XXXversion = "2022.10.16.1"
     XXXremote  = "0.0.0.0"
     currList = []
     MAIN_URL = ''
@@ -4701,7 +4701,7 @@ class Host:
            sts, data = self.get_Page(url)
            if not sts: return valTab
            printDBG( 'Host listsItems data: '+data )
-           data = self.cm.ph.getAllItemsBeetwenMarkers(data, '<a class="textIndent', '</div>')
+           data = self.cm.ph.getAllItemsBeetwenMarkers(data, '<div class="im">', '</div>')
            for item in data:
               phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0]
               phTitle = self.cm.ph.getSearchGroups(item, '''alt=['"]([^"^']+?)['"]''', 1, True)[0]
@@ -4713,7 +4713,6 @@ class Host:
               if phImage.startswith('/'): phImage = self.MAIN_URL + phImage
               valTab.append(CDisplayListItem(phTitle,phTitle,CDisplayListItem.TYPE_CATEGORY, [phUrl],'sunporno-clips', phImage, None)) 
            valTab.sort(key=lambda poz: poz.name)
-           valTab.insert(0,CDisplayListItem("--- Recommended ---","Recommended",     CDisplayListItem.TYPE_CATEGORY,['https://www.sunporno.com/suggestions/'],             'sunporno-clips',    '',None))
            valTab.insert(0,CDisplayListItem("--- Most viewed ---","Most viewed",     CDisplayListItem.TYPE_CATEGORY,['https://www.sunporno.com/most-viewed/'],             'sunporno-clips',    '',None))
            valTab.insert(0,CDisplayListItem("--- HD Porn ---","HD Porn",     CDisplayListItem.TYPE_CATEGORY,['https://www.sunporno.com/most-recent/hd/'],             'sunporno-clips',    '',None))
            valTab.insert(0,CDisplayListItem("--- Best Videos ---","Best Videos",     CDisplayListItem.TYPE_CATEGORY,['https://www.sunporno.com/top-rated/date-last-week/'],             'sunporno-clips',    '',None))
@@ -4740,7 +4739,7 @@ class Host:
               phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0] 
               phImage = self.cm.ph.getSearchGroups(item, '''data-original=['"]([^"^']+?)['"]''', 1, True)[0] 
               if not phImage: phImage = self.cm.ph.getSearchGroups(item, '''src=['"]([^"^']+?)['"]''', 1, True)[0] 
-              phTitle = self.cm.ph.getSearchGroups(item, '''alt="([^"]+?)["] data''', 1, True)[0]  
+              phTitle = self.cm.ph.getSearchGroups(item, '''alt=['"]([^"^']+?)['"]''', 1, True)[0] 
               phTime = self.cm.ph.getSearchGroups(item, '''tm">([^>]+?)<''', 1, True)[0]  
               if phUrl.startswith('/'): phUrl = 'https://www.sunporno.com' + phUrl
               if phImage.startswith('/'): phImage = 'http:' + phImage
@@ -6775,8 +6774,8 @@ class Host:
            printDBG( 'Host listsItems data: '+data )
            next = self.cm.ph.getSearchGroups(data, '''<link rel="next" href=['"]([^"^']+?)['"]''', 1, True)[0].replace('&amp;','&').replace('..','')
            if next == '': next = self.cm.ph.getSearchGroups(data, '''<li class="next"><a href=['"]([^"^']+?)['"]''', 1, True)[0].replace('&amp;','&').replace('..','')
-           data = self.cm.ph.getDataBeetwenMarkers(data, 'video-list-with-ads">', '<div class="pagination"', False)[1]
-           data = self.cm.ph.getAllItemsBeetwenMarkers(data, 'data-id="', '<span class="v"')
+           data = self.cm.ph.getDataBeetwenMarkers(data, 'video-list-with-ads">', '<div class="lv_cm_cl', False)[1]
+           data = self.cm.ph.getAllItemsBeetwenMarkers(data, 'data-id="', '<span class="v')
            for item in data:
               phTitle = self.cm.ph.getSearchGroups(item, '''alt=['"]([^"^']+?)['"]''', 1, True)[0].replace('\n','').strip()
               phImage = self.cm.ph.getSearchGroups(item, '''data-src=['"]([^"^']+?)['"]''', 1, True)[0] 
