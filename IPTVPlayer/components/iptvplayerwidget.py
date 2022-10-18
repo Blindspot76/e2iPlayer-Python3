@@ -5,6 +5,8 @@
 #  $Id$
 #
 #
+# 2022-10-18 - Modified by Blindspot
+###################################################
 
 from time import sleep as time_sleep
 from os import remove as os_remove, path as os_path
@@ -722,27 +724,20 @@ class E2iPlayerWidget(Screen):
         TextMSG = ''
         if ret:
             if ret[1] == "info": #information about plugin
-                TextMSG = _("Lead programmer: ") + "\n\t- samsamsam\n"
-                if config.plugins.iptvplayer.preferredupdateserver.value == '3': #private sss repository
-                    TextMSG += _("E-mail: ") + "\n\t- iptvplayere2@gmail.com\n"
-                    TextMSG += _("www: ") + "\n\t- http://iptvplayer.vline.pl/" + '\n\t- http://www.iptvplayer.gitlab.io/\n'
-                TextMSG += _("Developers: ")
-                developersTab = [{'nick': 'zdzislaw22', },
-                                 {'nick': 'mamrot', },
-                                 {'nick': 'MarcinO', },
-                                 {'nick': 'skalita', },
-                                 {'nick': 'atilaks', },
-                                 {'nick': 'huball', },
-                                 {'nick': 'matzg', },
-                                 {'nick': 'tomashj291', },
-                                 {'nick': 'a4tech', },
-                                ]
+                TextMSG  = _("E2iPlayer Magyar Változat")+"\n\n"
+                TextMSG += _("E-mail: ") + "\nblindspot76@freemail.hu\n\n"
+                TextMSG += _("www: ") + "\nhttps://github.com/Blindspot76/e2iPlayer-Python3" + '\nhttp://www.netboard.hu/viewtopic.php?topic=18425\n\n\n'
+                TextMSG += _("Készítették: ") 
+                developersTab = [{'nick':'Blindspot',},
+                                 {'nick':'WhiteWolf',    },
+                                 {'nick':'Mario',   },
+                                 ]
                 # present alphabetically, the order does not mean validity
                 sortedList = sorted(developersTab, key=lambda k: k['nick'].upper())
                 for item in sortedList:
                     TextMSG += "\n\t- {0}, ".format(item['nick'])
                 TextMSG = TextMSG[:-2]
-                TextMSG += "\n\tand others\n"
+                TextMSG += "\n\tés sokan mások...\n"
                 self.session.open(MessageBox, TextMSG, type=MessageBox.TYPE_INFO)
             elif ret[1] == "IPTVDM":
                 self.runIPTVDM()
