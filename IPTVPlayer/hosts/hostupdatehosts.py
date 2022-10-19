@@ -51,38 +51,49 @@ class UPDATEHOSTS(CBaseHostClass):
         self.DEFAULT_ICON_URL = 'http://www.figyelmeztetes.hu/updatehosts_logo.jpg'
     
     def main_menu(self, cItem):
-        changes = {'title': 'Változások listája', 'url': 'changes', 'icon': self.DEFAULT_ICON_URL}
+        changes = {'title': 'Változások listája', 'url': 'changes', 'icon': self.DEFAULT_ICON_URL, 'desc': "Jelenlegi verzió: %s\nElérhető verzió: %s" % (self.getversion(), self.getremoteversion())}
         self.addDir(changes)
-        frissit = {'title': 'Frissítés', 'url': 'update', 'icon': self.DEFAULT_ICON_URL}
+        frissit = {'title': 'Frissítés', 'url': 'update', 'icon': self.DEFAULT_ICON_URL, 'desc': "Jelenlegi verzió: %s\nElérhető verzió: %s" % (self.getversion(), self.getremoteversion())}
         self.addDir(frissit)
-        telepit = {'title': 'Teljes Telepítés', 'url': 'install', 'icon': self.DEFAULT_ICON_URL}
+        telepit = {'title': 'Teljes Telepítés', 'url': 'install', 'icon': self.DEFAULT_ICON_URL, 'desc': "Jelenlegi verzió: %s\nElérhető verzió: %s" % (self.getversion(), self.getremoteversion())}
         self.addDir(telepit)
     
     def getchanges(self):
+        sts, data = self.cm.getPage('https://raw.githubusercontent.com/Blindspot76/e2iPlayer-Python3/master/IPTVPlayer/changes.txt', self.defaultParams)
+        f = open(self.changespath, "w")
+        f.write(data)
+        f.close()
         f = open(self.changespath, "r")
         a = f.read()
-        printDBG(a)
         a = a.split("#")
         a.pop(0)
-        printDBG(a)
         var = 0
         while var != len(a):
            params = {'title': a[var][:a[var].index("\n")], 'desc': a[var][a[var].index("\n"):]}
            self.addMarker(params)
            var += 1
+        f.close()
     
-    def check(self):
+    def getremoteversion(self):
         sts, data = self.cm.getPage('https://github.com/Blindspot76/e2iPlayer-Python3/blob/master/IPTVPlayer/version.py', self.defaultParams)
         version = self.cm.ph.getDataBeetwenMarkers(data, 'IPTV_VERSION', '</td>', False)[1]
         version = self.cm.ph.getDataBeetwenMarkers(version, '&quot;', '&quot;', False)[1]
         printDBG(version)
+        return version
+    
+    def check(self):
+        version = self.getremoteversion()
         local = self.getversion()
         if version != local:
             self._update("update")
             msg = 'Jelenlegi verzió: %s %s' % (self.getversion(), "\n")
             ret = self.sessionEx.waitForFinishOpen(MessageBox, msg+ _("A frissítés sikeres.\nA rendszer most újraindul."), type = MessageBox.TYPE_INFO, timeout = 10)
-            from enigma import quitMainloop
-            quitMainloop(3) 
+            try:
+               from enigma import quitMainloop
+               quitMainloop(3) 
+            except Exception:
+               msg = 'Nem sikerült az újraindítás.\nKérlek indítsd újra manuálisan!'
+               ret = self.sessionEx.waitForFinishOpen(MessageBox, msg, type = MessageBox.TYPE_INFO, timeout = 6)
         else:
           msg = 'Nem szükséges frissítés.'
           ret = self.sessionEx.waitForFinishOpen(MessageBox, msg, type=MessageBox.INFO, timeout = 10 )
@@ -182,8 +193,12 @@ class UPDATEHOSTS(CBaseHostClass):
                 self._update("install")
                 msg = 'Jelenlegi verzió: %s %s' % (self.getversion(), "\n")
                 ret = self.sessionEx.waitForFinishOpen(MessageBox, msg+ _("A telepítés sikeres.\nA rendszer most újraindul."), type = MessageBox.TYPE_INFO, timeout = 10)
-                from enigma import quitMainloop
-                quitMainloop(3) 
+                try:
+                   from enigma import quitMainloop
+                   quitMainloop(3) 
+                except Exception:
+                   msg = 'Nem sikerült az újraindítás.\nKérlek indítsd újra manuálisan!'
+                   ret = self.sessionEx.waitForFinishOpen(MessageBox, msg, type = MessageBox.TYPE_INFO, timeout = 6)
             else:
                 printExc()
             CBaseHostClass.endHandleService(self, index, refresh)
