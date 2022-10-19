@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2022-10-15 - UPDATEHOSTS - Blindspot
+# 2022-10-19 - UPDATEHOSTS - WhiteWolf
 ###################################################
-HOST_VERSION = "4.7"
+HOST_VERSION = "5.0"
 ###################################################
 # LOCAL import
 ###################################################
@@ -45,8 +45,31 @@ class UPDATEHOSTS(CBaseHostClass):
         self.USER_AGENT = 'User-Agent=Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0'
         self.HEADER = self.cm.getDefaultHeader()
         self.versionpath = normpath("/usr/lib/enigma2/python/Plugins/Extensions/IPTVPlayer/version.py")
-        self.hostspath = normpath("/usr/lib/enigma2/python/Plugins/Extensions/IPTVPlayer/hosts/")
+        self.playerpath = normpath("/usr/lib/enigma2/python/Plugins/Extensions/IPTVPlayer/")
+        self.changespath = self.playerpath+"/changes.txt"
         self.defaultParams = {'header':self.HEADER, 'use_cookie': False, 'load_cookie': False, 'save_cookie': False, 'cookiefile': self.COOKIE_FILE}
+        self.DEFAULT_ICON_URL = 'http://www.figyelmeztetes.hu/updatehosts_logo.jpg'
+    
+    def main_menu(self, cItem):
+        changes = {'title': 'Változások listája', 'url': 'changes', 'icon': self.DEFAULT_ICON_URL}
+        self.addDir(changes)
+        frissit = {'title': 'Frissítés', 'url': 'update', 'icon': self.DEFAULT_ICON_URL}
+        self.addDir(frissit)
+        telepit = {'title': 'Teljes Telepítés', 'url': 'install', 'icon': self.DEFAULT_ICON_URL}
+        self.addDir(telepit)
+    
+    def getchanges(self):
+        f = open(self.changespath, "r")
+        a = f.read()
+        printDBG(a)
+        a = a.split("#")
+        a.pop(0)
+        printDBG(a)
+        var = 0
+        while var != len(a):
+           params = {'title': a[var][:a[var].index("\n")], 'desc': a[var][a[var].index("\n"):]}
+           self.addMarker(params)
+           var += 1
     
     def check(self):
         sts, data = self.cm.getPage('https://github.com/Blindspot76/e2iPlayer-Python3/blob/master/IPTVPlayer/version.py', self.defaultParams)
@@ -55,15 +78,14 @@ class UPDATEHOSTS(CBaseHostClass):
         printDBG(version)
         local = self.getversion()
         if version != local:
-            self._update()
-            data = open(self.versionpath, 'w')
-            text = "# -*- coding: utf-8 -*-\n#YYYY.MM.DD.DAY_RELEASE\n" + 'IPTV_VERSION="' + version + '"'
-            data.write(text)
-            data.close()
-            rm(self.versionpath+"c")
+            self._update("update")
+            msg = 'Jelenlegi verzió: %s %s' % (self.getversion(), "\n")
+            ret = self.sessionEx.waitForFinishOpen(MessageBox, msg+ _("A frissítés sikeres.\nA rendszer most újraindul."), type = MessageBox.TYPE_INFO, timeout = 10)
+            from enigma import quitMainloop
+            quitMainloop(3) 
         else:
-           msg = 'Nem szükséges frissítés.'
-           ret = self.sessionEx.waitForFinishOpen(MessageBox, msg, type=MessageBox.INFO, timeout = 10 )
+          msg = 'Nem szükséges frissítés.'
+          ret = self.sessionEx.waitForFinishOpen(MessageBox, msg, type=MessageBox.INFO, timeout = 10 )
     
     def getversion(self):
         data = open(self.versionpath, 'r')
@@ -73,53 +95,42 @@ class UPDATEHOSTS(CBaseHostClass):
         data.close()
         return version
     
-    def getupdate(self, url):
-        sts, data = self.cm.getPage(url, self.defaultParams)
-        items = self.cm.ph.getAllItemsBeetwenMarkers(data, '<a class="js-navigation-open Link--primary"', '</span>', False)
-        to_update = []
-        num = 0
-        while num != len(items):
-           title = self.cm.ph.getDataBeetwenMarkers(items[num], '">', '</a>', False)[1]
-           to_update.append(title)
-           num = num+1
-        return to_update
-     
-    def _update(self):
-        msg = 'Frissítés szükséges. Egy kis időbe fog telni. (Nyomj igen-t, ha szeretnéd folytatni.)'
-        ret = self.sessionEx.waitForFinishOpen(MessageBox, msg, type=MessageBox.TYPE_YESNO, default=True)
-        if ret[0]:
-            pass
-        else:
-           return
-        url = 'https://github.com/Blindspot76/e2iPlayer-Python3/tree/master/IPTVPlayer/hosts/'
-        need = self.getupdate(url)
-        url = 'https://raw.githubusercontent.com/Blindspot76/e2iPlayer-Python3/master/IPTVPlayer/hosts/'
-        for i in need:
-            fname = i
-            destination = "/tmp/" + fname
-            if self.download(url+fname, destination):
-                if self._copy(destination, self.hostspath + "/" + fname):
-                    msg = 'Jelenlegi verzió: %s' % getversion()
-                    self.sessionEx.open(MessageBox, _("A frissítés sikeres. A rendszer most újraindul.")+ msg, type = MessageBox.TYPE_INFO, timeout = 10)
-                    sleep(3)
-                    from enigma import quitMainloop
-                    quitMainloop(3)
-                else:
-                   msg = 'A frissítés sikertelen! (Másolási hiba)'
-                   self.sessionEx.open(MessageBox, msg, type = MessageBox.TYPE_ERROR, timeout = 20 )
-                   return
+    def _update(self, command):
+        url = 'https://github.com/Blindspot76/e2iPlayer-Python3/archive/master.zip'
+        dir = "/tmp/cache/"
+        mkdirs(dir)
+        fname = 'master.zip'
+        destination = dir + fname
+        destination_unpack = "/tmp/cache/e2iPlayer-Python3-master/IPTVPlayer/*"
+        unzip_command = ['unzip', '-q', '-o', destination, '-d', dir]
+        if self.download(url, destination):
+            if self._mycall(unzip_command) == 0:
+                if command == "update":
+                    if self._copy(destination_unpack, self.playerpath):
+                        pass
+                    else:
+                       msg = 'A frissítés sikertelen! (Másolási hiba)'
+                       self.sessionEx.waitForFinishOpen(MessageBox, msg, type = MessageBox.TYPE_ERROR, timeout = 20 )
+                       return
+                if command == "install":
+                    rmtree(self.playerpath)
+                    mkdirs(self.playerpath)
+                    if self._copy(destination_unpack, self.playerpath):
+                        pass
+                    else:
+                       msg = 'A frissítés sikertelen! (Másolási hiba)'
+                       self.sessionEx.waitForFinishOpen(MessageBox, msg, type = MessageBox.TYPE_ERROR, timeout = 20 )
+                       return
             else:
-               msg = 'A frissítés sikertelen! (Letöltési hiba, próbáld újra.)'
-               self.sessionEx.open(MessageBox, msg, type = MessageBox.TYPE_ERROR, timeout = 20 )
+               msg = 'A frissítés sikertelen! (Hiba a kicsomagolás során)'
+               self.sessionEx.waitForFinishOpen(MessageBox, msg, type = MessageBox.TYPE_ERROR, timeout = 20 )
                return
-            if fileExists(destination):
-                rm(destination)
-            if fileExists(self.hostspath+fname+"c"):
-                rm(self.hostspath+fname+"c")
-            if fileExists(self.hostspath+fname+"o"):
-                rm(self.hostspath+fname+"o")
-        msg = 'A frissítés sikeres! Indítsd újra a készüléket!'
-        self.sessionEx.open(MessageBox, msg, type = MessageBox.TYPE_INFO, timeout = 20 )  
+        else:
+           msg = 'A frissítés sikertelen! (Letöltési hiba, próbáld újra.)'
+           self.sessionEx.waitForFinishOpen(MessageBox, msg, type = MessageBox.TYPE_ERROR, timeout = 20 )
+           return
+        rmtree(dir)
+        return
     
     def download(self, url, destination, tries=2, delay=3):
         vissza = False
@@ -159,9 +170,20 @@ class UPDATEHOSTS(CBaseHostClass):
             CBaseHostClass.handleService(self, index, refresh, searchPattern, searchType)
             name     = self.currItem.get("name", '')
             category = self.currItem.get("category", '')
+            url      = self.currItem.get("url", '')
             self.currList = []
             if name == None:
+                self.main_menu({'name':'category'})
+            elif url == "changes":
+                self.getchanges()
+            elif url == "update":
                 self.check()
+            elif url == "install":
+                self._update("install")
+                msg = 'Jelenlegi verzió: %s %s' % (self.getversion(), "\n")
+                ret = self.sessionEx.waitForFinishOpen(MessageBox, msg+ _("A telepítés sikeres.\nA rendszer most újraindul."), type = MessageBox.TYPE_INFO, timeout = 10)
+                from enigma import quitMainloop
+                quitMainloop(3) 
             else:
                 printExc()
             CBaseHostClass.endHandleService(self, index, refresh)

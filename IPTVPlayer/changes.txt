@@ -1,3 +1,5 @@
+#2022.10.19.01
+-Telepítő frissítve
 #2022.10.18.01
 -e2iPlayer Widget frissítve
 #2022.10.16.02
