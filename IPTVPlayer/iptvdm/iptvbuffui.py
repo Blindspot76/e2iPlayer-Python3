@@ -567,8 +567,9 @@ class E2iPlayerBufferingWidget(Screen):
                 percentage = 100
             else:
                 percentage = (100 * localSize) / remoteSize
-
-        self["percentage"].setText(str(percentage))
+        
+        percentage = self.correctfloat(str(percentage))
+        self["percentage"].setText(percentage)
         self["icon"].nextFrame()
 
         # check if we start movie player
@@ -593,6 +594,13 @@ class E2iPlayerBufferingWidget(Screen):
         self.updateOKButton()
         self.updateRecButton()
         return
+
+    def correctfloat(self, floatnum):
+        try:
+           floatnum = floatnum[0:floatnum.index(".")]
+        except:
+           pass
+        return floatnum
 
     def __del__(self):
         printDBG('E2iPlayerBufferingWidget.__del__ --------------------------------------')
