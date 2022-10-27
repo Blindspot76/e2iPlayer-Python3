@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
-# Modified by Blindspot - 2022.10.21.
-# Added New Host: PornHeed
+# Modified by Blindspot - 2022.10.25.
+# Fixed PornOne
 ###################################################
 # LOCAL import
 ###################################################
@@ -171,7 +171,7 @@ class IPTVHost(IHost):
     ###################################################
 
 class Host:
-    XXXversion = "2022.10.21.1"
+    XXXversion = "2022.10.25.1"
     XXXremote  = "0.0.0.0"
     currList = []
     MAIN_URL = ''
@@ -361,7 +361,7 @@ class Host:
            valTab.append(CDisplayListItem('BALKANJIZZ',     'https://www.balkanjizz.com/', CDisplayListItem.TYPE_CATEGORY, ['https://www.balkanjizz.com/kategorije-pornica'],'BALKANJIZZ', 'https://www.balkanjizz.com/images/logo/logo.png', None)) 
            valTab.append(CDisplayListItem('PORNORUSSIA',     'https://pornorussia.tv/', CDisplayListItem.TYPE_CATEGORY, ['https://pornorussia.tv/'],'PORNORUSSIA', 'https://pornorussia.tv/images/logo.png', None)) 
            valTab.append(CDisplayListItem('LETMEJERK',     'https://www.letmejerk.com', CDisplayListItem.TYPE_CATEGORY, ['https://www.letmejerk.com/category'],'LETMEJERK', 'https://letmejerksite.com/icons/android-chrome-512x512.png', None)) 
-           valTab.append(CDisplayListItem('GOTPORN',     'https://www.gotporn', CDisplayListItem.TYPE_CATEGORY, ['https://www.gotporn.com/categories?src=hm'],'GOTPORN', 'https://cdn2-static-cf.gotporn.com/desktop/img/gotporn-logo.png', None)) 
+           #valTab.append(CDisplayListItem('GOTPORN',     'https://www.gotporn', CDisplayListItem.TYPE_CATEGORY, ['https://www.gotporn.com/categories?src=hm'],'GOTPORN', 'https://cdn2-static-cf.gotporn.com/desktop/img/gotporn-logo.png', None)) 
            valTab.append(CDisplayListItem('ANALDIN',     'https://www.analdin.com', CDisplayListItem.TYPE_CATEGORY, ['https://www.analdin.com/categories/'],'ANALDIN', 'https://www.analdin.com/images/logo-retina.png', None)) 
            valTab.append(CDisplayListItem('NETFLIXPORNO',     'https://netflixporno.net/', CDisplayListItem.TYPE_CATEGORY, ['https://netflixporno.net/'],'NETFLIXPORNO', 'https://netflixporno.net/adult/wp-content/uploads/2021/04/netflixporno-1.png',   None)) 
            valTab.append(CDisplayListItem('FAPSET',     'https://fapset.com', CDisplayListItem.TYPE_CATEGORY, ['https://fapset.com'],'fapset', 'https://fapset.com/templates/Default/images/logo.png', None)) 
@@ -4252,28 +4252,29 @@ class Host:
            sts, data = self.get_Page(url)
            if not sts: return valTab
            printDBG( 'Host listsItems data: '+data )
-           data2 = self.cm.ph.getDataBeetwenMarkers(data, '>All Categories<', '</div>', False)[1]
-           data2 = self.cm.ph.getAllItemsBeetwenMarkers(data2, '<a', '</a>')
+           data2 = self.cm.ph.getDataBeetwenMarkers(data, 'pagebase="categories/', 'var distance', False)[1]
+           data2 = self.cm.ph.getAllItemsBeetwenMarkers(data2, '<a href', '</a>', True)
            for item in data2:
               phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0] 
-              phTitle = self.cm.ph.getSearchGroups(item, '''categoryName">([^>]+?)<''', 1, True)[0] 
+              phTitle = self.cm.ph.getSearchGroups(item, '''category.([^>]+?)" data''', 1, True)[0] 
               #phTitle = self._cleanHtmlStr(item) 
-              phImage = self.cm.ph.getSearchGroups(item, '''<img src=['"]([^"^']+?)['"]''', 1, True)[0] 
+              phImage = self.cm.ph.getSearchGroups(item, '''data-src=['"]([^"^']+?)['"]''', 1, True)[0] 
+              if phImage.startswith('/'): phImage = self.MAIN_URL + phImage
               if phUrl.startswith('//'): phUrl = 'http:' + phUrl
               if phUrl.startswith('/'): phUrl = self.MAIN_URL + phUrl
               if phUrl and phTitle:
                  valTab.append(CDisplayListItem(phTitle,phTitle,CDisplayListItem.TYPE_CATEGORY, [phUrl],'pornone-clips', phImage, None)) 
            valTab.sort(key=lambda poz: poz.name)
-           valTab.insert(0,CDisplayListItem("--- Longest ---","Longest",     CDisplayListItem.TYPE_CATEGORY,['http://www.pornone.com/longest/'],             'pornone-clips',    '',None))
-           valTab.insert(0,CDisplayListItem("--- Most Votes ---","Most Votes",     CDisplayListItem.TYPE_CATEGORY,['http://www.pornone.com/votes/'],             'pornone-clips',    '',None))
-           valTab.insert(0,CDisplayListItem("--- Most Comments ---","Most Comments",     CDisplayListItem.TYPE_CATEGORY,['http://www.pornone.com/comments/'],             'pornone-clips',    '',None))
-           valTab.insert(0,CDisplayListItem("--- Most Favorited ---","Most Favorited",     CDisplayListItem.TYPE_CATEGORY,['http://www.pornone.com/favorites/'],             'pornone-clips',    '',None))
-           valTab.insert(0,CDisplayListItem("--- Most Viewed ---","Most Viewed",     CDisplayListItem.TYPE_CATEGORY,['http://www.pornone.com/views/'],             'pornone-clips',    '',None))
-           valTab.insert(0,CDisplayListItem("--- Top Rated ---","Top Rated",     CDisplayListItem.TYPE_CATEGORY,['http://www.pornone.com/rating/'],             'pornone-clips',    '',None))
-           valTab.insert(0,CDisplayListItem("--- Newest ---","Newest",     CDisplayListItem.TYPE_CATEGORY,['http://www.pornone.com/newest/'],             'pornone-clips',    '',None))
+           valTab.insert(0,CDisplayListItem("--- Longest ---","Longest",     CDisplayListItem.TYPE_CATEGORY,['http://www.pornone.com/longest/'],             'pornone-clips',    'https://cdni.pornpics.com/1280/1/292/15828683/15828683_014_9a3b.jpg',None))
+           valTab.insert(0,CDisplayListItem("--- Most Votes ---","Most Votes",     CDisplayListItem.TYPE_CATEGORY,['http://www.pornone.com/votes/'],             'pornone-clips',    'https://cdni.pornpics.com/1280/7/154/33717710/33717710_008_ec04.jpg',None))
+           valTab.insert(0,CDisplayListItem("--- Most Comments ---","Most Comments",     CDisplayListItem.TYPE_CATEGORY,['http://www.pornone.com/comments/'],             'pornone-clips',    'https://cdni.pornpics.com/1280/7/589/47394188/47394188_007_daf3.jpg',None))
+           valTab.insert(0,CDisplayListItem("--- Most Favorited ---","Most Favorited",     CDisplayListItem.TYPE_CATEGORY,['http://www.pornone.com/favorites/'],             'pornone-clips',    'https://cdni.pornpics.com/1280/7/26/50917530/50917530_015_3a92.jpg',None))
+           valTab.insert(0,CDisplayListItem("--- Most Viewed ---","Most Viewed",     CDisplayListItem.TYPE_CATEGORY,['http://www.pornone.com/views/'],             'pornone-clips',    'https://cdni.pornpics.com/1280/1/135/47343437/47343437_003_b60d.jpg',None))
+           valTab.insert(0,CDisplayListItem("--- Top Rated ---","Top Rated",     CDisplayListItem.TYPE_CATEGORY,['http://www.pornone.com/rating/'],             'pornone-clips',    'https://cdni.pornpics.com/1280/1/147/17976797/17976797_006_571d.jpg',None))
+           valTab.insert(0,CDisplayListItem("--- Newest ---","Newest",     CDisplayListItem.TYPE_CATEGORY,['http://www.pornone.com/newest/'],             'pornone-clips',    'https://cdni.pornpics.com/1280/7/541/62271429/62271429_019_bc26.jpg',None))
            self.SEARCH_proc='pornone-search'
-           valTab.insert(0,CDisplayListItem(_('Search history'), _('Search history'), CDisplayListItem.TYPE_CATEGORY, [''], 'HISTORY', '', None)) 
-           valTab.insert(0,CDisplayListItem(_('Search'),  _('Search'),                       CDisplayListItem.TYPE_SEARCH,   [''], '',        '', None)) 
+           valTab.insert(0,CDisplayListItem(_('Search history'), _('Search history'), CDisplayListItem.TYPE_CATEGORY, [''], 'HISTORY', 'https://img2.thejournal.ie/inline/2398415/original/?width=630&version=2398415', None)) 
+           valTab.insert(0,CDisplayListItem(_('Search'),  _('Search'),                       CDisplayListItem.TYPE_SEARCH,   [''], '',        'https://www.hyperpoolgroup.co.za/wp-content/uploads/2018/07/Product-Search.jpg', None)) 
            return valTab
         if 'pornone-search' == name:
            printDBG( 'Host listsItems begin name='+name )
@@ -4287,21 +4288,25 @@ class Host:
            sts, data = self.get_Page(url)
            if not sts: return valTab
            printDBG( 'Host listsItems data: '+data )
-           next_page = self.cm.ph.getDataBeetwenMarkers(data, '<link rel="next"', '>', False)[1]
-           #data = self.cm.ph.getAllItemsBeetwenMarkers(data, '<div class="thumb"', '</div>')
-           data = self.cm.ph.getAllItemsBeetwenMarkers(data, 'class="video"', 'Rating')
+           next = self.cm.ph.getSearchGroups(data, '''</ul><a href=['"]([^"^']+?)['"].title="Next Page"''', 1, True)[0]
+           data = self.cm.ph.getDataBeetwenMarkers(data, 'data-id="All"', '<nav class="hidden md', False)[1]
+           data = self.cm.ph.getAllItemsBeetwenMarkers(data, '<a href', '</a>', True)
            for item in data:
               phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0] 
-              phImage = self.cm.ph.getSearchGroups(item, '''<img src=['"]([^"^']+?)['"]''', 1, True)[0] 
-              phTitle = self.cm.ph.getSearchGroups(item, '''alt=['"]([^"^']+?)['"]''', 1, True)[0] 
-              phTime = self.cm.ph.getSearchGroups(item, '''"time">([^"^']+?)<''', 1, True)[0].strip()
+              phImage = self.cm.ph.getSearchGroups(item, '''<img src=['"](h[^"^']+?)['"]''', 1, True)[0] 
+              phTitle = self.cm.ph.getSearchGroups(item, '''normal "[>]([^"^']+?)[<]/div''', 1, True)[0].replace("&apos;","'")
+              if not phTitle:
+                 phTitle = self.cm.ph.getSearchGroups(item, '''.jpg.+?alt=["']([^"^']+?)["']''', 1, True)[0].replace("&apos;","'")
+              phTime = self.cm.ph.getSearchGroups(item, '''svg">([^"^']+?)<''', 1, True)[0].strip()
+              if not phTime:
+                 phTime = self.cm.ph.getSearchGroups(item, '''opacity-50">([^"^']+?)</span> </span>''', 1, True)[0].strip()
               if phUrl.startswith('/'): phUrl = 'https://pornone.com' + phUrl
               if phImage.startswith('//'): phImage = 'http:' + phImage
-              valTab.append(CDisplayListItem(decodeHtml(phTitle),'['+phTime+']  '+decodeHtml(phTitle),CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, phImage, None)) 
-           if next_page:
-              next = self.cm.ph.getSearchGroups(next_page, '''href=['"]([^"^']+?)['"]''', 1, True)[0] 
+              if phTitle:
+                 valTab.append(CDisplayListItem(decodeHtml(phTitle),'['+phTime+']  '+decodeHtml(phTitle),CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, phImage, None)) 
+           if next: 
               if next.startswith('/'): next = 'https://pornone.com' + next
-              valTab.append(CDisplayListItem('Next', next, CDisplayListItem.TYPE_CATEGORY, [next], name, '', None))                
+              valTab.append(CDisplayListItem('Next', next, CDisplayListItem.TYPE_CATEGORY, [next], name, 'http://www.clker.com/cliparts/n/H/d/S/N/j/green-next-page-button-hi.png', None))                
            return valTab
 
         if 'zbporn' == name:

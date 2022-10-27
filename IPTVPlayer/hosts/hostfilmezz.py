@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2022-09-28 by Blindspot
+# 2022-10-27 by Blindspot
 ###################################################
-HOST_VERSION = "3.1"
+HOST_VERSION = "3.2"
 ###################################################
 # LOCAL import
 ###################################################
@@ -83,10 +83,14 @@ class Filmezz(CBaseHostClass):
         sts, data = self.getPage(cItem['url'])
         film = self.cm.ph.getDataBeetwenMarkers(data, '<ul class="row list-unstyled movie-list">', '<center>', False)[1]
         filmek = self.cm.ph.getAllItemsBeetwenMarkers(film, '<li class="', '</a>', False)
+        icon = ''
         for i in filmek:
             url = "https://filmezz.club" + self.cm.ph.getDataBeetwenMarkers(i, '<a href="', '"', False)[1]
-            title = self.cm.ph.getDataBeetwenMarkers(i, '<span class="title">', '</span>', False)[1]
+            title = self.cm.ph.getSearchGroups(i, '''title"[>]([^"^']+?)[<]/span''', 1, True)[0]
             icon = self.cm.ph.getDataBeetwenMarkers(i, 'src="', '"', False)[1]
+            if title == ' (2000)':
+                title = 'Hűség (2000)'
+                icon = 'https://m.media-amazon.com/images/M/MV5BMTkyNDk1Nzk1OF5BMl5BanBnXkFtZTcwNTY2MzA5Mg@@._V1_.jpg'
             desc = self.cm.ph.getDataBeetwenMarkers(i, '<ul class="list-unstyled more-info">', '</ul>', False)[1]
             desc = self.cm.ph.getAllItemsBeetwenMarkers(desc, '<span>', '</li>', False)
             kat  = self.cm.ph.getSearchGroups(i, '''Kategória:</span[>]([^"^']+?)[<]''', 1, True)[0].strip()
@@ -117,20 +121,26 @@ class Filmezz(CBaseHostClass):
         url = self.cm.ph.getDataBeetwenMarkers(data, 'Filmmel kapcsolatos linkek', 'Beküldött', False)[1]
         url = self.cm.ph.getDataBeetwenMarkers(url, 'href="', '"', False)[1]
         sts, data = self.getPage(url)
-        urls = self.cm.ph.getAllItemsBeetwenMarkers(data, '<div class="col-sm-4 col-xs-12 host">', '</a>', False)
-        icon = self.cm.ph.getDataBeetwenMarkers(data, '" src="', '"', False)[1]
+        urls = self.cm.ph.getAllItemsBeetwenMarkers(data, ' title="Link indítása"', ';')
+        printDBG('linkek: '+ str (urls))
         for i in urls:
-            host = self.cm.ph.getDataBeetwenMarkers(i, '</ul>', '<div', False)[1].strip()
-            if not host:
-               host = "Ismeretlen megosztó"
-            title = self.cm.ph.getDataBeetwenMarkers(i, '<div class="col-sm-4 col-xs-12">', '</div>', False)[1].replace("&nbsp;", "")
+            episode = self.cm.ph.getSearchGroups(i, '''sm.2.col.xs-.+"[>]([^;^w^S^-]+?)[&]''', 1, True)[0].strip()
+            printDBG('Epizód: '+ episode)
+            host = self.cm.ph.getSearchGroups(i, '''sm.2.col.xs-.+"[>]([^-^;^]+?)[<]''', 1, True)[0].strip()
+            if not host or 'div>' in host:
+                host = False
+            title = self.cm.ph.getSearchGroups(i, '''sm.2.col.xs-.+"[>]([^.^;^w^S^<]+?)[<]''', 1, True)[0].strip()
+            printDBG('Minőség: '+ title)
             if title:
-                title = title + ", " + host
-            else:
-               title = host
-            url = self.cm.ph.getDataBeetwenMarkers(i, 'href="', '>', False)[1]
-            url = self.cm.ph.getDataBeetwenMarkers(url, 'https://online', '"')[1].strip('"')
-            params = {'title':title, 'icon': icon , 'url': url, 'desc': desc}
+                title = cItem['title'] + " - " + episode + " -" + title + " - " + str(host)
+                title = title.replace(' -  -', ' - ')
+            if not host:
+                if not episode:
+                    title = cItem['title']
+                else:
+                    title = cItem['title'] + " - " + episode
+            url = self.cm.ph.getSearchGroups(i, '''adf.ly/.{8}[/]([^"^']+?)["]''', 1, True)[0]
+            params = {'title':title, 'icon': cItem['icon'] , 'url': url, 'desc': desc}
             self.addVideo(params)
     
     def getLinksForVideo(self, cItem):
