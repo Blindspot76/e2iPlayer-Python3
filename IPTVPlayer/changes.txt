@@ -1,3 +1,8 @@
+#2022.11.08.01
+-Kisebb javítások
+#2022.11.07.01
+-3Movs hozzáadva (XXX)
+-SpankBang javítva
 #2022.10.27.01
 -Filmezz javítva
 -PonOne javítva (XXX)
