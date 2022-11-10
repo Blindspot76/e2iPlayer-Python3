@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# Modified by Blindspot - 2022.11.10
 ###################################################
 # LOCAL import
 ###################################################
@@ -13,12 +13,14 @@ from Plugins.Extensions.IPTVPlayer.libs.e2ijson import loads as json_loads, dump
 from Plugins.Extensions.IPTVPlayer.libs import ph
 ###################################################
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_urlencode
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urlparse, urlunparse, parse_qsl
+from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
+from Plugins.Extensions.IPTVPlayer.p2p3.pVer import isPY2
 ###################################################
 # FOREIGN import
 ###################################################
 import re
 import codecs
-from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urlparse, urlunparse, parse_qsl
 from datetime import timedelta
 from Components.config import config, ConfigSelection, ConfigYesNo
 ###################################################
@@ -86,7 +88,7 @@ class YouTubeParser():
 
     def getDirectLinks(self, url, formats='flv, mp4', dash=True, dashSepareteList=False, allowVP9=None, allowAgeGate=None):
         printDBG('YouTubeParser.getDirectLinks')
-        list = []
+        linksList = []
         try:
             if self.cm.isValidUrl(url) and '/channel/' in url and url.endswith('/live'):
                 sts, data = self.cm.getPage(url)
@@ -96,7 +98,7 @@ class YouTubeParser():
                         videoId = self.cm.ph.getSearchGroups(data, '''['"]REDIRECT_TO_VIDEO['"]\s*\,\s*['"]([^'^"]+?)['"]''')[0]
                     if videoId != '':
                         url = 'https://www.youtube.com/watch?v=' + videoId
-            list = YoutubeIE()._real_extract(url, allowVP9=allowVP9, allowAgeGate=allowAgeGate)
+            linksList = YoutubeIE()._real_extract(url, allowVP9=allowVP9, allowAgeGate=allowAgeGate)
         except Exception:
             printExc()
             if dashSepareteList:
@@ -113,14 +115,13 @@ class YouTubeParser():
         dashVideoLists = []
         if dash:
             # separete audio and video links
-            printDBG(str(list))
-            for item in list:
+            for item in linksList:
                 if 'mp4a' == item['ext']:
                     dashAudioLists.append(item)
                 elif item['ext'] in ('mp4v', 'webmv'):
                     dashVideoLists.append(item)
                 elif 'mpd' == item['ext']:
-                    tmpList = getMPDLinksWithMeta(item['url'], checkExt=False)
+                    tmpList = getMPDLinksWithMeta(ensure_str(item['url']), checkExt=False)
                     printDBG(tmpList)
                     for idx in range(len(tmpList)):
                         tmpList[idx]['format'] = "%sx%s" % (tmpList[idx].get('height', 0), tmpList[idx].get('width', 0))
@@ -131,11 +132,14 @@ class YouTubeParser():
 
             def _key(x):
                 if x['format'].startswith('>'):
-                     int(x['format'][1:-1])
+                    return int(x['format'][1:-1])
                 else:
-                     int(ph.search(x['format'], reNum)[0])
+                    return int(ph.search(x['format'], reNum)[0])
 
-        for item in list:
+            dashAudioLists = sorted(dashAudioLists, key=_key, reverse=True)
+            dashVideoLists = sorted(dashVideoLists, key=_key, reverse=True)
+
+        for item in linksList:
             printDBG(">>>>>>>>>>>>>>>>>>>>>")
             printDBG(str(item))
             printDBG("<<<<<<<<<<<<<<<<<<<<<")
@@ -145,20 +149,20 @@ class YouTubeParser():
                     if format != None:
                         item['format'] = format.group(1) + "x"
                         item['ext'] = item['ext'] + "_M3U8"
-                        item['url'] = decorateUrl(item['url'], {"iptv_proto": "m3u8"})
+                        item['url'] = decorateUrl(ensure_str(item['url']), {"iptv_proto": "m3u8"})
                         retHLSList.append(item)
                 else:
                     format = re.search('([0-9]+?x[0-9]+?$)', item['format'])
                     if format != None:
                         item['format'] = format.group(1)
-                        item['url'] = decorateUrl(item['url'])
+                        item['url'] = decorateUrl(ensure_str(item['url']))
                         retList.append(item)
 
         if len(dashAudioLists):
             # use best audio
             for item in dashVideoLists:
                 item = dict(item)
-                item["url"] = decorateUrl("merge://audio_url|video_url", {'audio_url': dashAudioLists[0]['url'], 'video_url': item['url']})
+                item["url"] = decorateUrl("merge://audio_url|video_url", {'audio_url': dashAudioLists[0]['url'], 'video_url': ensure_str(item['url'])})
                 dashList.append(item)
 
         # try to get hls format with alternative method
@@ -256,7 +260,7 @@ class YouTubeParser():
                 img = thumbJson[i]
                 width = img['width']
                 if width < maxWidth:
-                    url = img['url']
+                    url = ensure_str(img['url'])
                 i = i + 1
 
             if hq or (not config.plugins.iptvplayer.allowedcoverformats.value) or config.plugins.iptvplayer.allowedcoverformats.value != 'all':
@@ -279,13 +283,14 @@ class YouTubeParser():
             except:
                 title = videoJson['title']['simpleText']
 
+            title = ensure_str(title)
             badges = []
-            bb = videoJson.get("badges", [])
-            for b in bb:
+            videoBadges = videoJson.get("badges", [])
+            for videoBadge in videoBadges:
                 try:
-                    bLabel = b["metadataBadgeRenderer"]["label"]
-                    badges.append(bLabel.upper())
-                except:
+                    badgeLabel = ensure_str(videoBadge["metadataBadgeRenderer"]["label"])
+                    badges.append(badgeLabel.upper())
+                except Exception:
                     pass
 
             if badges:
@@ -297,21 +302,21 @@ class YouTubeParser():
             try:
                 duration = videoJson["lengthText"]["simpleText"]
                 if duration:
-                    desc.append(_("Duration: %s") % duration)
+                    desc.append(_("Duration: %s") % ensure_str(duration))
             except:
                 pass
 
             try:
                 views = videoJson["viewCountText"]["simpleText"]
                 if views:
-                    desc.append(views)
+                    desc.append(ensure_str(views))
             except:
                 pass
 
             try:
                 time = videoJson["publishedTimeText"]["simpleText"]
                 if time:
-                    desc.append(time)
+                    desc.append(ensure_str(time))
             except:
                 time = ''
 
@@ -322,18 +327,19 @@ class YouTubeParser():
                     owner = videoJson["longBylineText"]["runs"][0]["text"]
                 except:
                     owner = ""
-
+            owner = ensure_str(owner)
+            
             if desc:
                 desc = " | ".join(desc) + "\n" + owner
             else:
                 desc = owner
 
             try:
-                desc = desc + "\n" + videoJson["descriptionSnippet"]["runs"][0]["text"]
+                desc = desc + "\n" + ensure_str(videoJson["descriptionSnippet"]["runs"][0]["text"])
             except:
                 pass
 
-            return {'type': 'video', 'category': 'video', 'title': title, 'url': url, 'icon': icon, 'time': time, 'desc': desc}
+            return {'type': 'video', 'category': 'video', 'title': title, 'url': ensure_str(url), 'icon': icon, 'time': time, 'desc': desc}
         else:
             return {}
 
@@ -351,7 +357,7 @@ class YouTubeParser():
             except:
                 desc = ""
 
-            return {'type': 'category', 'category': 'channel', 'title': title, 'url': url, 'icon': icon, 'time': '', 'desc': desc}
+            return {'type': 'category', 'category': 'channel', 'title': title, 'url': ensure_str(url), 'icon': icon, 'time': '', 'desc': desc}
 
         else:
             return {}
@@ -371,7 +377,7 @@ class YouTubeParser():
                 desc = desc + "\n" + by
             except:
                 pass
-            return {'type': 'category', 'category': 'playlist', 'title': title, 'url': url, 'icon': icon, 'time': '', 'desc': desc}
+            return {'type': 'category', 'category': 'playlist', 'title': title, 'url': ensure_str(url), 'icon': icon, 'time': '', 'desc': desc}
         else:
             return {}
 
@@ -393,9 +399,9 @@ class YouTubeParser():
                     return {}
 
             if '/channel/' in url:
-                return {'type': 'category', 'category': 'channel', 'title': title, 'url': url, 'icon': icon, 'time': '', 'desc': ''}
+                return {'type': 'category', 'category': 'channel', 'title': title, 'url': ensure_str(url), 'icon': icon, 'time': '', 'desc': ''}
             else:
-                return {'type': 'feed', 'category': cat, 'title': title, 'url': url, 'icon': icon, 'time': '', 'desc': ''}
+                return {'type': 'feed', 'category': cat, 'title': title, 'url': ensure_str(url), 'icon': icon, 'time': '', 'desc': ''}
 
         except:
             printExc()
@@ -599,7 +605,6 @@ class YouTubeParser():
                     response = json_loads(data2 + "}")
 
                     r1 = response['contents']['twoColumnBrowseResultsRenderer']['tabs']
-
                     r2 = {}
                     for tab in r1:
                         try:
@@ -611,14 +616,15 @@ class YouTubeParser():
                         if r2:
                             break
 
-                    r3 = r2['sectionListRenderer']['contents'][0]['itemSectionRenderer']['contents']
-                    r4 = r3[0]['gridRenderer'].get('items', '')
+                    r4 = r2['richGridRenderer']['contents']
 
                 nextPage = ''
                 for r5 in r4:
-                    videoJson = r5.get("gridVideoRenderer", "")
+                    videoJson = r5.get("richItemRenderer", "")
                     nP = r5.get('continuationItemRenderer', '')
                     if videoJson:
+                        videoJson = videoJson.get("content", {})
+                        videoJson = videoJson.get("videoRenderer", "")
                         params = self.getVideoData(videoJson)
                         if params:
                             printDBG(str(params))
@@ -640,7 +646,7 @@ class YouTubeParser():
                     post_data['context']['clickTracking'] = {'clickTrackingParams': ctit}
                     post_data = json_dumps(post_data).encode('utf-8')
                     urlNextPage = strwithmeta(urlNextPage, {'post_data': post_data})
-                    params = {'type': 'more', 'category': category, 'title': label, 'page': str(int(page) + 1), 'url': urlNextPage}
+                    params = {'type': 'more', 'category': category, 'title': label, 'page': str(int(page) + 1), 'url': ensure_str(urlNextPage)}
                     printDBG(str(params))
                     currList.append(params)
 
@@ -702,8 +708,17 @@ class YouTubeParser():
                     data2 = self.cm.ph.getDataBeetwenMarkers(data, "window[\"ytInitialData\"] =", "};", False)[1]
                     if len(data2) == 0:
                         data2 = self.cm.ph.getDataBeetwenMarkers(data, "var ytInitialData =", "};", False)[1]
-
-                    response = json_loads(data2 + "}")
+                    
+                    data2 = ensure_str(data2.strip()) #just cleaning and ensuring we're working with string
+                    #json simple schema verification and correction
+                    jsonStarts = data2.count('{')
+                    jsonEnds = data2.count('}')
+                    printDBG('youtuberparser.YouTubeParser().getSearchResult correcting json string by adding "}" %s time(s) at the end' % (jsonStarts - jsonEnds))
+                    while jsonEnds < jsonStarts:
+                        data2 = data2 + '}'
+                        jsonEnds += 1
+                    open("/tmp/data2.txt", "w").write(data2)
+                    response = json_loads(data2)
 
             if not sts:
                 return []
@@ -715,8 +730,12 @@ class YouTubeParser():
             # search videos
             r2 = list(self.findKeys(response, 'videoRenderer'))
 
-            printDBG("---------------------")
-            printDBG(json_dumps(r2))
+            printDBG("---------Returned DICT ------------")
+            if isPY2():
+                printDBG(json_dumps(r2))
+            else:
+                for item in r2:
+                    printDBG(str(item))
             printDBG("---------------------")
 
             for item in r2:
@@ -773,7 +792,7 @@ class YouTubeParser():
                     label = _("Next Page")
 
                 urlNextPage = self.updateQueryUrl(url, {'pbj': '1', 'ctoken': ctoken, 'continuation': ctoken, 'itct': itct})
-                params = {'type': 'more', 'category': "search_next_page", 'title': label, 'page': str(int(page) + 1), 'url': urlNextPage}
+                params = {'type': 'more', 'category': "search_next_page", 'title': label, 'page': str(int(page) + 1), 'url': ensure_str(urlNextPage)}
                 printDBG(str(params))
                 currList.append(params)
 
@@ -793,7 +812,7 @@ class YouTubeParser():
                 post_data['context']['clickTracking'] = {'clickTrackingParams': itct}
                 post_data = json_dumps(post_data).encode('utf-8')
                 urlNextPage = strwithmeta(urlNextPage, {'post_data': post_data})
-                params = {'type': 'more', 'category': "search_next_page", 'title': label, 'page': str(int(page) + 1), 'url': urlNextPage}
+                params = {'type': 'more', 'category': "search_next_page", 'title': label, 'page': str(int(page) + 1), 'url': ensure_str(urlNextPage)}
                 printDBG(str(params))
                 currList.append(params)
 
@@ -828,7 +847,7 @@ class YouTubeParser():
                     if time.startswith("0:"):
                         time = time[2:]
                     desc = item['title']['accessibility']['accessibilityData']['label']
-                    params = {'type': 'video', 'category': 'video', 'title': title, 'url': url, 'icon': img, 'time': time, 'desc': desc}
+                    params = {'type': 'video', 'category': 'video', 'title': title, 'url': ensure_str(url), 'icon': img, 'time': time, 'desc': desc}
                     currList.append(params)
             except Exception:
                 printExc()
