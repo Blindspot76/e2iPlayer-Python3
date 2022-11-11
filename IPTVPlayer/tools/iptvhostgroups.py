@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Python 3 version - Blindspot -2022.10.16.
+# Python 3 version - Blindspot -2022.11.11.
 ###################################################
 # LOCAL import
 ###################################################
@@ -57,7 +57,7 @@ class IPTVHostsGroups:
         # hosts
         self.PREDEFINED_HOSTS = {}
         self.PREDEFINED_HOSTS['userdefined'] = ['favourites', 'localmedia']
-        self.PREDEFINED_HOSTS['moviesandseries'] = ['appletrailers', 'efilmytv', 'ekinotv', 'cdapl', 'vizjerpl', 'zaluknijcc', 'filman', 'hdseanspl', 'ogladajto', 'govodtv', 'filmynadzis', 'horrorycc', 'filmowoclub', 'freediscpl',
+        self.PREDEFINED_HOSTS['moviesandseries'] = ['appletrailers', 'tv2play', 'efilmytv', 'ekinotv', 'cdapl', 'vizjerpl', 'zaluknijcc', 'filman', 'hdseanspl', 'ogladajto', 'govodtv', 'filmynadzis', 'horrorycc', 'filmowoclub', 'freediscpl',
                                                      'movienightws', 'yifytv', 'hdpopcornscom', 'losmovies',
                                                      'solarmovie', 'mythewatchseries', 'thewatchseriesto', 'classiccinemaonline', 'seriesonline', 'vumooch', 'movs4ucom', 'movizlandcom',
                                                      'cinemay', 'icefilmsinfo', 'egybest', 'dpstreamingcx', 'librestream', 'streamcomplet', 'skstream', 'filmstreamvkcom',
@@ -89,7 +89,7 @@ class IPTVHostsGroups:
                                                      'dailymotion', 'vimeo', 'laola1tv', 'sportdeutschland', 'twitchtv', 'playrtsiw', 'del', 'kkiste']
         self.PREDEFINED_HOSTS['french'] = ['youtube', 'streamstat', 'tfarjocom', 'skstream', 'filmstreamvkcom', 'streamcomplet', 'dpstreamingcx', 'librestream', 'cinemay', 'otakufr', 'rtbfbe', 'artetv', 'dailymotion',
                                                      'vimeo', 'twitchtv', 'forjatn', 'planetstreamingcom', 'playrtsiw', 'officialfilmillimite', 'hdsto']
-        self.PREDEFINED_HOSTS['hungarian'] = ['youtube', 'idokep', 'onlinestream', 'filmezz', 'localmedia', 'mozicsillag', 'webhuplayer', 'mediayou', 'updatehosts', 'nonstopmozi', 'mozicsillag', 'dmdamedia', 'filmpapa', 'filmvilag', 'filmtar', 'urllist', 'm4sport', 'mindigtv', 'streamstat', 'rtlmost', 'dailymotion', 'twitchtv']
+        self.PREDEFINED_HOSTS['hungarian'] = ['youtube', 'idokep', 'tv2play', 'onlinestream', 'filmezz', 'localmedia', 'mozicsillag', 'webhuplayer', 'mediayou', 'updatehosts', 'nonstopmozi', 'mozicsillag', 'dmdamedia', 'filmpapa', 'filmvilag', 'filmtar', 'urllist', 'm4sport', 'mindigtv', 'streamstat', 'rtlmost', 'dailymotion', 'twitchtv']
         self.PREDEFINED_HOSTS['arabic'] = ['youtube', 'streamstat', 'webstream', 'akoam', 'egybest', 'movs4ucom', 'movizlandcom', 'shahiidanimenet', 'dailymotion', 'vimeo', 'twitchtv', 'forjatn', 'faselhdcom', 'movierulzsx', '3sktv', 'cimaclubcom', 'hdsto']
         self.PREDEFINED_HOSTS['greek'] = ['youtube', 'streamstat', 'gamatotvme', 'xrysoise', 'tainieskaiseirestv', 'gamatocom', 'greekdocumentaries3', 'dailymotion', 'vimeo', 'twitchtv', 'oipeirates']
         self.PREDEFINED_HOSTS['latino'] = ['youtube', 'streamstat', 'mrpiracy', 'solarmovie', 'artetv', 'dailymotion', 'vimeo', 'twitchtv', 'plusdede', 'hdsto', 'hdfull', 'vidcorncom', 'dixmax']

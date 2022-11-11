@@ -142,6 +142,7 @@ hosttainieskaiseirestv
 hosttantifilmorg
 hostted
 hosttfarjocom
+hosttv2play
 hosttvgrypl
 hosttvn24
 hosttvnowde
