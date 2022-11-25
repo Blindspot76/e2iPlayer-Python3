@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# 2022.08.15. Blindspot
+# 2022.11.24. Blindspot
 ###################################################
-HOST_VERSION = "1.1"
+HOST_VERSION = "1.2"
 ###################################################
 # LOCAL import
 ###################################################
@@ -373,11 +373,20 @@ class Idokep(CBaseHostClass):
         sts, data = self.getPage(cItem['url'])
         if not sts:
             return
+        icon = ''
         data = self.cm.ph.getDataBeetwenMarkers(data, '<div id="camimg"', '</div>', False)[1]
         url = self.cm.ph.getDataBeetwenMarkers(data, '<img src="', '"', False)[1]
+        if not url:
+            url = self.cm.ph.getDataBeetwenMarkers(data, '<source src="', '"', False)[1]
+            icon = self.cm.ph.getDataBeetwenMarkers(data, '<video poster="', '"', False)[1]
+            icon = "https:" + icon 
         url = "https:" + url
-        params = {'title':cItem['title'], 'icon': url, 'url': url}
-        self.addPicture(params)
+        if ".m3u8" in url:
+            params = {'title':cItem['title'], 'icon': icon, 'url': url}
+            self.addVideo(params)
+        else:
+            params = {'title':cItem['title'], 'icon': url, 'url': url}
+            self.addPicture(params)
         
     def listStatic(self, cItem):
         names = ['Előrejelzés holnapra', 'Előrejelzés 2 napra', 'Előrejelzés 3 napra', 'Előrejelzés 4 napra', 'Előrejelzés 5 napra', '14 napos előrejelzés', '30 napos előrejelzés']
