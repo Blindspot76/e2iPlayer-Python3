@@ -1,3 +1,7 @@
+#2022.12.10.01
+-M4 Sport frissítve
+-XXX host frissítve
+-Skinek hozzáadva
 #2022.11.25.01
 -Időkép frissítve (HUN)
 -SexTubeFun hozzáadva (XXX)
