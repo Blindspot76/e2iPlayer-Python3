@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2022-02-13 by Blindspot - M4 SPORT
+# 2022-12-10 by Blindspot - M4 SPORT
 ###################################################
-HOST_VERSION = "1.7"
+HOST_VERSION = "1.8"
 ###################################################
 # LOCAL import
 ###################################################
@@ -24,6 +24,7 @@ import time
 import zlib
 import urllib
 import base64
+from urllib.parse import *
 from hashlib import sha1
 from Components.config import config, ConfigText, ConfigYesNo, getConfigListEntry
 from Tools.Directories import resolveFilename, fileExists, SCOPE_PLUGINS
@@ -80,7 +81,7 @@ class m4sport(CBaseHostClass):
             if self.cm.isValidUrl(url):
                 return url
             else:
-                return urlparse.urljoin(baseUrl, url)
+                return urllib.parse.urljoin(baseUrl, url)
             
         addParams['cloudflare_params'] = {'domain':self.up.getDomain(baseUrl), 'cookie_file':self.COOKIE_FILE, 'User-Agent':self.USER_AGENT, 'full_url_handle':_getFullUrl}
         sts, data = self.cm.getPageCFProtection(baseUrl, addParams, post_data)
@@ -88,7 +89,6 @@ class m4sport(CBaseHostClass):
         
     def listMainMenu(self, cItem):
         try:
-            if not self.ebbtit(): return
             if self.btps != '' and self.brdr != '': self.pbtp = self.btps.strip() + ' - ' + self.brdr.strip()
             n_bx = self.malvadst('1', '11', 'm4_boxutca')
             if n_bx != '' and self.aid:
@@ -421,18 +421,7 @@ class m4sport(CBaseHostClass):
             return bv
         except:
             return '-'
-            
-    def ebbtit(self):
-        try:
-            if '' == self.btps.strip() or '' == self.brdr.strip():
-                msg = 'A Set-top-Box típusát és a használt rendszer (image) nevét egyszer meg kell adni!\n\nA kompatibilitás és a megfelelő használat miatt kellenek ezek az adatok a programnak.\nKérlek, a helyes működéshez a valóságnak megfelelően írd be azokat.\n\nA "HU Telepítő" keretrendszerben tudod ezt megtenni.\n\nKilépek és megyek azt beállítani?'
-                ret = self.sessionEx.waitForFinishOpen(MessageBox, msg, type=MessageBox.TYPE_YESNO, default=True)
-                return False
-            else:
-                return True
-        except Exception:
-            return False
-        
+    
     def listSearchResult(self, cItem, searchPattern, searchType):
         try:
             printDBG("listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
