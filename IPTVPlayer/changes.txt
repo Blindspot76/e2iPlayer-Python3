@@ -1,3 +1,5 @@
+#2022.12.18.01
+-Kisebb javítások
 #2022.12.10.01
 -M4 Sport frissítve
 -XXX host frissítve

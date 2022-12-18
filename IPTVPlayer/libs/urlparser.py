@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+# Modified by Blindspot - 2022.12.18.
 ###################################################
 # LOCAL import
 ###################################################
@@ -240,6 +240,8 @@ class urlparser:
                        'divxstage.eu': self.pp.parserDIVXSTAGE,
                        'divxstage.to': self.pp.parserDIVXSTAGE,
                        'donevideo.com': self.pp.parserLIMEVIDEO,
+                       'dood.re': self.pp.parserDOOD,
+                       'dood.wf': self.pp.parserDOOD,
                        'dood.cx': self.pp.parserDOOD,
                        'dood.la': self.pp.parserDOOD,
                        'dood.pm': self.pp.parserDOOD,
