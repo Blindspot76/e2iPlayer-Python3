@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2022-09-05 by Blindspot
+# 2023-01-15 by Blindspot
 ###################################################
-HOST_VERSION = "2.0"
+HOST_VERSION = "2.1"
 ###################################################
 # LOCAL import
 ###################################################
@@ -19,7 +19,10 @@ from Plugins.Extensions.IPTVPlayer.libs.urlparser import urlparser
 # FOREIGN import
 ###################################################
 import re
-import urllib
+try:
+    import urllib.parse
+except:
+   import urllib
 import random
 import base64
 import os
@@ -115,6 +118,7 @@ class MoziCsillag(CBaseHostClass):
             desc = desc.replace("<br>", "")
             desc = desc.replace("   ", "")
             desc = desc.replace("\n", "")
+            desc = desc.replace("Hossz", " Hossz").replace("IMDB", " IMDB").replace("Feltöltve", " Feltöltve")
             params = {'category':'explore_items','title':title, 'icon': icon , 'url': url, 'desc': desc}
             self.addDir(params)
         if "</li><li class='arrow unavailable'>" not in next:
@@ -276,7 +280,10 @@ class MoziCsillag(CBaseHostClass):
     
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("MoziCsillag.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
-        searchPattern = searchPattern.replace(" ", "+")
+        try:
+            searchPattern = urllib.parse.quote_plus(searchPattern)
+        except:
+            searchPattern = urllib.quote_plus(searchPattern)
         url = 'search_term=' + searchPattern +'&search_type=0&search_where=0&search_rating_start=1&search_rating_end=10&search_year_from=1900&search_year_to=2022'
         url = url.encode('ascii')
         url = base64.b64encode(url)

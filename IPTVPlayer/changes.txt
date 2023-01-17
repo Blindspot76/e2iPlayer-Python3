@@ -1,3 +1,6 @@
+#2023.01.17.01
+-MoziCsillag kereső javítva
+-XXX host frissítve
 #2023.01.08.01
 -WofVideo hozzáadva
 -XXX host frissítve
