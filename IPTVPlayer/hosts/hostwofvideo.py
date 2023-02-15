@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# 2023.01.08. WhiteWolf
+# 2023.02.14. WhiteWolf
 ###################################################
-HOST_VERSION = "1.2"
+HOST_VERSION = "1.3"
 ###################################################
 # LOCAL import
 ###################################################
@@ -216,7 +216,7 @@ class WOFvideo(CBaseHostClass):
     
     def listSearchResult(self, cItem, searchPattern, searchType):
         printDBG("Wofvideo.listSearchResult cItem[%s], searchPattern[%s] searchType[%s]" % (cItem, searchPattern, searchType))
-        url = 'https://wofvideo.pro/?s=' + searchPattern
+        url = 'https://wofvideo.pro/?s=' + searchPattern.replace(" ", "+")
         cItem['url'] = url           
         self.listItems(cItem)
 
