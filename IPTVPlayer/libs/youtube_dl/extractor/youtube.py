@@ -494,20 +494,20 @@ class YoutubeIE(object):
             tries = 0
             while tries < 3:
                 tries+=1
-            	url = 'https://www.youtube.com/youtubei/v1/player?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8'
-            	isGoogleDoc = False
-            	videoKey = 'video_id'
-            	videoInfoparams = {}
+                url = 'https://www.youtube.com/youtubei/v1/player?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8'
+                isGoogleDoc = False
+                videoKey = 'video_id'
+                videoInfoparams = {}
                 http_params = {'header': {'User-Agent': 'com.google.android.youtube/17.31.35 (Linux; U; Android 11) gzip', 'Content-Type': 'application/json', 'Origin': 'https://www.youtube.com', 'X-YouTube-Client-Name': '3', 'X-YouTube-Client-Version': '17.31.35'}}
-            	http_params['raw_post_data'] = True
+                http_params['raw_post_data'] = True
                 post_data = "{'videoId': '%s', 'context': {'client': {'hl': 'en', 'clientVersion': '17.31.35', 'clientName': 'ANDROID', 'androidSdkVersion': 30}}}" % video_id
-            	sts, video_webpage = self.cm.getPage(url, http_params, post_data)
-            	if sts:
+                sts, video_webpage = self.cm.getPage(url, http_params, post_data)
+                if sts:
                     if allowAgeGate and 'LOGIN_REQUIRED' in video_webpage:
                         http_params['header']['X-YouTube-Client-Name'] = '85'
                         post_data = "{'videoId': '%s', 'thirdParty': 'https://google.com', 'context': {'client': {'clientName': 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', 'clientVersion': '2.0', 'clientScreen': 'EMBED'}}}" % video_id
                         sts, video_webpage = self.cm.getPage(url, http_params, post_data)
-                	printDBG(video_webpage)
+                    printDBG(video_webpage)
                     player_response = json_loads(video_webpage)
                 else:
                     url = 'http://www.youtube.com/watch?v=%s&bpctr=9999999999&has_verified=1&' % video_id
