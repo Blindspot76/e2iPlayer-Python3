@@ -1,3 +1,5 @@
+#2023.05.14.01
+-Dmdamedia javítva
 #2023.05.11.01
 -Videa parser javítva
 -Voe parser hozzáadva

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# Blindspot - 2023.04.11. 
+# Blindspot - 2023.05.14. 
 ###################################################
-HOST_VERSION = "2.3"
+HOST_VERSION = "2.1"
 ###################################################
 # LOCAL import
 ###################################################
@@ -14,6 +14,7 @@ from Plugins.Extensions.IPTVPlayer.libs.urlparser import urlparser
 from Plugins.Extensions.IPTVPlayer.hosts import hosturllist as urllist
 from Plugins.Extensions.IPTVPlayer.libs import ph
 from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Playlist
+from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_unquote, urllib_quote_plus
 ###################################################
 
 ###################################################
@@ -52,10 +53,50 @@ class Dmdamedia(CBaseHostClass):
         sts, data = self.getPage(cItem['url'])        
         if not sts:
             return
-        share = self.cm.ph.getDataBeetwenMarkers(data,'<div class="beagyazas">','</iframe>', False) [1]
-        share = self.cm.ph.getDataBeetwenMarkers(share,'src="','"', False) [1]
-        if "https:" not in share:
-            share = "https:" + share
+        share = self.cm.ph.getDataBeetwenMarkers(data,'<div class="beagyazas">','" FRAMEBORDER', False) [1]
+        share = share.replace('<iframe src="', '')
+        if share != '':
+            if 'https:' not in share:
+                share = 'https:'+share
+        else:
+           share = self.cm.ph.getDataBeetwenMarkers(data,'<div class="beagyazas">','" allowfullscreen', False) [1]
+           if '<iframe width="640" height="360" frameborder="0" src="' in share:
+               share = share.replace('<iframe width="640" height="360" frameborder="0" src="', '')
+           share = share.replace('<iframe width="640" height="360" src="', '')
+           if share != '':
+               if 'https:' not in share:
+                   share = 'https:'+share
+           else:
+              share = self.cm.ph.getDataBeetwenMarkers(data,'<div class="beagyazas">','" scrolling=', False) [1]
+              share = share.replace('<iframe src="', '')
+              if share != '':
+                  if 'https:' not in share:
+                      share = 'https:'+share
+              else:
+                 share = self.cm.ph.getDataBeetwenMarkers(data,'<div class="filmbeagyazas">','" FRAMEBORDER', False) [1]
+                 share = share.replace('<iframe src="', '')
+                 if share != '':
+                     if 'https:' not in share:
+                         share = 'https:'+share
+                 else:
+                    share = self.cm.ph.getDataBeetwenMarkers(data,'<div class="filmbeagyazas">','" allowfullscreen', False) [1]
+                    share = share.replace('<iframe width="640" height="360" src="', '')
+                    if share != '':
+                        if 'https:' not in share:
+                            share = 'https:'+share
+                    else:
+                       share = self.cm.ph.getDataBeetwenMarkers(data,'<div class="filmbeagyazas">','" scrolling=', False) [1]
+                       share = share.replace('<iframe src="', '')
+                       if 'https:' not in share:
+                           share = 'https:'+share
+        video = self.cm.ph.getDataBeetwenMarkers(data, '<div class="video">', '</iframe>', False) [1]
+        share = self.cm.ph.getDataBeetwenMarkers(video, '<iframe src="', '"', False) [1]
+        if 'https:' not in share:
+            share = 'https:'+share
+        share = " ".join(share.split())
+        printDBG(share)
+        share = share.replace(' ', '')
+        
         printDBG("Dmdamedia.getLinksForVideo url[%s]" % share)
         videoUrls = []
         uri = urlparser.decorateParamsFromUrl(share)
@@ -86,10 +127,10 @@ class Dmdamedia(CBaseHostClass):
     
     def listMainMenu(self, cItem):   
         printDBG('Dmdamedia.listMainMenu')
-        MAIN_CAT_TAB = [{'category':'list_filters',            'title': _('Kategóriák'), 'desc':'Figyelem: Hibajelentés előtt mindig ellenőrizd a videó meglétét a weboldalon.', 'url': 'https://dmdamedia.hu/'},
-                        {'category':'list_items',            'title': _('Filmek'), 'desc':'Figyelem: Hibajelentés előtt mindig ellenőrizd a videó meglétét a weboldalon.', 'url': 'https://dmdamedia.hu/film', 'page': '1'},
-                        {'category':'list_items',            'title': _('Sorozatok'), 'desc':'Figyelem: Hibajelentés előtt mindig ellenőrizd a videó meglétét a weboldalon.', 'url': 'https://dmdamedia.hu/', 'page': '1'},
-                        {'category':'list_items',            'title': _('Friss'), 'desc':'Figyelem: Hibajelentés előtt mindig ellenőrizd a videó meglétét a weboldalon.', 'url': 'https://dmdamedia.hu/friss', 'page': '1'},
+        MAIN_CAT_TAB = [{'category':'list_filters',            'title': _('Kategóriák'), 'desc':'Figyelem: A Videa és Playtube megosztók pillanatnyilag nem támogatottak.', 'url': 'https://dmdamedia.hu/'},
+                        {'category':'list_items',            'title': _('Filmek'), 'desc':'Figyelem: A Videa és Playtube megosztók pillanatnyilag nem támogatottak.', 'url': 'https://dmdamedia.hu/film', 'page': '1'},
+                        {'category':'list_items',            'title': _('Sorozatok'), 'desc':'Figyelem: A Videa és Playtube megosztók pillanatnyilag nem támogatottak.', 'url': 'https://dmdamedia.hu/', 'page': '1'},
+                        {'category':'list_items',            'title': _('Friss'), 'desc':'Figyelem: A Videa és Playtube megosztók pillanatnyilag nem támogatottak.', 'url': 'https://dmdamedia.hu/friss', 'page': '1'},
                         {'category':'search',          'title': _('Keresés'), 'search_item':True},
                         {'category':'search_history',  'title': _('Keresési előzmények')}]
         self.listsTab(MAIN_CAT_TAB, cItem) 
@@ -110,7 +151,7 @@ class Dmdamedia(CBaseHostClass):
     
     def listItems(self, cItem):
         printDBG('Dmdamedia.listItems')
-        url = cItem['url']
+        url = cItem['url'][0:cItem['url'].index('=')+1] + urllib_quote_plus(cItem['url'][cItem['url'].index('=')+1:])
         page = cItem['page']     
         params = False     
         sts, data = self.getPage(url)                
@@ -213,25 +254,29 @@ class Dmdamedia(CBaseHostClass):
         sts, data = self.getPage(url)
         if not sts:
             return
-        res = self.cm.ph.getDataBeetwenMarkers(data,'<div class="reszek">','</div>')[1]
-        ep = self.cm.ph.getAllItemsBeetwenMarkers(res,'<a class="episode','</a>')
-        if len(ep) == 0:
-            ep = self.cm.ph.getAllItemsBeetwenMarkers(res,'<a class="sub episode','</a>')
-        for e in ep:
-            fin = self.cm.ph.getDataBeetwenMarkers(e,'" href="','">', False)[1]
-            title = self.cm.ph.getDataBeetwenMarkers(e,'">','</a>', False) [1] + ".rész" + " - " + self.cm.ph.getDataBeetwenMarkers(e,'title="','" href=', False) [1]
-            if "- feliratos rész" not in title:
-                title = title.replace("-", "")
-            if "https://dmdamedia.hu" in fin or "https://dmdamedia.eu" in fin or "http://dmdamedia.eu" in fin or "http://dmdamedia.hu" in fin:
-                newurl = fin
-            else:
-                newurl = "https://dmdamedia.hu" + fin
-            sts, data = self.getPage(newurl)
-            desc = self.cm.ph.getDataBeetwenMarkers(data, '<p style="text-align:left;margin:20px;">', '</p>', False)[1]
-            if not desc:
-                desc = cItem['desc']
-            params = {'category':'explore_item', 'title': title,  'icon': icon, 'url': newurl, 'desc': desc}
-            self.addDir(params)
+        res = self.cm.ph.getAllItemsBeetwenMarkers(data,'<div class="reszek">','</div>')
+        for r in res:
+            ep = self.cm.ph.getAllItemsBeetwenMarkers(r,'<a class="episode','</a>')
+            if ep == '':
+                ep = self.cm.ph.getAllItemsBeetwenMarkers(r,'<a class="sub episode','</a>')
+            for e in ep:
+                fin = self.cm.ph.getAllItemsBeetwenMarkers(e,'" href="','">')
+                for f in fin:
+                    f = f.replace('" href="', '')
+                    f = f.replace('">', '')
+                    title = self.cm.ph.getDataBeetwenMarkers(e,'">','</a>', False) [1] + ".rész" + " - " + self.cm.ph.getDataBeetwenMarkers(e,'title="','" href=', False) [1]
+                    if "- feliratos rész" not in title:
+                        title = title.replace("-", "")
+                    if "https://dmdamedia.hu" in f or "https://dmdamedia.eu" in f or "http://dmdamedia.eu" in f or "http://dmdamedia.hu" in f:
+                         newurl = f
+                    else:
+                       newurl = "https://dmdamedia.hu" + f
+                    sts, data = self.getPage(newurl)
+                    desc = self.cm.ph.getDataBeetwenMarkers(data, '<p style="text-align:left;margin:20px;">', '</p>', False)[1]
+                    if not desc:
+                        desc = cItem['desc']
+                    params = {'category':'explore_item', 'title': title,  'icon': icon, 'url': newurl, 'desc': desc}
+                    self.addDir(params)
     
     def exploreItemsEL(self, cItem, title, icon):
         printDBG('Dmdamedia.exploreItems - EpizódLinkek')
@@ -320,6 +365,7 @@ class Dmdamedia(CBaseHostClass):
         sts, data = self.getPage(url)           
         if not sts:
             return
+        searchPattern = urllib_quote_plus(searchPattern)
         found = self.cm.ph.getAllItemsBeetwenMarkers(data, '<div class="wrap">', "</a></div>")
         point = searchPattern.split()
         for p in point:
