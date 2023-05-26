@@ -1,3 +1,6 @@
+#2023.05.26.01
+-Voe parser javítva
+-Mozicsillag javítva
 #2023.05.14.01
 -Dmdamedia javítva
 #2023.05.11.01
