@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2023-05-26 by Blindspot
+# 2023-05-28 by Blindspot
 ###################################################
-HOST_VERSION = "2.2"
+HOST_VERSION = "2.3"
 ###################################################
 # LOCAL import
 ###################################################
@@ -227,6 +227,14 @@ class MoziCsillag(CBaseHostClass):
         videoUrls = []
         sts, data = self.cm.getPage(cItem['url'])
         url = self.cm.meta['url']
+        if 'voe' in cItem['title'] or 'Voe' in cItem['title']:
+            videoUrls = []
+            sts, data = self.getPage(url)
+            url = self.cm.ph.getDataBeetwenMarkers(data, "'hls': '", "'", False)[1]
+            if not url:
+                url = self.cm.ph.getDataBeetwenMarkers(data, "'mp4': '", "'", False)[1]
+            videoUrls.append({'name':'direct link', 'url':url})
+            return videoUrls
         uri = urlparser.decorateParamsFromUrl(url)
         protocol = uri.meta.get('iptv_proto', '')
         

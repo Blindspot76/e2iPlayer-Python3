@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# Blindspot - 2023.05.14. 
+# Blindspot - 2023.05.28. 
 ###################################################
-HOST_VERSION = "2.1"
+HOST_VERSION = "2.2"
 ###################################################
 # LOCAL import
 ###################################################
@@ -96,7 +96,14 @@ class Dmdamedia(CBaseHostClass):
         share = " ".join(share.split())
         printDBG(share)
         share = share.replace(' ', '')
-        
+        if 'voe' in cItem['title'] or 'Voe' in cItem['title']:
+            videoUrls = []
+            sts, data = self.getPage(share)
+            url = self.cm.ph.getDataBeetwenMarkers(data, "'hls': '", "'", False)[1]
+            if not url:
+                url = self.cm.ph.getDataBeetwenMarkers(data, "'mp4': '", "'", False)[1]
+            videoUrls.append({'name':'direct link', 'url':url})
+            return videoUrls
         printDBG("Dmdamedia.getLinksForVideo url[%s]" % share)
         videoUrls = []
         uri = urlparser.decorateParamsFromUrl(share)
@@ -151,7 +158,7 @@ class Dmdamedia(CBaseHostClass):
     
     def listItems(self, cItem):
         printDBG('Dmdamedia.listItems')
-        url = cItem['url'][0:cItem['url'].index('=')+1] + urllib_quote_plus(cItem['url'][cItem['url'].index('=')+1:])
+        url = cItem['url']
         page = cItem['page']     
         params = False     
         sts, data = self.getPage(url)                
