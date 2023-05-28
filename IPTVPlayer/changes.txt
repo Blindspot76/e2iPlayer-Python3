@@ -1,3 +1,5 @@
+#2323.05.28.01
+-Kisebb javítások
 #2023.05.26.01
 -Voe parser javítva
 -Mozicsillag javítva
