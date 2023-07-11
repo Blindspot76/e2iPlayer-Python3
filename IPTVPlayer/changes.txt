@@ -1,4 +1,6 @@
-#2323.05.28.01
+#2023.07.11.01
+-Webhuplayer és Magyar Telepítő javítva
+#2023.05.28.01
 -Kisebb javítások
 #2023.05.26.01
 -Voe parser javítva

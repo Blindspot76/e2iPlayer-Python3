@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2022-08-31 - Web HU Player
+# 2023-07-11 - Web HU Player
 ###################################################
-HOST_VERSION = "4.0"
+HOST_VERSION = "4.1"
 ###################################################
 # LOCAL import
 ###################################################
@@ -151,7 +151,9 @@ class webhuplayer(CBaseHostClass):
     def check(self):
         if os.path.isdir(self.path_webh):
             sts, data = self.cm.getPage('https://github.com/e2iplayerhosts/webmedia3/blob/master/README.md', self.defaultParams)
-            version = self.cm.ph.getDataBeetwenMarkers(data, 'Version: ', '</p>', False)[1]
+            printDBG(data)
+            version = self.cm.ph.getDataBeetwenMarkers(data, 'Version: ', 'u003', False)[1]
+            version = version[0:-1]
             printDBG(version)
             local = self.getversion()
             if version != local:

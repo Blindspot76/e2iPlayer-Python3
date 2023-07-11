@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2022-10-19 - UPDATEHOSTS - WhiteWolf
+# 2023-07-11 - UPDATEHOSTS - WhiteWolf
 ###################################################
-HOST_VERSION = "5.0"
+HOST_VERSION = "5.1"
 ###################################################
 # LOCAL import
 ###################################################
@@ -76,8 +76,8 @@ class UPDATEHOSTS(CBaseHostClass):
     
     def getremoteversion(self):
         sts, data = self.cm.getPage('https://github.com/Blindspot76/e2iPlayer-Python3/blob/master/IPTVPlayer/version.py', self.defaultParams)
-        version = self.cm.ph.getDataBeetwenMarkers(data, '<span class=pl-v>IPTV_VERSION', '</td>', False)[1]
-        version = self.cm.ph.getDataBeetwenMarkers(version, '&quot;', '&quot;', False)[1]
+        version = self.cm.ph.getDataBeetwenMarkers(data, 'IPTV_VERSION=', '\n', False)[1]
+        version = self.cm.ph.getDataBeetwenMarkers(version, '\"', '\\"', False)[1]
         printDBG(version)
         return version
     
