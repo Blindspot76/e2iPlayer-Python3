@@ -5,7 +5,7 @@ from Screens.InfoBarGenerics import InfoBarSeek, InfoBarAudioSelection, InfoBarN
 from Screens.HelpMenu import HelpableScreen
 from Components.ActionMap import HelpableActionMap
 from Components.config import config
-from Components.AVSwitch import eAVSwitch
+from Components.AVSwitch import iAVSwitch
 from Screens.ChoiceBox import ChoiceBox
 from Components.ServiceEventTracker import ServiceEventTracker
 from enigma import iPlayableService, eTimer
