@@ -1,3 +1,5 @@
+#2023.01.15.01
+-Kisebb javítások
 #2023.07.11.01
 -Webhuplayer és Magyar Telepítő javítva
 #2023.05.28.01
