@@ -155,6 +155,7 @@ hosturllist
 hostustreamtv
 hostustvgo
 hostvidcorncom
+hostvidea
 hostvimeo
 hostvizjerpl
 hostvodpl
