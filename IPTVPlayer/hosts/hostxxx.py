@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
-# Modified by Blindspot - 2024.01.27.
-# Fixed EPorner, HomeMoviesTube, Yuvutu * Added FHD & 4K support for HQPorner
+# Modified by Blindspot - 2024.01.31.
+# Added new host: HellMoms
 ###################################################
 # LOCAL import
 ###################################################
@@ -166,7 +166,7 @@ class IPTVHost(IHost):
     ###################################################
 
 class Host:
-    XXXversion = "2024.01.27.1"
+    XXXversion = "2024.01.31.1"
     XXXremote  = "0.0.0.0"
     currList = []
     MAIN_URL = ''
@@ -287,6 +287,7 @@ class Host:
            if self.XXXversion != self.XXXremote and self.XXXremote != "0.0.0.0":
               valTab.append(CDisplayListItem('---UPDATE---','UPDATE MENU',        CDisplayListItem.TYPE_CATEGORY,           [''], 'UPDATE',  'https://cdn-icons-png.flaticon.com/512/5278/5278658.png', None)) 
            valTab.append(CDisplayListItem('XHAMSTER',       'xhamster.com',       CDisplayListItem.TYPE_CATEGORY, ['https://xhamster.com/categories'],     'xhamster','https://1000logos.net/wp-content/uploads/2018/12/xHamster-Logo-768x432.png', None)) 
+           valTab.append(CDisplayListItem('HELLMOMS',       'https://hellmoms.com',       CDisplayListItem.TYPE_CATEGORY, ['https://hellmoms.com'],     'HELLMOMS','https://hellmoms.com/highres.png', None)) 
            valTab.append(CDisplayListItem('BOUNDHUB',       'https://www.boundhub.com',       CDisplayListItem.TYPE_CATEGORY, ['https://www.boundhub.com/categories/'],     'BOUNDHUB','https://findbestporno.com/public/uploads/image/2021/9/BoundHub.jpg', None))
            valTab.append(CDisplayListItem('SHAMELESS',       'https://www.shameless.com/',       CDisplayListItem.TYPE_CATEGORY, ['https://www.shameless.com/categories/'],     'SHAMELESS','https://onepornlist.com/img/screenshots/shameless.jpg', None))
            valTab.append(CDisplayListItem('XXXBULE',       'https://www.xxxbule.com/',       CDisplayListItem.TYPE_CATEGORY, ['https://www.xxxbule.com/streams/'],     'XXXBULE','https://ph-static.com/xxxbule/css/logo.png', None)) 
@@ -656,6 +657,11 @@ class Host:
               for item in valtemp: item.name='XNXX - '+item.name
               valTab = valTab + valtemp
               
+              self.MAIN_URL = 'https://hellmoms.com' 
+              valtemp = self.listsItems(-1, url, 'HELLMOMS-search')
+              for item in valtemp: item.name='HELLMOMS - '+item.name
+              valTab = valTab + valtemp
+              
               self.MAIN_URL = 'http://www.boundhub.com' 
               valtemp = self.listsItems(-1, url, 'BOUNDHUB-search')
               for item in valtemp: item.name='BOUNDHUB - '+item.name
@@ -969,6 +975,56 @@ class Host:
               valTab.append(CDisplayListItem('Next', 'Page: '+phUrl.split('/')[-2], CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL+phUrl], name, '', None))                
            return valTab
 
+        if 'HELLMOMS' == name:
+           printDBG( 'Host listsItems begin name='+name )
+           self.MAIN_URL = 'https://hellmoms.com' 
+           COOKIEFILE = os_path.join(GetCookieDir(), 'hellmoms.cookie')
+           self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
+           sts, data = self.cm.getPage(url, self.defaultParams)
+           if not sts: return valTab
+           #printDBG( 'Host listsItems data: '+data )
+           data = self.cm.ph.getDataBeetwenMarkers(data, 'block-menu', 'class="btn-search', False)[1]
+           data = data.split('<li>')
+           if len(data): 
+              del data[0]
+           for item in data:
+              phTitle = self.cm.ph.getSearchGroups(item, '''"[>]([^"^']+?)[<]/''', 1, True)[0]
+              phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0]
+              phImage = 'https://cdni.pornpics.com/460/7/500/77394548/77394548_099_512f.jpg'
+              valTab.append(CDisplayListItem(phTitle,phTitle,CDisplayListItem.TYPE_CATEGORY, [phUrl],'HELLMOMS-clips', phImage, None)) 
+           valTab.sort(key=lambda poz: poz.name)
+           valTab.insert(0,CDisplayListItem('--- Recently Added ---', 'Recently Added Videos', CDisplayListItem.TYPE_CATEGORY, [self.MAIN_URL],      'HELLMOMS-clips', 'https://cdni.pornpics.com/1280/1/181/25977073/25977073_013_edfb.jpg', None)) 
+           self.SEARCH_proc='HELLMOMS-search'
+           valTab.insert(0,CDisplayListItem(_('Search history'), _('Search history'), CDisplayListItem.TYPE_CATEGORY, [''], 'HISTORY', 'https://img2.thejournal.ie/inline/2398415/original/?width=630&version=2398415', None)) 
+           valTab.insert(0,CDisplayListItem(_('Search'),_('Search'),                  CDisplayListItem.TYPE_SEARCH,   [''], '',        'https://www.hyperpoolgroup.co.za/wp-content/uploads/2018/07/Product-Search.jpg', None)) 
+           return valTab
+        if 'HELLMOMS-search' == name:
+           printDBG( 'Host listsItems begin name='+name )
+           valTab = self.listsItems(-1, 'https://hellmoms.com/q/'+url.replace(' ','+'), 'HELLMOMS-clips')
+           return valTab              
+        if 'HELLMOMS-clips' == name:
+           printDBG( 'Host listsItems begin name='+name )
+           self.MAIN_URL = 'https://hellmoms.com' 
+           COOKIEFILE = os_path.join(GetCookieDir(), 'hellmoms.cookie')
+           self.defaultParams = {'use_cookie': True, 'load_cookie': True, 'save_cookie': True, 'cookiefile': COOKIEFILE, 'return_data': True}
+           sts, data = self.cm.getPage(url, self.defaultParams)
+           if not sts: return valTab
+           #printDBG( 'Host listsItems data: '+data )
+           next = self.cm.ph.getSearchGroups(data, '''rel="next".href=["]([^"^']+?)["]><''', 1, True)[0]
+           data = data.split('class="thumb">')
+           if len(data): 
+              del data[0]
+           for item in data:
+              phUrl = self.cm.ph.getSearchGroups(item, '''href=['"]([^"^']+?)['"]''', 1, True)[0] 
+              phTitle = self.cm.ph.getSearchGroups(item, '''title"[>]([^"]+?)[<]/''', 1, True)[0] 
+              phImage = self.cm.ph.getSearchGroups(item, '''img.src=['"]([^"^']+?)['"]''', 1, True)[0] 
+              if not phImage:
+                 phImage = self.cm.ph.getSearchGroups(item, '''data-original=['"]([^"^']+?)['"]''', 1, True)[0] 
+              phTime = self.cm.ph.getSearchGroups(item, '''duration">([^>]+?)<''', 1, True)[0]
+              valTab.append(CDisplayListItem(decodeHtml(phTitle),'['+phTime+'] '+decodeHtml(phTitle),CDisplayListItem.TYPE_VIDEO, [CUrlItem('', phUrl, 1)], 0, phImage, None)) 
+           if next:
+              valTab.append(CDisplayListItem('Next', 'Page: '+ next.split('/')[-2], CDisplayListItem.TYPE_CATEGORY, [next], name, 'http://www.clker.com/cliparts/n/H/d/S/N/j/green-next-page-button-hi.png', None)) 
+           return valTab
         
         if 'BOUNDHUB' == name:
            printDBG( 'Host listsItems begin name='+name )
@@ -9003,6 +9059,7 @@ class Host:
         if self.MAIN_URL == 'https://zbporn.com':            return 'https://zbporn.com'
         if self.MAIN_URL == 'https://www.alphaporno.com':    return self.MAIN_URL
         if self.MAIN_URL == 'https://crocotube.com/':        return self.MAIN_URL
+        if self.MAIN_URL == 'https://hellmoms.com':          return self.MAIN_URL
         if self.MAIN_URL == 'https://www.boundhub.com':      return self.MAIN_URL
         if self.MAIN_URL == 'https://www.shameless.com/':    return self.MAIN_URL
         if self.MAIN_URL == 'https://pornone.com':           return self.MAIN_URL
