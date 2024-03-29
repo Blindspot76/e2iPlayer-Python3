@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2023-05-28 by Blindspot
+# 2024-03-24 by Blindspot
 ###################################################
-HOST_VERSION = "2.3"
+HOST_VERSION = "2.4"
 ###################################################
 # LOCAL import
 ###################################################
@@ -132,104 +132,70 @@ class MoziCsillag(CBaseHostClass):
         sts, data = self.getPage(cItem['url'])
         desc = self.cm.ph.getDataBeetwenMarkers(data, '<p>', '</p>', False)[1]
         desc = self.cleanHtmlStr(desc)
-        url = self.cm.ph.getDataBeetwenMarkers(data, '<div class="small-12 medium-7 small-centered columns">', 'Beküldött', False)[1]
-        url = self.cm.ph.getDataBeetwenMarkers(url, '<a href="', '"', False)[1]
-        sts, data = self.getPage(url)
-        urls = self.cm.ph.getAllItemsBeetwenMarkers(data, '<div class="panel">', 'Lejátszás', False)
+        urls = data.split('<div class="panel">')
+        if len(urls): 
+           del urls[0]
+        #printDBG('Lekért linkek: '+str(urls))
         if len(urls) == 1:
-            urls = self.cm.ph.getDataBeetwenMarkers(data, '<div class="panel">', 'Lejátszás', False)[1]
-            host = self.cm.ph.getDataBeetwenMarkers(urls, 'title="', '</div>', False)[1]
-            host = self.cm.ph.getDataBeetwenMarkers(host, '">', '</a>', False)[1]
-            url =  self.cm.ph.getDataBeetwenMarkers(urls, '</span></div>', 'onclick="', False)[1]
-            url = 'https://filmek-online.com/' + self.cm.ph.getDataBeetwenMarkers(url, '<a href="', '"', False)[1]
+            urls = self.cm.ph.getDataBeetwenMarkers(data, '<div class="panel">', 'Lejátszás</a>', False)[1]
+            printDBG('Lekért URLS: '+str(urls))
+            host = self.cm.ph.getSearchGroups(urls, '''title=["]([^"^']+?)["]>.+/span''', 1, True)[0]
+            printDBG('Lekért HOST: '+str(host))
+            url = self.cm.ph.getSearchGroups(urls, '''href=['"]([^"^']+?)['"].target''', 1, True)[0]
+            printDBG('Lekért URL: '+str(url))
             title = cItem['title'] + " - " + host
+            printDBG('Lekért TITLE: '+str(title))
             params = {'title':title, 'icon': cItem['icon'] , 'url': url, 'desc': desc}
             self.addVideo(params)
         else:
            for i in urls:
-               host = self.cm.ph.getDataBeetwenMarkers(i, 'title="', '</div>', False)[1]
-               host = self.cm.ph.getDataBeetwenMarkers(host, '">', '</a>', False)[1]
-               url =  self.cm.ph.getDataBeetwenMarkers(i, '</span></div>', 'onclick="', False)[1]
-               url = 'https://filmek-online.com/' + self.cm.ph.getDataBeetwenMarkers(url, '<a href="', '"', False)[1]
+               host = self.cm.ph.getSearchGroups(i, '''title=["]([^"^']+?)["]>.+/span''', 1, True)[0]
+               printDBG('ELSE HOST: '+str(host))
+               url = self.cm.ph.getSearchGroups(i, '''href=['"]([^"^']+?)['"].target''', 1, True)[0]
+               printDBG('ELSE url: '+str(url))
                title = cItem['title'] + " - " + host
+               printDBG('ELSE Title: '+str(title))
                params = {'title':title, 'icon': cItem['icon'] , 'url': url, 'desc': desc}
                self.addVideo(params)
     
     def exploreEpisodes(self, cItem):
         printDBG("MoziCsillag.exploreEpisodes")
         sts, data = self.getPage(cItem['url'])
-        desc = self.cm.ph.getDataBeetwenMarkers(data, '<p>', '</p>', False)[1]
+        desc = self.cm.ph.getSearchGroups(data, '''Tag.+\s\s.+\s.+\s.+\s.+<p[>]([^"^']+?)[<]/p>''', 1, True)[0].strip()
         desc = self.cleanHtmlStr(desc)
-        url = self.cm.ph.getDataBeetwenMarkers(data, '<div class="small-12 medium-7 small-centered columns">', 'Beküldött', False)[1]
-        url = self.cm.ph.getDataBeetwenMarkers(url, '<a href="', '"', False)[1]
-        sts, data = self.getPage(url)
-        episodes = self.cm.ph.getAllItemsBeetwenMarkers(data, "<div class='accordion-episodes'>", "<div class='dateHolder'>", False)
-        if len(episodes) == 1:
-            episodes = self.cm.ph.getDataBeetwenMarkers(data, "<div class='accordion-episodes'>", "<div class='dateHolder'>", False)[1]
-            title = self.cm.ph.getDataBeetwenMarkers(episodes, "<div class='textHolder'>", "</div>", False)[1]
-            num = ".1"
-            params = {'category': 'explore_episodes', 'title': title, 'url': url, 'icon': cItem['icon'], 'num': num, 'desc': desc}
+        episodes = re.findall('''href="#.+strong[>]([^"^']+?)[<]/strong''', data)
+        for i in episodes:
+            printDBG(i)
+            num = str(episodes.index(i)+1)
+            title = num + ".rész"
+            params = {'category': 'explore_episodes', 'title': title, 'url': cItem['url'], 'icon': cItem['icon'], 'num': num, 'desc': desc}
             self.addDir(params)
-        else:
-           for i in episodes:
-               title = self.cm.ph.getDataBeetwenMarkers(i, "<div class='textHolder'>", "</div>", False)[1]
-               num = episodes.index(i)
-               params = {'category': 'explore_episodes', 'title': title, 'url': url, 'icon': cItem['icon'], 'num': num, 'desc': desc}
-               self.addDir(params)
     
     def exploreLinks(self, cItem):
-        printDBG("MoziCsillag.exploreLinks")
         sts, data = self.getPage(cItem['url'])
-        if cItem['num'] == ".1":
-            urls = self.cm.ph.getAllItemsBeetwenMarkers(data, "<div class='panel '>", 'Lejátszás', False)
-            if len(urls) == 1:
-                urls = self.cm.ph.getDataBeetwenMarkers(data, "<div class='panel '>", 'Lejátszás', False)[1]
-                host = self.cm.ph.getDataBeetwenMarkers(urls, "title='", '</div>', False)[1]
-                host = self.cm.ph.getDataBeetwenMarkers(host, "'>", '</a>', False)[1]
-                url =  self.cm.ph.getDataBeetwenMarkers(urls, '</span></div>', "onclick='", False)[1]
-                url = 'https://filmek-online.com/' + self.cm.ph.getDataBeetwenMarkers(url, "<a href='", "'", False)[1]
-                title = cItem['title'] + " - " + host
-                params = {'title':title, 'icon': cItem['icon'] , 'url': url, 'desc': cItem['desc']}
-                self.addVideo(params)
-            else:
-               for i in urls:
-                   host = self.cm.ph.getDataBeetwenMarkers(i, "title='", '</div>', False)[1]
-                   host = self.cm.ph.getDataBeetwenMarkers(host, "'>", '</a>', False)[1]
-                   url =  self.cm.ph.getDataBeetwenMarkers(i, '</span></div>', "onclick='", False)[1]
-                   url = 'https://filmek-online.com/' + self.cm.ph.getDataBeetwenMarkers(url, "<a href='", "'", False)[1]
-                   title = cItem['title'] + " - " + host
-                   params = {'title':title, 'icon': cItem['icon'] , 'url': url, 'desc': cItem['desc']}
-                   self.addVideo(params)
-        else:
-           episodes = self.cm.ph.getAllItemsBeetwenMarkers(data, "<div class='accordion-episodes'>", "</div></div></div>", False)
-           urls = self.cm.ph.getAllItemsBeetwenMarkers(episodes[cItem['num']], "<div class='panel '>", 'Lejátszás', False)
-           if len(urls) == 1:
-               urls = self.cm.ph.getDataBeetwenMarkers(episodes[cItem['num']], "<div class='panel '>", 'Lejátszás',False)[1]
-               host = self.cm.ph.getDataBeetwenMarkers(urls, "title='", '</div>', False)[1]
-               host = self.cm.ph.getDataBeetwenMarkers(host, "'>", '</a>', False)[1]
-               url =  self.cm.ph.getDataBeetwenMarkers(urls, '</span></div>', "onclick='", False)[1]
-               url = 'https://filmek-online.com/' + self.cm.ph.getDataBeetwenMarkers(url, "<a href='", "'", False)[1]
-               title = cItem['title'] + " - " + host
-               params = {'title':title, 'icon': cItem['icon'] , 'url': url, 'desc': cItem['desc']}
-               self.addVideo(params)
-           else:
-              for i in urls:
-                  host = self.cm.ph.getDataBeetwenMarkers(i, "title='", '</div>', False)[1]
-                  host = self.cm.ph.getDataBeetwenMarkers(host, "'>", '</a>', False)[1]
-                  url =  self.cm.ph.getDataBeetwenMarkers(i, '</span></div>', "onclick='", False)[1]
-                  url = 'https://filmek-online.com/' + self.cm.ph.getDataBeetwenMarkers(url, "<a href='", "'", False)[1]
-                  title = cItem['title'] + " - " + host
-                  params = {'title':title, 'icon': cItem['icon'] , 'url': url, 'desc': cItem['desc']}
-                  self.addVideo(params)
+        episode = self.cm.ph.getDataBeetwenMarkers(data, "<strong>Epizód %s</strong>" % cItem['num'], '</dd>', False)[1]
+        urls = re.findall('''href=['"]([^"^']+?)['"] t''', episode)
+        titles = re.findall('''title="([^"^']+?)">.+</span>''', episode)
+        for i in urls:
+            params = {'title': titles[urls.index(i)], 'url': i, 'icon': cItem['icon'], 'desc': cItem['desc']}
+            self.addVideo(params)
     
     def getLinksForVideo(self, cItem):
         printDBG("MoziCsillag.getLinksForVideo")
         videoUrls = []
         sts, data = self.cm.getPage(cItem['url'])
+        printDBG('GetLinksforVideo DATA: '+data)
         url = self.cm.meta['url']
+        printDBG('GetLinksforVideo URL: '+str(url))
+        if "waaw" in cItem['title']:
+            sts, data = self.getPage(url)
+            printDBG( 'Videolinkek oldala: ' + data )
+            id = self.cm.ph.getDataBeetwenMarkers(data, "'MTQ5-", "')", False)[1]
+            url = 'https://waaw.to/watch_video.php?v=' + id
         if 'voe' in cItem['title'] or 'Voe' in cItem['title']:
             videoUrls = []
             sts, data = self.getPage(url)
+            printDBG( 'Film oldala: ' + data )
             url = self.cm.ph.getDataBeetwenMarkers(data, "'hls': '", "'", False)[1]
             if not url:
                 url = self.cm.ph.getDataBeetwenMarkers(data, "'mp4': '", "'", False)[1]
