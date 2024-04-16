@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2024-03-24 by Blindspot
+# 2024-04-15 by Blindspot
 ###################################################
-HOST_VERSION = "2.4"
+HOST_VERSION = "2.5"
 ###################################################
 # LOCAL import
 ###################################################
@@ -29,14 +29,14 @@ import os
 from Components.config import config, ConfigText, ConfigYesNo, getConfigListEntry
 ###################################################
 def gettytul():
-    return 'https://mozicsillag.me/'
+    return 'https://mozicsillag1.me/'
 
 class MoziCsillag(CBaseHostClass):
  
     def __init__(self):
         CBaseHostClass.__init__(self, {'history':'mozicsillag', 'cookie':'mozicsillag.cookie'})
-        self.MAIN_URL = 'https://mozicsillag.me/'
-        self.DEFAULT_ICON_URL =  'https://mozicsillag.me/img/logo.png'
+        self.MAIN_URL = 'https://mozicsillag1.me/'
+        self.DEFAULT_ICON_URL =  'https://mozicsillag1.me/img/logo.png'
         self.USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36'
         self.HEADER = {'User-Agent': self.USER_AGENT, 'DNT':'1', 'Accept': 'text/html'}
         self.AJAX_HEADER = dict(self.HEADER)
@@ -54,8 +54,8 @@ class MoziCsillag(CBaseHostClass):
     
     def listMainMenu(self, cItem):
         MAIN_CAT_TAB = [
-                        {'category':'list_filters', 'title': _('Filmek'), 'url':'https://mozicsillag.me/filmek-online/legfrissebb'},
-                        {'category':'list_filters', 'title': _('Sorozatok'), 'url':'https://mozicsillag.me/sorozatok-online'},
+                        {'category':'list_filters', 'title': _('Filmek'), 'url':'https://mozicsillag1.me/filmek-online/legfrissebb'},
+                        {'category':'list_filters', 'title': _('Sorozatok'), 'url':'https://mozicsillag1.me/sorozatok-online'},
                         {'category':'search', 'title': _('Keresés'), 'search_item':True},
                         {'category':'search_history', 'title': _('Keresési előzmények')} 
                           ]
@@ -74,11 +74,11 @@ class MoziCsillag(CBaseHostClass):
                 params = {'category':'list_items','title':title, 'icon': None, 'url': url}
                 self.addDir(params)
                 if cats.index(i) == 0:
-                    url = 'https://mozicsillag.me/filmek-online/legnezettebb'
+                    url = 'https://mozicsillag1.me/filmek-online/legnezettebb'
                     title = "Legnézettebb"
                     params = {'category':'list_items','title':title, 'icon': None, 'url': url}
                     self.addDir(params)
-                    url = 'https://mozicsillag.me/filmek-online/legjobbra-ertekelt'
+                    url = 'https://mozicsillag1.me/filmek-online/legjobbra-ertekelt'
                     title = "Legjobbra értékelt"
                     params = {'category':'list_items','title':title, 'icon': None, 'url': url}
                     self.addDir(params)
@@ -92,11 +92,11 @@ class MoziCsillag(CBaseHostClass):
                 params = {'category':'list_items','title':title, 'icon': None, 'url': url}
                 self.addDir(params)
                 if cats.index(i) == 0:
-                    url = 'https://mozicsillag.me/sorozatok-online/legnezettebb'
+                    url = 'https://mozicsillag1.me/sorozatok-online/legnezettebb'
                     title = "Legnézettebb"
                     params = {'category':'list_items','title':title, 'icon': None, 'url': url}
                     self.addDir(params)
-                    url = 'https://mozicsillag.me/sorozatok-online/legjobbra-ertekelt'
+                    url = 'https://mozicsillag1.me/sorozatok-online/legjobbra-ertekelt'
                     title = "Legjobbra értékelt"
                     params = {'category':'list_items','title':title, 'icon': None, 'url': url}
                     self.addDir(params)
@@ -113,7 +113,7 @@ class MoziCsillag(CBaseHostClass):
             url = self.cm.ph.getDataBeetwenMarkers(i, '="', '"', False)[1]
             title = self.cm.ph.getDataBeetwenMarkers(i, '<strong>', '</strong>', False)[1]
             title = self.cleanHtmlStr(title)
-            icon = "https://mozicsillag.me" + self.cm.ph.getDataBeetwenMarkers(i, 'data-original="', '"', False)[1]
+            icon = "https://mozicsillag1.me" + self.cm.ph.getDataBeetwenMarkers(i, 'data-original="', '"', False)[1]
             desc = self.cm.ph.getDataBeetwenMarkers(i, '</p>', '<div', False)[1]
             desc = desc.replace("<br>", "")
             desc = desc.replace("   ", "")
@@ -262,7 +262,7 @@ class MoziCsillag(CBaseHostClass):
         url = url.encode('ascii')
         url = base64.b64encode(url)
         url = url.decode("ascii")
-        url = 'https://mozicsillag.me/kereses/' + url
+        url = 'https://mozicsillag1.me/kereses/' + url
         cItem['url'] = url
         self.listItems(cItem) 
 
