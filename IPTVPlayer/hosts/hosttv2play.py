@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# 2022.11.11. Blindspot
+# 2024.04.24. Blindspot
 ###################################################
-HOST_VERSION = "1.0"
+HOST_VERSION = "1.1"
 ###################################################
 # LOCAL import
 ###################################################
@@ -20,7 +20,22 @@ from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Play
 ###################################################
 import re
 from urllib.parse import unquote
+from Components.config import config, ConfigSelection, ConfigYesNo, ConfigText, ConfigInteger, getConfigListEntry
 ###################################################
+# E2 GUI COMPONENTS
+###################################################
+from Plugins.Extensions.IPTVPlayer.components.iptvmultipleinputbox import IPTVMultipleInputBox
+from Screens.MessageBox import MessageBox
+###################################################
+###################################################
+# Config options for HOST
+###################################################
+config.plugins.iptvplayer.tv2play_quality = ConfigYesNo(default = True)
+###################################################
+def GetConfigList():
+    optionList = []
+    optionList.append( getConfigListEntry(_("Elérhető legjobb minőség beállítása"), config.plugins.iptvplayer.tv2play_quality) )
+    return optionList
 def gettytul():
     return 'https://tv2play.hu/' 
 
@@ -69,8 +84,19 @@ class TV2Play(CBaseHostClass):
             videoUrls.extend(retTab)
         elif 0 == urlSupport and self._uriIsValid(uri):
             if protocol == 'm3u8':
+                use_best = config.plugins.iptvplayer.tv2play_quality.value
+                printDBG("Legjobb minőség használata: "+str(use_best))
                 retTab = getDirectM3U8Playlist(uri, checkExt=False, checkContent=True)
-                videoUrls.extend(retTab)
+                printDBG("Lejátszási linkek vége: "+str(retTab[-1]))
+                if config.plugins.iptvplayer.tv2play_quality.value:
+                   BestLink = str(retTab[-1])
+                   url = self.cm.ph.getSearchGroups(BestLink, '''url.+?['"]([^"^']+?)['"]''', 1, True)[0]
+                   printDBG("Kész link: "+url)
+                   videoUrls.append({'name':'direct link', 'url':url})
+                   return videoUrls
+                else:   
+                   videoUrls.extend(retTab)
+                   printDBG("Utolsó best nélkül: "+str(videoUrls))
             elif protocol == 'f4m':
                 retTab = getF4MLinksWithMeta(uri)
                 videoUrls.extend(retTab)

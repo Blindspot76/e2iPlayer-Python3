@@ -1,3 +1,5 @@
+#2024.04.24.01
+MoziCsillag (HU) linktámogatás javítva (VOE.SX), TV2 Play Minőségválasztó hozzáadva
 #2024.04.17.01
 Összetevők frissítése
 #2024.04.16.01
