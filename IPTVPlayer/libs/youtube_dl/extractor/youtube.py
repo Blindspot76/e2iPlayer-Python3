@@ -3,6 +3,7 @@
 # -*- coding: utf-8 -*-
 import re
 import time
+import requests
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_urlencode, urllib_unquote_plus
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urlparse, urlunparse
 from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import iterDictItems
@@ -498,21 +499,23 @@ class YoutubeIE(object):
                 isGoogleDoc = False
                 videoKey = 'video_id'
                 videoInfoparams = {}
-                http_params = {'header': {'User-Agent': 'com.google.android.youtube/17.31.35 (Linux; U; Android 11) gzip', 'Content-Type': 'application/json', 'Origin': 'https://www.youtube.com', 'X-YouTube-Client-Name': '3', 'X-YouTube-Client-Version': '17.31.35'}}
-                http_params['raw_post_data'] = True
-                post_data = "{'videoId': '%s', 'context': {'client': {'hl': 'en', 'clientVersion': '17.31.35', 'clientName': 'ANDROID', 'androidSdkVersion': 30}}}" % video_id
-                sts, video_webpage = self.cm.getPage(url, http_params, post_data)
-                if sts:
+                http_params = {'User-Agent': 'com.google.android.youtube/17.31.35 (Linux; U; Android 11) gzip', 'Content-Type': 'application/json', 'Origin': 'https://www.youtube.com', 'X-YouTube-Client-Name': '3', 'X-YouTube-Client-Version': '17.31.35'}
+                http_params['raw_post_data'] = 'True'
+                post_data = {'videoId': video_id, 'context': {'client': {'hl': 'en', 'clientVersion': '17.31.35', 'clientName': 'ANDROID', 'androidSdkVersion': 30}}}
+                x = requests.post(url, json = post_data, headers = http_params)
+                video_webpage = x.text
+                if x.status_code == 200:
                     if allowAgeGate and 'LOGIN_REQUIRED' in video_webpage:
-                        http_params['header']['X-YouTube-Client-Name'] = '85'
-                        post_data = "{'videoId': '%s', 'thirdParty': 'https://google.com', 'context': {'client': {'clientName': 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', 'clientVersion': '2.0', 'clientScreen': 'EMBED'}}}" % video_id
-                        sts, video_webpage = self.cm.getPage(url, http_params, post_data)
-                    printDBG(video_webpage)
+                        http_params['X-YouTube-Client-Name'] = '85'
+                        post_data = {'videoId': video_id, 'thirdParty': 'https://google.com', 'context': {'client': {'clientName': 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', 'clientVersion': '2.0', 'clientScreen': 'EMBED'}}}
+                        x = requests.post(url, json = post_data, headers = http_params)
+                        video_webpage = x.text
                     player_response = json_loads(video_webpage)
                 else:
                     url = 'http://www.youtube.com/watch?v=%s&bpctr=9999999999&has_verified=1&' % video_id
-                    sts, video_webpage = self.cm.getPage(url)
-                    if sts:
+                    x = requests.get(url, headers = http_params)
+                    video_webpage = x.text
+                    if x.status_code == 200:
                         player_response = self._extract_yt_initial_variable(
                         video_webpage, self._YT_INITIAL_PLAYER_RESPONSE_RE,
                         video_id, 'initial player response')
@@ -520,7 +523,7 @@ class YoutubeIE(object):
                 if player_response['playabilityStatus']['status'] == 'OK':
                     break
         
-        if not sts:
+        if not x.status_code == 200:
             raise ExtractorError('Unable to download video webpage')
 
         if not player_response:
@@ -613,7 +616,7 @@ class YoutubeIE(object):
                     playerUrl = ph.search(video_webpage, reObj)[0]
                     if playerUrl:
                         break
-            playerUrl = self.cm.getFullUrl(playerUrl.replace('\\', ''), self.cm.meta['url'])
+            playerUrl = self.cm.getFullUrl(playerUrl.replace('\\', ''), url)
             if playerUrl:
                 decSignatures = CYTSignAlgoExtractor(self.cm).decryptSignatures(signatures, playerUrl)
                 if len(signatures) == len(signItems):
