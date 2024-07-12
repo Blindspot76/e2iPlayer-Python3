@@ -163,7 +163,6 @@ hostvumedicom
 hostwatchcartoononline
 hostwatchwrestling
 hostwatchwrestlinguno
-hostwebhuplayer
 hostwebstream
 hostwgrane
 hostwofvideo

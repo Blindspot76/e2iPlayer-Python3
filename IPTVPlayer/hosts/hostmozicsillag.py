@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2024-04-24 by Blindspot
+# 2024-04-15 by Blindspot
 ###################################################
-HOST_VERSION = "2.6"
+HOST_VERSION = "2.5"
 ###################################################
 # LOCAL import
 ###################################################
@@ -112,7 +112,7 @@ class MoziCsillag(CBaseHostClass):
         for i in filmek:
             url = self.cm.ph.getDataBeetwenMarkers(i, '="', '"', False)[1]
             title = self.cm.ph.getDataBeetwenMarkers(i, '<strong>', '</strong>', False)[1]
-            title = self.cleanHtmlStr(title)
+            title = self.cleanHtmlStr(title).replace('&eacute;', 'é')
             icon = "https://mozicsillag1.me" + self.cm.ph.getDataBeetwenMarkers(i, 'data-original="', '"', False)[1]
             desc = self.cm.ph.getDataBeetwenMarkers(i, '</p>', '<div', False)[1]
             desc = desc.replace("<br>", "")
@@ -195,14 +195,8 @@ class MoziCsillag(CBaseHostClass):
         if 'voe' in cItem['title'] or 'Voe' in cItem['title']:
             videoUrls = []
             sts, data = self.getPage(url)
-            #printDBG( 'Film oldala: ' + data )
+            printDBG( 'Film oldala: ' + data )
             url = self.cm.ph.getDataBeetwenMarkers(data, "'hls': '", "'", False)[1]
-            printDBG( 'Lekért URL: ' + url )
-            if 'm3u8' not in url:
-               url = base64.b64decode(url)
-               url = str(url)
-               url = url.replace("b'https", "https").replace("'", "")
-               printDBG( 'Decoded Link: '+str(url))
             if not url:
                 url = self.cm.ph.getDataBeetwenMarkers(data, "'mp4': '", "'", False)[1]
             videoUrls.append({'name':'direct link', 'url':url})

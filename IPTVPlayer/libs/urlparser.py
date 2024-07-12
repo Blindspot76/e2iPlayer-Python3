@@ -10065,7 +10065,7 @@ class pageParser(CaptchaHelper):
         urlsTab = urlsTab[::-1]
 
         if 1: #0 == len(urlsTab):
-            url = urlparser.decorateUrl(data['hlsManifestUrl'], {'iptv_proto': 'm3u8', 'Referer': baseUrl, 'User-Agent': HTTP_HEADER['User-Agent']})
+            url = urlparser.decorateUrl(data['hlsManifestUrl'].replace('\\u0026', '&'), {'iptv_proto': 'm3u8', 'Referer': baseUrl, 'User-Agent': HTTP_HEADER['User-Agent']})
             linksTab = getDirectM3U8Playlist(url, checkExt=False, checkContent=True)
 
             for idx in range(len(linksTab)):
