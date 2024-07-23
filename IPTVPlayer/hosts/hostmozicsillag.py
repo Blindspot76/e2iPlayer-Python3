@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2024-04-15 by Blindspot
+# 2024-07-11 by Blindspot
 ###################################################
-HOST_VERSION = "2.5"
+HOST_VERSION = "2.7"
 ###################################################
 # LOCAL import
 ###################################################
@@ -143,7 +143,7 @@ class MoziCsillag(CBaseHostClass):
             printDBG('Lekért HOST: '+str(host))
             url = self.cm.ph.getSearchGroups(urls, '''href=['"]([^"^']+?)['"].target''', 1, True)[0]
             printDBG('Lekért URL: '+str(url))
-            title = cItem['title'] + " - " + host
+            title = cItem['title'] + " - " + host.replace('&eacute;', 'é')
             printDBG('Lekért TITLE: '+str(title))
             params = {'title':title, 'icon': cItem['icon'] , 'url': url, 'desc': desc}
             self.addVideo(params)

@@ -1,4 +1,4 @@
-# Modified by Blindspot - 2022.11.10
+# -*- coding: utf-8 -*-
 ###################################################
 # LOCAL import
 ###################################################
@@ -328,7 +328,7 @@ class YouTubeParser():
                 except:
                     owner = ""
             owner = ensure_str(owner)
-            
+
             if desc:
                 desc = " | ".join(desc) + "\n" + owner
             else:
@@ -398,7 +398,7 @@ class YouTubeParser():
                     printExc()
                     return {}
 
-            if '/channel/' in url:
+            if '/channel/' in url or '/@' in url:
                 return {'type': 'category', 'category': 'channel', 'title': title, 'url': ensure_str(url), 'icon': icon, 'time': '', 'desc': ''}
             else:
                 return {'type': 'feed', 'category': cat, 'title': title, 'url': ensure_str(url), 'icon': icon, 'time': '', 'desc': ''}
@@ -708,7 +708,7 @@ class YouTubeParser():
                     data2 = self.cm.ph.getDataBeetwenMarkers(data, "window[\"ytInitialData\"] =", "};", False)[1]
                     if len(data2) == 0:
                         data2 = self.cm.ph.getDataBeetwenMarkers(data, "var ytInitialData =", "};", False)[1]
-                    
+
                     data2 = ensure_str(data2.strip()) #just cleaning and ensuring we're working with string
                     #json simple schema verification and correction
                     jsonStarts = data2.count('{')

@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-# Modified by Blindspot 2022.11.10
 # -*- coding: utf-8 -*-
 import re
 import time
-import requests
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_urlencode, urllib_unquote_plus
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlParse import urlparse, urlunparse
 from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import iterDictItems
@@ -21,9 +19,9 @@ from Plugins.Extensions.IPTVPlayer.tools.e2ijs import js_execute_ext, is_js_cach
 
 from Plugins.Extensions.IPTVPlayer.p2p3.manipulateStrings import ensure_str
 
+
 class CYTSignAlgoExtractor:
-    # MAX RECURSION Depth for security
-    MAX_REC_DEPTH = 5
+    MAX_REC_DEPTH = 5 # MAX RECURSION Depth for security
     RE_FUNCTION_NAMES = re.compile('[ =(,]([a-zA-Z$]+?)\([a-z0-9,]*?\)')
     RE_OBJECTS = re.compile('[ =(,;]([a-zA-Z$]+?)\.([a-zA-Z$]+?)\(')
     RE_MAIN = re.compile('([a-zA-Z0-9$]+)\(')
@@ -426,6 +424,10 @@ class YoutubeIE(object):
             player_response = webpage
         try:
             player_captions = player_response['captions']['playerCaptionsTracklistRenderer']['captionTracks']
+        except Exception:
+            printDBG('youtube - _get_automatic_captions(): [captionTracks] NOT found in player_response')
+            return sub_tracks
+        try:
             for lang in player_captions:
                 printDBG("_get_automatic_captions %s" % lang)
                 sub_url = urllib_unquote_plus(lang['baseUrl'])
@@ -494,47 +496,42 @@ class YoutubeIE(object):
         else:
             tries = 0
             while tries < 3:
-                tries+=1
+                tries += 1
                 url = 'https://www.youtube.com/youtubei/v1/player?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8'
                 isGoogleDoc = False
                 videoKey = 'video_id'
                 videoInfoparams = {}
-                http_params = {'User-Agent': 'com.google.android.youtube/17.31.35 (Linux; U; Android 11) gzip', 'Content-Type': 'application/json', 'Origin': 'https://www.youtube.com', 'X-YouTube-Client-Name': '3', 'X-YouTube-Client-Version': '17.31.35'}
-                http_params['raw_post_data'] = 'True'
-                post_data = {'videoId': video_id, 'context': {'client': {'hl': 'en', 'clientVersion': '17.31.35', 'clientName': 'ANDROID', 'androidSdkVersion': 30}}}
-                x = requests.post(url, json = post_data, headers = http_params)
-                video_webpage = x.text
-                if x.status_code == 200:
+
+                http_params = {'header': {'User-Agent': 'com.google.android.youtube/1.9 (Linux; U; Android 13; en_US; sdk_gphone64_x86_64 Build/UPB4.230623.005) gzip', 'Content-Type': 'application/json', 'Origin': 'https://www.youtube.com', 'X-YouTube-Client-Name': '3', 'X-YouTube-Client-Version': '1.9'}}
+                http_params['raw_post_data'] = True
+                post_data = "{'videoId': '%s', 'params': '2AMB', 'context': {'client': {'hl': '%s', 'clientVersion': '1.9', 'clientName': 'ANDROID_TESTSUITE', 'androidSdkVersion': 33, 'osName': 'Android', 'osVersion': '13',}}}" % (video_id, GetDefaultLang())
+                sts, video_webpage = self.cm.getPage(url, http_params, post_data)
+                if sts:
                     if allowAgeGate and 'LOGIN_REQUIRED' in video_webpage:
-                        http_params['X-YouTube-Client-Name'] = '85'
-                        post_data = {'videoId': video_id, 'thirdParty': 'https://google.com', 'context': {'client': {'clientName': 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', 'clientVersion': '2.0', 'clientScreen': 'EMBED'}}}
-                        x = requests.post(url, json = post_data, headers = http_params)
-                        video_webpage = x.text
+                        http_params['header']['X-YouTube-Client-Name'] = '85'
+                        post_data = "{'videoId': '%s', 'thirdParty': 'https://www.youtube.com/', 'context': {'client': {'clientName': 'TVHTML5_SIMPLY_EMBEDDED_PLAYER', 'clientVersion': '2.0', 'clientScreen': 'EMBED'}}}" % video_id
+                        sts, video_webpage = self.cm.getPage(url, http_params, post_data)
                     player_response = json_loads(video_webpage)
                 else:
                     url = 'http://www.youtube.com/watch?v=%s&bpctr=9999999999&has_verified=1&' % video_id
-                    x = requests.get(url, headers = http_params)
-                    video_webpage = x.text
-                    if x.status_code == 200:
+                    sts, video_webpage = self.cm.getPage(url)
+                    if sts:
                         player_response = self._extract_yt_initial_variable(
-                        video_webpage, self._YT_INITIAL_PLAYER_RESPONSE_RE,
-                        video_id, 'initial player response')
+                            video_webpage, self._YT_INITIAL_PLAYER_RESPONSE_RE,
+                            video_id, 'initial player response')
                 printDBG("_real_extract tries %s" % tries)
                 if player_response['playabilityStatus']['status'] == 'OK':
                     break
-        
-        if not x.status_code == 200:
+
+        if not sts:
             raise ExtractorError('Unable to download video webpage')
 
         if not player_response:
             raise ExtractorError('Unable to get player response')
-        printDBG(player_response)
-        video_info = player_response['videoDetails']
+
+        video_info = player_response.get('videoDetails', {})
         # subtitles
-        if 'lengthSeconds' not in video_info:
-            video_duration = ''
-        else:
-            video_duration = video_info['lengthSeconds']
+        video_duration = video_info.get('lengthSeconds', '')
 
         url_map = {}
         video_url_list = {}
@@ -589,7 +586,7 @@ class YoutubeIE(object):
         except Exception:
             printExc()
 
-        if video_info.get('isLive') and not video_url_list:
+        if video_info.get('isLive', True) and not video_url_list: #j00zek needs verification if default value should be True or False, for now assuming yes
             is_m3u8 = 'yes'
             manifest_url = _unquote(player_response['streamingData']['hlsManifestUrl'], None)
             url_map = self._extract_from_m3u8(manifest_url, video_id)
@@ -616,7 +613,7 @@ class YoutubeIE(object):
                     playerUrl = ph.search(video_webpage, reObj)[0]
                     if playerUrl:
                         break
-            playerUrl = self.cm.getFullUrl(playerUrl.replace('\\', ''), url)
+            playerUrl = self.cm.getFullUrl(playerUrl.replace('\\', ''), self.cm.meta['url'])
             if playerUrl:
                 decSignatures = CYTSignAlgoExtractor(self.cm).decryptSignatures(signatures, playerUrl)
                 if len(signatures) == len(signItems):
@@ -633,7 +630,7 @@ class YoutubeIE(object):
         if isGoogleDoc:
             cookieHeader = self.cm.getCookieHeader(COOKIE_FILE)
 
-        sub_tracks = self._get_automatic_captions(video_id, )
+        sub_tracks = self._get_automatic_captions(video_id, player_response)
         results = []
         for format_param, url_item in video_url_list:
             # Extension
