@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2024-07-11 by Blindspot
+# 2024-08-17 by Blindspot
 ###################################################
-HOST_VERSION = "2.7"
+HOST_VERSION = "2.8"
 ###################################################
 # LOCAL import
 ###################################################
@@ -197,6 +197,16 @@ class MoziCsillag(CBaseHostClass):
             sts, data = self.getPage(url)
             printDBG( 'Film oldala: ' + data )
             url = self.cm.ph.getDataBeetwenMarkers(data, "'hls': '", "'", False)[1]
+            if not url:
+                videoPage = self.cm.ph.getSearchGroups(data, '''href.=.['"]([^"^']+?)['"]''', 1, True)[0]
+                sts, data = self.getPage(videoPage)
+                url = self.cm.ph.getDataBeetwenMarkers(data, "'hls': '", "'", False)[1]
+                printDBG( 'Lekért HLS link: ' + url )
+            if 'm3u8' not in url:
+                url = base64.b64decode(url)
+                printDBG( 'Decoded Link: ' + str(url) )
+                url = str(url).replace("b'", "").replace("'", "")
+                printDBG( 'Javítás után: '+str(url) )
             if not url:
                 url = self.cm.ph.getDataBeetwenMarkers(data, "'mp4': '", "'", False)[1]
             videoUrls.append({'name':'direct link', 'url':url})
