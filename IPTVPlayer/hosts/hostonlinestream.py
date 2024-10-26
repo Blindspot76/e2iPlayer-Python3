@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# 2022.07.15. Blindspot
+# 2024.10.26. Blindspot
 ###################################################
-HOST_VERSION = "1.4"
+HOST_VERSION = "1.5"
 ###################################################
 # LOCAL import
 ###################################################
@@ -17,7 +17,7 @@ from Plugins.Extensions.IPTVPlayer.libs.urlparserhelper import getDirectM3U8Play
 ###################################################
 # FOREIGN import
 ###################################################
-import urllib
+import urllib, re
 import os
 ###################################################
 
@@ -72,10 +72,10 @@ class OnlineStream(CBaseHostClass):
                 return
             dat = self.cm.ph.getDataBeetwenMarkers(data, "https://", "m3u8")[1]
         if cItem['title'] == 'M3':
-            url = "https://archivum.mtva.hu/api/m3/v3/stream?target=live"
+            url = "https://nemzetiarchivum.hu/m3/stream?no_lb=1&target=live"
             sts, data = self.cm.getPage(url)
-            dat = self.cm.ph.getDataBeetwenMarkers(data, '"url":"', '","', False)[1]
-            dat = dat.replace('\/', '/').replace("HLS.smil", "nodrm.smil")
+            dat = re.search(r'source":"nava","url":"(.*?)\"', data)
+            dat = dat.group(1).replace('\\/','/')
         if self._isPicture(dat):
             dat = dat.replace("mjpg", "jpg")
             dat = dat.replace("video", "image")
