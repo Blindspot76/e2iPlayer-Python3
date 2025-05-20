@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2024-08-17 by Blindspot
+# 2025-05-20 by Blindspot
 ###################################################
-HOST_VERSION = "2.8"
+HOST_VERSION = "3.0"
 ###################################################
 # LOCAL import
 ###################################################
@@ -30,6 +30,52 @@ from Components.config import config, ConfigText, ConfigYesNo, getConfigListEntr
 ###################################################
 def gettytul():
     return 'https://mozicsillag1.me/'
+
+def parseFilemoonVideoLink(data):
+    printDBG('*** parseFilemoonVideoLink called ***')
+    with open('/media/hdd/filemoon_dump.txt', 'w') as f:
+       f.write(data)
+    import re
+    match = re.search(r'<iframe[^>]+src=["\']([^"\']+)["\']', data)
+    if match:
+       return match.group(1)
+    return None
+
+def parserOKRU(url):
+    printDBG('parserOKRU baseUrl[%s]' % url)
+    baseUrl = url
+
+    # Extract movieId
+    videoId = urlparser.getParam(url, False).split('/')[-1]
+    apiUrl = 'https://ok.ru/dk/video.playJSON?movieId=' + videoId
+    printDBG('OK.RU API URL: ' + apiUrl)
+
+    sts, data = self.cm.getPage(apiUrl, {
+        'header': {
+            'Referer': baseUrl,
+            'User-Agent': HTTP_HEADER['User-Agent'],
+            'Accept': 'application/json',
+        },
+        'load_cookie': True,
+        'use_cookie': True,
+        'save_cookie': True,
+        'cookiefile': GetCookieDir('ok.cookie'),
+    })
+
+    if not sts:
+        printDBG('Failed to get OK.RU video JSON')
+        return []
+
+    try:
+        import json
+        json_data = json.loads(data)
+        hlsUrl = json_data['hlsManifestUrl'].replace('\\u0026', '&')
+        hlsUrl = urlparser.decorateUrl(hlsUrl, {'iptv_proto':'m3u8', 'Referer': baseUrl, 'User-Agent': HTTP_HEADER['User-Agent']})
+        printDBG('OK.RU hlsManifestUrl: ' + hlsUrl)
+        return [{'name': 'OK.RU m3u8', 'url': hlsUrl}]
+    except Exception as e:
+        printDBG('Error parsing OK.RU JSON: ' + str(e))
+        return []
 
 class MoziCsillag(CBaseHostClass):
  
@@ -184,54 +230,79 @@ class MoziCsillag(CBaseHostClass):
         printDBG("MoziCsillag.getLinksForVideo")
         videoUrls = []
         sts, data = self.cm.getPage(cItem['url'])
-        printDBG('GetLinksforVideo DATA: '+data)
+        if not sts:
+           printDBG('Nem sikerült lekérni az oldalt: ' + cItem['url'])
+           return []
+        printDBG('GetLinksforVideo DATA: ' + data)
         url = self.cm.meta['url']
-        printDBG('GetLinksforVideo URL: '+str(url))
-        if "waaw" in cItem['title']:
-            sts, data = self.getPage(url)
-            printDBG( 'Videolinkek oldala: ' + data )
-            id = self.cm.ph.getDataBeetwenMarkers(data, "'MTQ5-", "')", False)[1]
-            url = 'https://waaw.to/watch_video.php?v=' + id
-        if 'voe' in cItem['title'] or 'Voe' in cItem['title']:
-            videoUrls = []
-            sts, data = self.getPage(url)
-            printDBG( 'Film oldala: ' + data )
-            url = self.cm.ph.getDataBeetwenMarkers(data, "'hls': '", "'", False)[1]
-            if not url:
-                videoPage = self.cm.ph.getSearchGroups(data, '''href.=.['"]([^"^']+?)['"]''', 1, True)[0]
-                sts, data = self.getPage(videoPage)
-                url = self.cm.ph.getDataBeetwenMarkers(data, "'hls': '", "'", False)[1]
-                printDBG( 'Lekért HLS link: ' + url )
-            if 'm3u8' not in url:
-                url = base64.b64decode(url)
-                printDBG( 'Decoded Link: ' + str(url) )
-                url = str(url).replace("b'", "").replace("'", "")
-                printDBG( 'Javítás után: '+str(url) )
-            if not url:
-                url = self.cm.ph.getDataBeetwenMarkers(data, "'mp4': '", "'", False)[1]
-            videoUrls.append({'name':'direct link', 'url':url})
-            return videoUrls
+        printDBG('GetLinksforVideo URL: ' + str(url))
+
+        if 'filemoon.to' in url:
+           video_url = parseFilemoonVideoLink(data)
+           if video_url:
+              videoUrls.append({'name': 'filemoon iframe', 'url': video_url})
+        
+        if 'ok.ru' in url:
+           printDBG('OK.RU feldolgozás...')
+           sts, data = self.cm.getPage(url)
+           video_url = self.cm.ph.getSearchGroups(data, r'\\"ondemandHls\\":\\"(https[^"]+?m3u8.*?)\\"', 1, True)[0]
+           if not video_url:
+              printDBG('Nincs elérhető link')
+           else:
+              video_url = video_url.replace('\\u0026', '&')
+              videoUrls.append({'name': 'ok.ru m3u8', 'url': video_url})
+        
+        if "vidoza" in url or "videzz" in url:
+           urls = self.cm.ph.getSearchGroups(data, 'src:.["]([^"]+?)["].{,16}mp4', 1, True)
+           if urls:
+              url = urls[0]
+              printDBG('VIDEZZ LINK: ' + url)
+              videoUrls.append({'name': 'direct link', 'url': url})
+
+        if 'voe' in url or 'Voe' in url or 'kellywhatcould' in url:
+           videoUrls = []
+           sts, data = self.getPage(url)
+           if not sts:
+             printDBG('Nem sikerült lekérni az oldalt: ' + url)
+             return []
+           url = self.cm.ph.getDataBeetwenMarkers(data, "'hls': '", "'", False)[1]
+           if not url:
+              videoPage = self.cm.ph.getSearchGroups(data, '''href.=.['"]([^"^']+?)['"]''', 1, True)
+              if videoPage:
+                 videoPage = videoPage[0]
+                 sts, data = self.getPage(videoPage)
+                 if not sts:
+                    printDBG('Nem sikerült lekérni a videó oldalt: ' + videoPage)
+                    return []
+                 url = self.cm.ph.getDataBeetwenMarkers(data, "'hls': '", "'", False)[1]
+           if 'm3u8' not in url and url:
+              url = base64.b64decode(url)
+           if not url:
+              url = self.cm.ph.getDataBeetwenMarkers(data, "'mp4': '", "'", False)[1]
+           if url:
+              videoUrls.append({'name': 'direct link', 'url': url})
+
         uri = urlparser.decorateParamsFromUrl(url)
         protocol = uri.meta.get('iptv_proto', '')
-        
         printDBG("PROTOCOL [%s] " % protocol)
-        
-        urlSupport = self.up.checkHostSupport( uri )
-        if 1 == urlSupport:
-            retTab = self.up.getVideoLinkExt( uri )
-            videoUrls.extend(retTab)
-        elif 0 == urlSupport and self._uriIsValid(uri):
-            if protocol == 'm3u8':
-                retTab = getDirectM3U8Playlist(uri, checkExt=False, checkContent=True)
-                videoUrls.extend(retTab)
-            elif protocol == 'f4m':
-                retTab = getF4MLinksWithMeta(uri)
-                videoUrls.extend(retTab)
-            elif protocol == 'mpd':
-                retTab = getMPDLinksWithMeta(uri, False)
-                videoUrls.extend(retTab)
-            else:
-                videoUrls.append({'name':'direct link', 'url':uri})
+
+        urlSupport = self.up.checkHostSupport(uri)
+        if urlSupport == 1:
+           retTab = self.up.getVideoLinkExt(uri)
+           videoUrls.extend(retTab)
+        elif urlSupport == 0 and self._uriIsValid(uri):
+           if protocol == 'm3u8':
+              retTab = getDirectM3U8Playlist(uri, checkExt=False, checkContent=True)
+              videoUrls.extend(retTab)
+           elif protocol == 'f4m':
+              retTab = getF4MLinksWithMeta(uri)
+              videoUrls.extend(retTab)
+           elif protocol == 'mpd':
+              retTab = getMPDLinksWithMeta(uri, False)
+              videoUrls.extend(retTab)
+           else:
+              videoUrls.append({'name': 'direct link', 'url': uri})
+
         return videoUrls
     
     def handleService(self, index, refresh = 0, searchPattern = '', searchType = ''):
