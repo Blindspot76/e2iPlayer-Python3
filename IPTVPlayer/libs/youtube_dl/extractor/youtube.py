@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# Modified by Blindspot 14-10-2024
+# Modified by Blindspot 29-07-2025
 import re
 import time
 from Plugins.Extensions.IPTVPlayer.p2p3.UrlLib import urllib_urlencode, urllib_unquote_plus

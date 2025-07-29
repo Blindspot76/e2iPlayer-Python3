@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Blindspot - 2022-01-12
+# Blindspot - 2025-07-29
 ###################################################
 # LOCAL import
 ###################################################
@@ -202,21 +202,29 @@ class Youtube(CBaseHostClass):
                 params = {'title':title, 'url': url, 'icon': icon, 'desc': desc}
                 self.addVideo(params)
         else:
-           title = "Trending videos"
-           url = "https://www.youtube.com/feed/trending"
-           params = {'category':'feeds_video','title':title, 'url': url}
+           title = _("Music")
+           url = "https://www.youtube.com/channel/UC-9-kyTW8ZkZNDHQJ6FgpwQ"
+           params = {'category': 'feeds_video', 'title': title, 'url': url}
            self.addDir(params)
-           title = "Music"
-           url = "https://www.youtube.com/feed/trending?bp=4gINGgt5dG1hX2NoYXJ0cw%3D%3D"
-           params = {'category':'feeds_video','title':title, 'url': url}
+           title = _("Gaming")
+           url = "https://www.youtube.com/gaming"
+           params = {'category': 'feeds_video', 'title': title, 'url': url}
            self.addDir(params)
-           title = "Gaming"
-           url = "https://www.youtube.com/feed/trending?bp=4gIcGhpnYW1pbmdfY29ycHVzX21vc3RfcG9wdWxhcg%3D%3D"
-           params = {'category':'feeds_video','title':title, 'url': url}
+           title = _("Movies")
+           url = "https://www.youtube.com/feed/storefront?bp=ogUCKAU%3D"
+           params = {'category': 'feeds_video', 'title': title, 'url': url}
            self.addDir(params)
-           title = "Films"
-           url = "https://www.youtube.com/feed/trending?bp=4gIKGgh0cmFpbGVycw%3D%3D"
-           params = {'category':'feeds_video','title':title, 'url': url}
+           title = _("Shorts")
+           url = "https://www.youtube.com/shorts/I-GhnPL3C8Q"
+           params = {'category': 'feeds_video', 'title': title, 'url': url}
+           self.addDir(params)
+           title = _("Podcasts")
+           url = "https://www.youtube.com/podcasts"
+           params = {'category': 'feeds_video', 'title': title, 'url': url}
+           self.addDir(params)
+           title = _("Sport")
+           url = "https://www.youtube.com/channel/UCEgdi0XIXXZ-qJOFPf4JSKw"
+           params = {'category': 'feeds_video', 'title': title, 'url': url}
            self.addDir(params)
 
     def getVideos(self, cItem):
