@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-# Modified by Blindspot - 2024.10.28.
+# Modified by Blindspot - 2026.01.24.
 ###################################################
 # LOCAL import
 ###################################################
@@ -11216,7 +11216,7 @@ class pageParser(CaptchaHelper):
             videaXml = str(rc4(base64.b64decode(videaXml), key))
         printDBG(videaXml)
         sources = []
-        all = self.cm.ph.getDataBeetwenMarkers(videaXml, "<video_sources>", "</video_sources>", False)[1]
+        all = self.cm.ph.getDataBeetwenMarkers(videaXml, "<video_sources", "</video_sources>", False)[1]
         videos = self.cm.ph.getAllItemsBeetwenMarkers(all, '<video_source', '</video_source>')
         names = self.cm.ph.getAllItemsBeetwenMarkers(all, 'name="', '"', False)
         hashes = self.cm.ph.getDataBeetwenMarkers(videaXml, '<hash_values>', '</hash_values>', False)[1]

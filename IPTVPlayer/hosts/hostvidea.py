@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2024-01-18 by Blindspot
+# 2026-01-24 by Blindspot
 ###################################################
-HOST_VERSION = "1.2"
+HOST_VERSION = "1.3"
 ###################################################
 # LOCAL import
 ###################################################
@@ -104,18 +104,12 @@ class videa(CBaseHostClass):
             desc_kat = self.getdvdsz(tab_kat, 'Videa kategóriáinak megjelenítése...')
             tab_csat = 'videa_csatornak'
             desc_csat = self.getdvdsz(tab_csat, 'Videa csatornáinak megjelenítése...')
-            tab_ajanlott = 'videa_ajanlott'
-            desc_ajanlott = self.getdvdsz(tab_ajanlott, 'Ajánlott, nézett tartalmak megjelenítése...')
-            tab_keresett = 'videa_keresett_tartalom'
-            desc_keresett = self.getdvdsz(tab_keresett, 'Keresett tartalmak megjelenítése...')
             tab_search = 'videa_kereses'
             desc_search = self.getdvdsz(tab_search, 'Keresés...')
             tab_search_hist = 'videa_kereses_elozmeny'
             desc_search_hist = self.getdvdsz(tab_search_hist, 'Keresés az előzmények között...')
             MAIN_CAT_TAB = [{'category':'list_main', 'title': 'Kategóriák', 'tab_id':tab_kat, 'desc':desc_kat},
                             {'category':'list_main', 'title': 'Csatornák', 'tab_id':tab_csat, 'desc':desc_csat},
-                            {'category':'list_main', 'title': 'Ajánlott, nézett tartalmak', 'tab_id':tab_ajanlott, 'desc':desc_ajanlott},
-                            {'category':'list_main', 'title': 'Keresett tartalmak', 'tab_id':tab_keresett, 'desc':desc_keresett},
                             {'category':'search', 'title': _('Search'), 'search_item':True, 'tab_id':tab_search, 'desc':desc_search},
                             {'category':'search_history', 'title': _('Search history'), 'tab_id':tab_search_hist, 'desc':desc_search_hist} 
                            ]
