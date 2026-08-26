@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-# Modified by Blindspot - 2026.01.24.
+# Modified by Blindspot - 2026.08.26.
 ###################################################
 # LOCAL import
 ###################################################
@@ -11154,23 +11154,20 @@ class pageParser(CaptchaHelper):
             if self.cm.isValidUrl(url) and up.getDomain(url) != up.getDomain(baseUrl):
                 return up.getVideoLinkExt(url)
         return urlTab
+    
     ####STARTVIDEA####
     def parserVIDEAHU(self, url):
         printDBG("parserVIDEAHU url[%s]\n" % url)
         def rc4(cipher_text, key):
             def compat_ord(c):
                 return c if isinstance(c, int) else ord(c)
-                
             res = b''
-
             key_len = len(key)
             S = list(range(256))
-
             j = 0
             for i in range(256):
                 j = (j + S[i] + ord(key[i % key_len])) % 256
                 S[i], S[j] = S[j], S[i]
-
             i = 0
             j = 0
             for m in range(len(cipher_text)):
@@ -11179,12 +11176,10 @@ class pageParser(CaptchaHelper):
                 S[i], S[j] = S[j], S[i]
                 k = S[(S[i] + S[j]) % 256]
                 res += struct.pack('B', k ^ compat_ord(cipher_text[m]))
-
             try:
                 return res.decode('ascii')
             except:
                 return res
-
         STATIC_SECRET = 'xHb0ZvME5q8CBcoQi6AngerDu3FGO9fkUlwPmLVY_RTzj2hJIS4NasXWKy1td7p'
         sts, video_page = self.cm.getPage(url)
         if '/player' in url:
@@ -11209,6 +11204,8 @@ class pageParser(CaptchaHelper):
         if 'f' in query or 'v' in query:
             _param = 'f=%s' % query['f'][0] if 'f' in query else 'v=%s' % query['v'][0]
         sts, videaXml = self.cm.getPage('https://videa.hu/player/xml?platform=desktop&%s&_s=%s&_t=%s' % (_param, _s, _t))
+        if isinstance(videaXml, bytes):
+            videaXml = videaXml.decode('utf-8', 'ignore')
         header = requests.head('https://videa.hu/player/xml?platform=desktop&%s&_s=%s&_t=%s' % (_param, _s, _t))
         if not videaXml.startswith('<?xml'):
             key = result[16:] + random_seed + header.headers['x-videa-xs']
@@ -11219,20 +11216,47 @@ class pageParser(CaptchaHelper):
         all = self.cm.ph.getDataBeetwenMarkers(videaXml, "<video_sources", "</video_sources>", False)[1]
         videos = self.cm.ph.getAllItemsBeetwenMarkers(all, '<video_source', '</video_source>')
         names = self.cm.ph.getAllItemsBeetwenMarkers(all, 'name="', '"', False)
-        hashes = self.cm.ph.getDataBeetwenMarkers(videaXml, '<hash_values>', '</hash_values>', False)[1]
-        hashes = self.cm.ph.getAllItemsBeetwenMarkers(hashes, "<hash_value_", "</")
         for i in videos:
-            url = self.cm.ph.getDataBeetwenMarkers(i, '">', '</', False)[1]
-            hash = self.cm.ph.getDataBeetwenMarkers(hashes[videos.index(i)], ">", "<", False)[1]
+            printDBG("Videa VIDEO_SOURCE RAW [%s]" % i)
+            video_url = self.cm.ph.getDataBeetwenMarkers(i, '>', '</', False)[1]
+            printDBG("Videa VIDEO_URL RAW [%s]" % video_url)
+            video_url = video_url.replace('&amp;', '&')
+            printDBG("Videa VIDEO_URL [%s]" % video_url)
             expire = self.cm.ph.getDataBeetwenMarkers(i, 'exp="', '"', False)[1]
-            printDBG(url)
-            printDBG(hash)
+            if not expire:
+                expire = self.cm.ph.getDataBeetwenMarkers(i, 'expires=', '&', False)[1]
+            if 'md5=' in video_url:
+                final = video_url
+            else:
+                hashes = self.cm.ph.getDataBeetwenMarkers(videaXml, '<hash_values>', '</hash_values>', False)[1]
+                hash_items = self.cm.ph.getAllItemsBeetwenMarkers(hashes, "<hash_value_", "</")
+                video_index = videos.index(i)
+                if video_index >= len(hash_items):
+                    printDBG("Videa: hash missing for video index [%s]" % video_index)
+                    continue
+                hash = self.cm.ph.getDataBeetwenMarkers(hash_items[video_index], ">", "<", False)[1]
+                if not hash:
+                    printDBG("Videa: hash empty for video index [%s]" % video_index)
+                    continue
+                final = "%s?md5=%s&expires=%s" % (video_url, hash, expire)
+            printDBG(video_url)
             printDBG(expire)
-            final = "%s?md5=%s&expires=%s" % (url, hash, expire)
             printDBG(final)
-            sources.append({'name':names[videos.index(i)], 'url': "https:" + final})
+            if not final.startswith('http'):
+                final = "https:" + final
+            sources.append({'name':names[videos.index(i)], 'url':final})
+        if not sources:
+            audio_sources = self.cm.ph.getAllItemsBeetwenMarkers(videaXml,'<audio_source','</audio_source>')
+            for i in audio_sources:
+                 audio_url = self.cm.ph.getDataBeetwenMarkers(i, '">', '</', False)[1].replace('&amp;', '&')
+                 if audio_url:
+                     if not audio_url.startswith('http'):
+                         audio_url = 'https:' + audio_url
+                     printDBG('Videa: AUDIO ONLY URL=[%s]' % audio_url)
+                     sources.append({'name': 'Audio','url': audio_url})
         return sources
     ####ENDVIDEA####
+
     
     def parserAFLAMYZCOM(self, baseUrl):
         printDBG("parserAFLAMYZCOM baseUrl[%s]\n" % baseUrl)
