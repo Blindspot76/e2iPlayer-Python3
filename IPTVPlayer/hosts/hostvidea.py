@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2026-08-26 by Blindspot
+# 2026-08-28 by Blindspot
 ###################################################
-HOST_VERSION = "1.6"
+HOST_VERSION = "1.7"
 ###################################################
 # LOCAL import
 ###################################################
@@ -45,10 +45,11 @@ from Screens.MessageBox import MessageBox
 config.plugins.iptvplayer.videa_id = ConfigYesNo(default = False)
 config.plugins.iptvplayer.boxtipus = ConfigText(default = "", fixed_size = False)
 config.plugins.iptvplayer.boxrendszer = ConfigText(default = "", fixed_size = False)
-
+config.plugins.iptvplayer.videa_quality = ConfigYesNo(default = False)
 def GetConfigList():
     optionList = []
     optionList.append(getConfigListEntry("id:", config.plugins.iptvplayer.videa_id))
+    optionList.append(getConfigListEntry(_("Elérhető legjobb minőség beállítása"), config.plugins.iptvplayer.videa_quality))
     return optionList
 ###################################################
 

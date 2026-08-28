@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-# Modified by Blindspot - 2026.08.26.
+# Modified by Blindspot - 2026.08.28.
 ###################################################
 # LOCAL import
 ###################################################
@@ -11254,6 +11254,20 @@ class pageParser(CaptchaHelper):
                          audio_url = 'https:' + audio_url
                      printDBG('Videa: AUDIO ONLY URL=[%s]' % audio_url)
                      sources.append({'name': 'Audio','url': audio_url})
+        if config.plugins.iptvplayer.videa_quality.value and sources:
+            best_source = None
+            best_quality = 0
+            for source in sources:
+                name = source.get('name', '')
+                match = re.search(r'(\d{3,4})\s*[pP]', name)
+                if match:
+                    quality = int(match.group(1))
+                    if quality > best_quality:
+                        best_quality = quality
+                        best_source = source
+            if best_source:
+                printDBG("Videa: Auto quality selected [%s] - %sp" % (best_source.get('name', ''), best_quality))
+                sources = [best_source]
         return sources
     ####ENDVIDEA####
 
