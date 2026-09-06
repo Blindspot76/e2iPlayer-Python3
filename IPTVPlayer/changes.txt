@@ -1,3 +1,5 @@
+#2026.09.06.
+VIDEA.HU frissítve (VideaTon, VideaKid hozzáadva)
 #2026.08.28.
 VIDEA frissítve (Automatikus minőségválasztó hozzáadva)
 XXX Host Prémium változat hozzáadva

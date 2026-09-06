@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ###################################################
-# 2026-08-28 by Blindspot
+# 2026-09-05 by Blindspot
 ###################################################
-HOST_VERSION = "1.7"
+HOST_VERSION = "1.8"
 ###################################################
 # LOCAL import
 ###################################################
@@ -110,6 +110,8 @@ class videa(CBaseHostClass):
             desc_search_hist = self.getdvdsz(tab_search_hist, 'Keresés az előzmények között')
             MAIN_CAT_TAB = [{'category':'list_main', 'title': 'Kategóriák', 'tab_id':tab_kat, 'desc':desc_kat},
                             {'category':'list_main', 'title': 'Csatornák', 'tab_id':tab_csat, 'desc':desc_csat},
+                            {'category':'list_items', 'title':'Videa Kid', 'url':'https://videakid.hu/','icon':'https://videakid.hu/static/uis/redesign/images/product-logos/videakid-logo.png', 'desc':'Videa Kid videóinak megjelenítése'},
+                            {'category':'list_items','title':'Videaton','url':self.MAIN_URL + '/videaton','icon': 'https://videa.hu/static/uis/redesign/images/product-logos/videaton-logo.png', 'videaton_mode':True,'desc':'Videaton videóinak megjelenítése'},
                             {'category':'search', 'title': _('Search'), 'search_item':True, 'tab_id':tab_search, 'desc':desc_search},
                             {'category':'search_history', 'title': _('Search history'), 'tab_id':tab_search_hist, 'desc':desc_search_hist} 
                            ]
@@ -296,11 +298,14 @@ class videa(CBaseHostClass):
                 url_ere = re.sub(r'[?&]page=\d+', '', url_ere)
                 printDBG('Videa CHANNEL: load url=%s' % url_ere)
             elif not searchMode and not channelMode:
-                if page > 0 and 'page=' in url_ere:
-                    idx1 = url_ere.rfind('page=')
-                    if -1 < idx1:
-                        url_ere = url_ere[:idx1].strip()
-                        url_ere = url_ere + 'page=' + str(page)
+                if cItem.get('videaton_mode', False):
+                    pass
+                else:
+                    if page > 0 and 'page=' in url_ere:
+                        idx1 = url_ere.rfind('page=')
+                        if -1 < idx1:
+                            url_ere = url_ere[:idx1].strip()
+                            url_ere = url_ere + 'page=' + str(page)
             printDBG('Videa listItems: searchMode=%s channelMode=%s url=%s page=%s' % (searchMode, channelMode, url_ere, page))
             sts, data = self.getPage(url_ere)
             printDBG('Videa listItems: getPage sts=%s data_len=%s' % (sts, len(data)))
@@ -308,7 +313,10 @@ class videa(CBaseHostClass):
             printDBG('Videa listItems: loaded url=%s' % url_ere)
             nextPage = False
             if not searchMode and not channelMode:
-                nextPage = self.cm.ph.getSearchGroups(data, 'next"\shref=[\'"]([^"^\']+?)[\'"]')[0]
+                if cItem.get('videaton_mode', False):
+                    nextPage = self.cm.ph.getSearchGroups(data,'href=[\'"]([^"^\']+?)[\'"][^>]+aria-label=[\'"]next[\'"]')[0]
+                else:
+                    nextPage = self.cm.ph.getSearchGroups(data,'next"\shref=[\'"]([^"^\']+?)[\'"]')[0]
                 if nextPage:
                     nextPage = True
             data = data.split('class="col video-item">')
@@ -349,7 +357,10 @@ class videa(CBaseHostClass):
                 ftlv = self.cm.ph.getSearchGroups(item,'''uploaded-at"[>]([^"^']+?)[<]''')[0]
                 desc = title + '\n' + 'Időtartam: ' + vhz + vmsg + '\nSzerző: ' + vszrz + '\nFeltöltve: ' + ftlv
                 params = MergeDicts(cItem, {'good_for_fav': False, 'title': title, 'url': url, 'icon': icon, 'desc': desc, 'tps': '0'})
-                self.addVideo(params)
+                if cItem.get('videaton_mode', False):
+                    self.addAudio(params)
+                else:
+                    self.addVideo(params)
 
             printDBG('LastItemId=%s' % lastItemId)
 
@@ -383,6 +394,13 @@ class videa(CBaseHostClass):
                     self.addDir(params)
                 else:
                     printDBG('CHANNEL: NO LAST ITEM ID')
+            elif cItem.get('videaton_mode', False):
+                if lastItemId != '':
+                    lazyUrl = self.MAIN_URL + '/lazy/videaton/?cacheId=&lastItemId=%s&itemCount=1000&sort=0' % urllib.parse.quote_plus(lastItemId)
+                    printDBG('VIDEATON NEXT LAZY URL=%s' % lazyUrl)
+                    params = dict(cItem)
+                    params.update({'title': _("Next page"), 'url': lazyUrl, 'category': 'list_items', 'videaton_mode': True, 'desc': 'Nyugi...\nVan még további tartalom, lapozz tovább!'})
+                    self.addDir(params)
             elif nextPage:
                 params = dict(cItem)
                 params.update({'title': _("Next page"), 'page': page + 1, 'desc': 'Nyugi...\nVan még további tartalom, lapozz tovább!'})
